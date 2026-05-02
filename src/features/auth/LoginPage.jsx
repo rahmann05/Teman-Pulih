@@ -74,7 +74,7 @@ const LoginPage = () => {
           error={error}
         />
 
-        <button type="submit" className="btn-primary">Masuk</button>
+        <button type="submit" className="auth-btn-primary">Masuk</button>
       </form>
 
       <p style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>

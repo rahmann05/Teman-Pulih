@@ -1,6 +1,6 @@
 // src/features/auth/AuthLayout.jsx
 import '../../../styles/features/Auth.css';
-import heroImg from '../../assets/images/hero-recovery.png';
+import heroImg from '../../../assets/images/hero-recovery.png';
 
 const AuthLayout = ({ children }) => {
   return (

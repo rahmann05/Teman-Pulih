@@ -142,7 +142,7 @@
   margin-top: var(--space-1);
 }
 
-.btn-primary {
+.auth-btn-primary {
   width: 100%;
   background: var(--accent);
   color: var(--text-inverse);
@@ -153,6 +153,6 @@
   transition: transform var(--duration-fast) var(--spring);
 }
 
-.btn-primary:active {
+.auth-btn-primary:active {
   transform: scale(0.96);
 }

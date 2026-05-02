@@ -108,20 +108,29 @@ body {
 
 #root {
   width: 100%;
-  max-width: var(--container-max);
+  max-width: 1280px; /* Increased for desktop responsiveness */
   margin: 0 auto;
   min-height: 100dvh;
   background: var(--bg);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (min-width: 431px) {
+@media (min-width: 1281px) {
+  body {
+    background: #E8E5E0;
+  }
   #root {
-    box-shadow: 0 0 80px rgba(0,0,0,0.08);
+    box-shadow: 0 0 80px rgba(0,0,0,0.05);
+    margin: 40px auto;
+    min-height: calc(100dvh - 80px);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
   }
 }
 
-@media (max-width: 430px) {
+@media (max-width: 1280px) {
   body { background: var(--bg); }
 }
 

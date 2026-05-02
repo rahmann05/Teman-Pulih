@@ -8,6 +8,7 @@
   position: relative;
   height: 92dvh;
   min-height: 640px;
+  max-height: 900px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -61,7 +62,7 @@
 
 .logo-text {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.3px;
@@ -74,13 +75,18 @@
 }
 
 .btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
-  padding: 8px 16px;
+  padding: 10px 18px;
   border-radius: var(--radius-full);
   transition: background 0.2s;
+  line-height: 1;
 }
 
 .btn-ghost:hover {
@@ -88,14 +94,19 @@
 }
 
 .btn-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   font-family: var(--font-heading);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #fff;
   background: var(--accent);
-  padding: 8px 20px;
+  padding: 10px 22px;
   border-radius: var(--radius-full);
   transition: all 0.25s var(--spring);
+  line-height: 1;
 }
 
 .btn-solid:hover {
@@ -162,6 +173,8 @@
 .btn-primary {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   gap: 8px;
   font-family: var(--font-heading);
   font-size: 14px;
@@ -170,8 +183,10 @@
   background: var(--accent);
   padding: 14px 28px;
   border-radius: var(--radius-full);
+  border: 1.5px solid transparent;
   transition: all 0.25s var(--spring);
   box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
+  line-height: 1;
 }
 
 .btn-primary:hover {
@@ -186,6 +201,8 @@
 .btn-outline {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  white-space: nowrap;
   gap: 8px;
   font-family: var(--font-heading);
   font-size: 14px;
@@ -196,6 +213,7 @@
   border-radius: var(--radius-full);
   border: 1.5px solid rgba(255, 255, 255, 0.3);
   transition: all 0.2s;
+  line-height: 1;
 }
 
 .btn-outline:hover {
@@ -313,23 +331,52 @@
   border-radius: var(--radius-xl);
   overflow: hidden;
   height: 220px;
-  transition: transform 0.3s var(--spring);
+  transition: all 0.4s var(--ease);
+  cursor: pointer;
+  transform: translateZ(0); /* Hardware acceleration */
+}
+
+.f-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .f-card:active {
-  transform: scale(0.98);
+  transform: scale(0.985) translateY(0);
+  transition: all 0.1s var(--ease);
 }
 
 .f-card-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.8s var(--ease);
+}
+
+.f-card:hover .f-card-img {
+  transform: scale(1.04);
+}
+
+.f-card:active .f-card-img {
+  transform: scale(1.03);
+  transition: transform 0.1s var(--ease);
 }
 
 .f-card-overlay {
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg, rgba(26, 26, 46, 0.0) 30%, rgba(26, 26, 46, 0.75) 100%);
+  transition: all 0.3s var(--ease);
+  opacity: 1;
+}
+
+.f-card:hover .f-card-overlay {
+  background: linear-gradient(180deg, rgba(26, 26, 46, 0.1) 0%, rgba(26, 26, 46, 0.8) 100%);
+}
+
+.f-card:active .f-card-overlay {
+  background: linear-gradient(180deg, rgba(26, 26, 46, 0.15) 0%, rgba(26, 26, 46, 0.85) 100%);
+  transition: all 0.1s var(--ease);
 }
 
 .f-card-content {
@@ -339,6 +386,7 @@
   right: 0;
   padding: 20px;
   color: #fff;
+  z-index: 2;
 }
 
 .f-card-label {
@@ -372,16 +420,24 @@
   justify-content: center;
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: background 0.2s;
+  transition: all 0.3s var(--spring);
+  z-index: 3;
 }
 
-.f-card-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
+.f-card:hover .f-card-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1) rotate(-45deg);
 }
 
 .f-card-btn svg {
   width: 18px;
   height: 18px;
+  transition: transform 0.3s var(--ease);
+}
+
+.f-card:hover .f-card-btn svg {
+  transform: rotate(45deg);
 }
 
 /* Two-column row */
@@ -765,3 +821,278 @@
   color: rgba(255, 255, 255, 0.3);
   text-align: center;
 }
+
+/* ============================================
+   RESPONSIVE OVERRIDES
+   ============================================ */
+@media (min-width: 768px) {
+  .hero {
+    height: 100dvh;
+    max-height: 1200px;
+  }
+
+  .nav {
+    padding: 40px 48px 0;
+  }
+
+  .hero-content {
+    padding: 0 48px 80px;
+    max-width: 800px;
+  }
+
+  .hero-title {
+    font-size: 56px;
+    margin-bottom: 24px;
+    line-height: 1.1;
+  }
+
+  .hero-desc {
+    font-size: 20px;
+    max-width: 550px;
+    margin-bottom: 40px;
+  }
+
+  .btn-primary, .btn-outline {
+    padding: 16px 32px;
+    font-size: 16px;
+  }
+  .hero-scroll {
+    bottom: 24px;
+  }
+
+/* ... existing styles ... */
+
+  .stat {
+    padding: 32px 24px;
+  }
+
+  .stat-value {
+    font-size: 42px;
+    margin-bottom: 8px;
+  }
+
+  .stat-desc {
+    font-size: 14px;
+  }
+
+  .chips-scroll {
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .features {
+    padding: 40px 40px 56px;
+  }
+
+  .features-title {
+    font-size: 28px;
+    margin-bottom: 32px;
+    text-align: center;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+  }
+
+  .f-card {
+    height: 460px;
+  }
+
+  .features-row {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .features-row .f-card {
+    height: 220px;
+  }
+
+  .stats {
+    padding: 64px 40px;
+  }
+
+  .stats-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .stat {
+    padding: 32px 24px;
+  }
+
+  .steps {
+    padding: 64px 40px;
+  }
+
+  .steps-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .steps-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    padding-left: 0;
+  }
+
+  .steps-list::before {
+    top: 15px;
+    left: 20px;
+    right: 20px;
+    bottom: auto;
+    width: auto;
+    height: 1.5px;
+  }
+
+  .step-num {
+    position: relative;
+    left: 0;
+    margin-bottom: 16px;
+  }
+
+  .testimonial {
+    padding: 80px 64px;
+    text-align: center;
+  }
+
+  .t-quote {
+    font-size: 24px;
+    max-width: 800px;
+    margin: 0 auto 32px;
+  }
+
+  .t-author {
+    justify-content: center;
+  }
+
+  .cta-section {
+    padding: 64px 40px;
+  }
+
+  .cta-card {
+    padding: 64px 48px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .cta-title {
+    font-size: 32px;
+  }
+
+  .cta-desc {
+    font-size: 16px;
+    max-width: 500px;
+    margin: 0 auto 32px;
+  }
+
+  .footer {
+    padding: 48px 40px;
+  }
+
+  .footer-top {
+    margin-bottom: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero {
+    height: 100dvh;
+    max-height: 1400px;
+  }
+  
+  .nav {
+    padding: 48px 80px 0;
+  }
+
+  .logo-text {
+    font-size: 24px;
+  }
+
+  .btn-ghost, .btn-solid {
+    padding: 12px 28px;
+    font-size: 15px;
+  }
+
+  .hero-content {
+    padding: 0 80px 100px;
+    max-width: 1000px;
+  }
+
+  .hero-title {
+    font-size: 72px;
+    margin-bottom: 28px;
+  }
+
+  .hero-desc {
+    font-size: 20px;
+    max-width: 600px;
+    margin-bottom: 40px;
+  }
+
+  .btn-primary, .btn-outline {
+    padding: 16px 36px;
+    font-size: 16px;
+  }
+
+  .features {
+    padding: 64px 80px 80px;
+  }
+
+  .features-grid {
+    grid-template-columns: 1.5fr 1fr;
+    gap: 24px;
+  }
+
+  .f-card {
+    height: 464px; /* Perfectly aligned: 220 + 24 + 220 = 464 */
+  }
+
+  .features-row {
+    gap: 24px;
+  }
+
+  .stats {
+    padding: 80px 80px;
+  }
+  
+  .stats-grid {
+    gap: 24px;
+  }
+
+  .steps {
+    padding: 80px 80px;
+  }
+}
+
+\
+/* ---- IMAGE OPTIMIZATION FOR DESKTOP ---- */
+@media (min-width: 1024px) {
+  .hero-img {
+    object-position: center 30%;
+  }
+
+  .f-card-img {
+    transition: transform 1.2s var(--ease);
+  }
+
+  .features-grid .f-card:first-child .f-card-img {
+    object-position: center 40%;
+  }
+
+  .features-row .f-card:nth-child(1) .f-card-img {
+    object-position: center 30%;
+  }
+
+  .features-row .f-card:nth-child(2) .f-card-img {
+    object-position: center 20%;
+  }
+}\

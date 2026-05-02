@@ -96,7 +96,7 @@ const RegisterPage = () => {
           error={error}
         />
 
-        <button type="submit" className="btn-primary">Daftar Sekarang</button>
+        <button type="submit" className="auth-btn-primary">Daftar Sekarang</button>
       </form>
 
       <p style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>
