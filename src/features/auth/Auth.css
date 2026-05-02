@@ -1,0 +1,32 @@
+/* src/features/auth/Auth.css */
+.auth-container {
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.auth-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(244, 221, 211, 0.4) 0%, rgba(196, 101, 58, 0.6) 100%);
+  backdrop-filter: blur(4px);
+  z-index: 1;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-card);
+  padding: var(--space-8) var(--space-6);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  margin: var(--space-4);
+}
