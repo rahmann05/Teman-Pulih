@@ -1,10 +1,10 @@
-import { 
-  LuScanLine, 
-  LuClock, 
-  LuMessageCircle, 
-  LuUsers, 
-  LuActivity 
-} from 'react-icons/lu'
+import {
+  LuScanLine,
+  LuClock,
+  LuMessageCircle,
+  LuUsers,
+  LuActivity
+} from 'react-icons/lu';
 
 const LandingServiceChips = () => {
   return (
@@ -27,7 +27,7 @@ const LandingServiceChips = () => {
         </button>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default LandingServiceChips
+export default LandingServiceChips;

@@ -1,4 +1,4 @@
-import { LuHeartPulse } from 'react-icons/lu'
+import { LuHeartPulse } from 'react-icons/lu';
 
 const Footer = () => {
   return (
@@ -21,7 +21,7 @@ const Footer = () => {
         © 2026 Teman Pulih · Tim CC26-PSU347
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;

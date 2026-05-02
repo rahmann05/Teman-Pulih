@@ -1,4 +1,5 @@
-import { HiOutlineArrowRight, HiOutlineShieldCheck } from 'react-icons/hi2'
+import { HiOutlineArrowRight, HiOutlineShieldCheck } from 'react-icons/hi2';
+import { Link } from 'react-router-dom';
 
 const LandingBottomCTA = () => {
   return (
@@ -11,12 +12,12 @@ const LandingBottomCTA = () => {
         <p className="cta-desc">
           Bergabung dengan pasien dan caregiver yang telah mempercayakan pemulihan mereka bersama Teman Pulih.
         </p>
-        <button className="cta-btn" type="button">
+        <Link to="/register" className="cta-btn">
           Daftar Gratis <HiOutlineArrowRight size={16} />
-        </button>
+        </Link>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default LandingBottomCTA
+export default LandingBottomCTA;

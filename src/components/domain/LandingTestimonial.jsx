@@ -13,7 +13,7 @@ const LandingTestimonial = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default LandingTestimonial
+export default LandingTestimonial;

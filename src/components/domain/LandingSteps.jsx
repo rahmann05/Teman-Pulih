@@ -29,7 +29,7 @@ const LandingSteps = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default LandingSteps
+export default LandingSteps;

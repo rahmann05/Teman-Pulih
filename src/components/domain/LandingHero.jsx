@@ -1,6 +1,7 @@
-import { HiOutlineArrowRight } from 'react-icons/hi2'
-import Navbar from '../layout/Navbar'
-import heroImg from '../../assets/images/hero-recovery.png'
+import { HiOutlineArrowRight } from 'react-icons/hi2';
+import { Link } from 'react-router-dom';
+import Navbar from '../layout/Navbar';
+import heroImg from '../../assets/images/hero-recovery.png';
 
 const LandingHero = () => {
   return (
@@ -22,9 +23,9 @@ const LandingHero = () => {
           Kelola jadwal obat, scan resep dengan AI, dan konsultasi chatbot medis — dalam satu genggaman.
         </p>
         <div className="hero-cta">
-          <button className="btn-primary" type="button">
+          <Link to="/register" className="btn-primary">
             Mulai Sekarang <HiOutlineArrowRight size={16} />
-          </button>
+          </Link>
           <button className="btn-outline" type="button">
             Pelajari
           </button>
@@ -37,7 +38,7 @@ const LandingHero = () => {
         <span className="scroll-dot" />
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default LandingHero
+export default LandingHero;

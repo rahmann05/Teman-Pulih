@@ -24,7 +24,7 @@ const LandingStats = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default LandingStats
+export default LandingStats;

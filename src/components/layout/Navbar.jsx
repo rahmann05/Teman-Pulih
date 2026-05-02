@@ -1,4 +1,5 @@
-import { LuHeartPulse } from 'react-icons/lu'
+import { LuHeartPulse } from 'react-icons/lu';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   return (
@@ -10,11 +11,11 @@ const Navbar = () => {
         <span className="logo-text">Teman Pulih</span>
       </div>
       <div className="nav-actions">
-        <button className="btn-ghost" type="button">Masuk</button>
-        <button className="btn-solid" type="button">Daftar</button>
+        <Link to="/login" className="btn-ghost">Masuk</Link>
+        <Link to="/register" className="btn-solid">Daftar</Link>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;
