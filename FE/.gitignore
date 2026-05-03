@@ -26,3 +26,8 @@ dist-ssr
 # AGENT Guide
 AGENT.MD
 
+# Env
+.env
+.env.*
+!.env.example
+
