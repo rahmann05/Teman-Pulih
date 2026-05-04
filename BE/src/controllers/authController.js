@@ -1,88 +1,93 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const db = require('../config/db');
+const { supabase } = require('../config/db');
 
 // Registrasi User
 const register = async (req, res) => {
-    const { name, email, password, role } = req.body;
-
-    // Validasi basic
-    if (!name || !email || !password || !role) {
-        return res.status(400).json({ message: 'Semua field wajib diisi' });
-    }
-
     try {
-        // Cek apakah email sudah terdaftar
-        const userExist = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userExist.rows.length > 0) {
-            return res.status(400).json({ message: 'Email sudah digunakan' });
-        }
+        const { name, email, password, role } = req.body;
 
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        // 1. Daftarkan user ke Supabase Auth
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+        });
 
-        // Masukkan ke database
-        const result = await db.query(
-            'INSERT INTO users (name, email, password, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role',
-            [name, email, hashedPassword, role]
-        );
+        if (authError) throw authError;
+
+        // 2. Simpan profil tambahan/role ke tabel public.users
+        const userId = authData.user.id;
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .insert([{ id: userId, name: name, email: email, role: role }])
+            .select()
+            .single();
+
+        if (userError) throw userError;
 
         res.status(201).json({
-            message: 'User berhasil didaftarkan',
-            user: result.rows[0],
+            message: 'User registered successfully. Verifikasi email Anda (jika diaktifkan di Supabase).',
+            user: userData,
+            session: authData.session
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(400).json({ error: error.message });
     }
 };
 
 // Login User
 const login = async (req, res) => {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-        return res.status(400).json({ message: 'Email dan password wajib diisi' });
-    }
-
     try {
-        // Cari user berdasarkan email
-        const userResult = await db.query('SELECT * FROM users WHERE email = $1', [email]);
-        const user = userResult.rows[0];
+        const { email, password } = req.body;
+        
+        // 1. Login melalui Supabase Auth
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+        });
 
-        if (!user) {
-            return res.status(400).json({ message: 'Email atau password salah' });
-        }
+        if (error) throw error;
 
-        // Cek password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Email atau password salah' });
-        }
+        // 2. Ambil informasi role user dari tabel public.users
+        const { data: userData, error: userError } = await supabase
+            .from('users')
+            .select('role, name')
+            .eq('id', data.user.id)
+            .single();
 
-        // Generate JWT token
-        const payload = {
-            id: user.id,
-            role: user.role,
-        };
-
-        const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-        res.json({
-            message: 'Login berhasil',
-            token,
-            user: {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-            },
+        res.status(200).json({
+            message: 'Login successful',
+            user: { id: data.user.id, email: data.user.email, ...userData },
+            token: data.session.access_token
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Terjadi kesalahan pada server' });
+        res.status(401).json({ error: error.message });
     }
 };
 
-module.exports = { register, login };
+// Mock implementation for auth controller
+const getMe = async (req, res) => {
+    try {
+        // Mendapatkan token dari header
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) throw new Error('Token is missing');
+
+        // Verifikasi token/Dapatkan user
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        
+        if (error) throw error;
+
+        // Ambil detail role/nama
+        const { data: userData } = await supabase
+            .from('users')
+            .select('role, name')
+            .eq('id', user.id)
+            .single();
+
+        res.status(200).json({
+            user: { id: user.id, email: user.email, ...userData }
+        });
+    } catch (error) {
+        res.status(401).json({ error: error.message });
+    }
+};
+
+module.exports = { register, login, getMe };

@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const { supabase } = require('../config/db');
 
 const authenticateToken = (req, res, next) => {
     // Ambil token dari header Authorization: Bearer <token>
@@ -27,4 +28,25 @@ const authorizeRole = (roles) => {
     };
 };
 
-module.exports = { authenticateToken, authorizeRole };
+const requireAuth = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'Access denied. No token provided.' });
+        }
+
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        
+        if (error || !user) {
+            return res.status(401).json({ error: 'Invalid or expired token.' });
+        }
+
+        // Simpan data user ke object request untuk dipakai controller berikutnya
+        req.user = user;
+        next();
+    } catch (err) {
+        res.status(500).json({ error: 'Internal server error during authentication.' });
+    }
+};
+
+module.exports = { authenticateToken, authorizeRole, requireAuth };

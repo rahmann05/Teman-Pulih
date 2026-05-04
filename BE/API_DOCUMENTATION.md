@@ -18,6 +18,54 @@ Format Header:
 
 ---
 
+# API Documentation - Teman Pulih
+
+Base URL: `/api`
+
+## Authentication (`/api/auth`)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| POST | `/register` | Mendaftarkan akun baru | `name, email, password, role` | `{ message, user, token }` |
+| POST | `/login` | Autentikasi user | `email, password` | `{ message, user, token }` |
+| GET | `/me` | Mendapatkan data user login | *None* | `{ user }` |
+
+## Profile & Family Sync (`/api/profile` & `/api/family`)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| GET | `/profile` | Mendapatkan profil detail | *None* | `{ profile }` |
+| PATCH| `/profile` | Mengupdate profil lengkap | `phone, address, birth_date, gender` | `{ profile }` |
+| POST | `/family/invite`| Mengundang caregiver/pasien | `email` | `{ message, status }` |
+| GET | `/family/members`| List semua terhubung | *None* | `{ members }` |
+
+## Medication (`/api/medications`)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| GET | `/` | List obat pasien | *None* | `[ medications ]` |
+| POST | `/` | Menambah obat baru | `name, dosage, frequency, start_date, ...` | `{ medication }` |
+| PATCH| `/:id` | Mengupdate data obat | `name, dosage, ...` | `{ medication }` |
+| DELETE| `/:id` | Menghapus obat | *None* | `{ message }` |
+| POST | `/:id/taken` | Tandai obat diminum (log) | `status ('taken', 'skipped')` | `{ log }` |
+
+## OCR Scanner (`/api/ocr`)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| POST | `/scan` | Mengirim gambar untuk OCR | `form-data: image file` | `{ id, text, image_url }` |
+| GET | `/history` | List hasil scan sblmnya | *None* | `[ scans ]` |
+| GET | `/result/:id` | Detail 1 scan text | *None* | `{ scan }` |
+
+## Chatbot AI (`/api/chatbot`)
+
+| Method | Endpoint | Description | Request Body | Response |
+|--------|----------|-------------|--------------|----------|
+| POST | `/message` | Kirim & terima chat AI | `message` | `{ reply }` |
+| GET | `/history` | History percakapan | *None* | `[ messages ]` |
+
+---
+
 ## 1. Authentication (Auth)
 
 ### a. Register User

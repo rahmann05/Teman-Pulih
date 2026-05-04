@@ -1,37 +1,37 @@
 // src/features/auth/RegisterPage.jsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/layout/auth/AuthLayout';
 import AuthToggle from '../../components/ui/auth/AuthToggle';
 import AuthInputField from '../../components/ui/auth/AuthInputField';
 import SocialLoginButton from '../../components/ui/auth/SocialLoginButton';
 import AuthDivider from '../../components/ui/auth/AuthDivider';
 import AuthFormHeader from '../../components/ui/auth/AuthFormHeader';
+import { useAuth } from '../../hooks/useAuth';
+import api from '../../services/api';
 
 const RegisterPage = () => {
-  const [role, setRole] = useState('pasien');
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [role, setRole] = useState('patient'); // backend expects 'patient' or 'caregiver'
   const [fullName, setFullName] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const validate = () => {
     if (!fullName) return 'Nama lengkap wajib diisi';
-    if (!identifier) return 'Email atau No. Telepon wajib diisi';
+    if (!identifier) return 'Email wajib diisi';
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^(?:\+62|08)\d{8,11}$/;
-
-    const isEmail = emailRegex.test(identifier);
-    const isPhone = phoneRegex.test(identifier);
-
-    if (!isEmail && !isPhone) {
-      return 'Format Email atau No. Telepon tidak valid';
+    if (!emailRegex.test(identifier)) {
+      return 'Format Email tidak valid (harus menggunakan email untuk ini)';
     }
 
     if (!password) return 'Kata sandi wajib diisi';
-    if (password.length < 8) return 'Kata sandi minimal 8 karakter';
+    if (password.length < 6) return 'Kata sandi minimal 6 karakter';
 
     if (password !== confirmPassword) {
       return 'Konfirmasi kata sandi tidak cocok';
@@ -40,15 +40,43 @@ const RegisterPage = () => {
     return '';
   };
 
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     const validationError = validate();
     if (validationError) {
       setError(validationError);
       return;
     }
+    
     setError('');
-    console.log('Registering...', { role, fullName, identifier, password });
+    setLoading(true);
+    
+    try {
+      // 1. Hit the backend endpoint
+      const response = await api.post('/auth/register', {
+        name: fullName,
+        email: identifier,
+        password: password,
+        role: role === 'pasien' ? 'patient' : role // normalisasi enum
+      });
+
+      // 2. Apabila auto login dari respon session register Supabase:
+      // (Backend kita mengembalikan user dan session di register)
+      if (response.data.session && response.data.session.access_token) {
+        login(response.data.session.access_token, response.data.user.role);
+        navigate(response.data.user.role === 'patient' ? '/dashboard' : '/caregiver/dashboard');
+      } else {
+        // Jika butuh email confirmation dulu
+        setError('Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi atau coba login.');
+        // navigate('/login'); // Opsional: redirect ke login
+      }
+      
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.error || err.message || 'Terjadi kesalahan saat mendaftar');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -96,7 +124,9 @@ const RegisterPage = () => {
           error={error}
         />
 
-        <button type="submit" className="auth-btn-primary">Daftar Sekarang</button>
+        <button type="submit" className="auth-btn-primary" disabled={loading}>
+          {loading ? 'Mendaftar...' : 'Daftar Sekarang'}
+        </button>
       </form>
 
       <p style={{ textAlign: 'center', marginTop: 'var(--space-6)', fontSize: 'var(--text-sm)' }}>

@@ -1073,7 +1073,6 @@
   }
 }
 
-\
 /* ---- IMAGE OPTIMIZATION FOR DESKTOP ---- */
 @media (min-width: 1024px) {
   .hero-img {
@@ -1095,4 +1094,5 @@
   .features-row .f-card:nth-child(2) .f-card-img {
     object-position: center 20%;
   }
-}\
+}
+
