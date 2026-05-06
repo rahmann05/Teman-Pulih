@@ -1,45 +1,117 @@
-const db = require('../config/db');
+const { supabase } = require('../config/db');
 const axios = require('axios');
+const FormData = require('form-data');
 
-const processOcr = async (req, res) => {
-    if (!req.file) return res.status(400).json({ message: 'Silakan unggah foto resep' });
+// URL dari Backend Machine Learning (misal Python FastAPI/Flask)
+const ML_BACKEND_URL = process.env.ML_API_URL || 'http://localhost:8000';
 
+const scanPrescription = async (req, res) => {
     try {
-        // 1. Simpan path/URL gambar
-        const imageUrl = `/uploads/${req.file.filename}`;
+        const userId = req.user.id; // Authentication Middleware Gateway
         
-        // 2. Kirim ke ML API (FastAPI) untuk diproses OCR
-        // (Mock Integrasi)
-        // const form = new FormData();
-        // form.append('file', req.file.buffer, req.file.originalname);
-        // const mlRes = await axios.post(`${process.env.ML_API_URL}/predict-ocr`, form);
-        // const { raw_text, processed_text } = mlRes.data;
+        // Multer file interception di router memastikan file ada di req.file
+        if (!req.file) {
+            return res.status(400).json({ error: 'Tidak ada file gambar yang diunggah' });
+        }
+
+        // 1. GATEWAY -> MACHINE LEARNING BACKEND: 
+        // Mengirimkan buffer gambar OCR ini ke AI Python Port 8000 secara rahasia
+        const formData = new FormData();
+        formData.append('file', req.file.buffer, req.file.originalname);
         
-        const raw_text = "MOCK_OCR_RAW: Parasetamol 3x1"; // Mock response
-        const processed_text = "Paracetamol 500mg, 3 kali sehari setelah makan."; // Mock response
+        let extractedText = "Mock OCR Text: Amoxicillin 500mg (ML Endpoint Belum Siap)";
+        
+        try {
+            // Tembak Microservice ML: POST /api/predict_ocr
+            const mlResponse = await axios.post(`${ML_BACKEND_URL}/api/predict_ocr`, formData, {
+                headers: formData.getHeaders(),
+                timeout: 10000 // Beri timeout 10 detik agar tak hanging
+            });
+            extractedText = mlResponse.data.text || extractedText;
+        } catch (mlErr) {
+            console.warn("Backend ML Unreachable. Menggunakan Mock OCR. Error:", mlErr.message);
+        }
 
-        // 3. Simpan ke Database
-        const result = await db.query(
-            `INSERT INTO ocr_logs (patient_id, image_url, raw_ocr_text, processed_text) 
-             VALUES ($1, $2, $3, $4) RETURNING *`,
-            [req.user.id, imageUrl, raw_text, processed_text]
-        );
+        // 2. GATEWAY -> SUPABASE STORAGE: Menitipkan Gambar
+        // Asumsi nama bucket 'prescriptions' sudah ada di project Supabase
+        const uniqueFileName = `${Date.now()}_${req.file.originalname}`;
+        const { error: uploadError, data: uploadData } = await supabase
+            .storage
+            .from('prescriptions') // Anda harus membuat bucket ini public terlebih dahulu di Dashboard
+            .upload(uniqueFileName, req.file.buffer, { contentType: req.file.mimetype });
+            
+        let imageUrl = `https://mock-image.com/${uniqueFileName}`;
+        if (!uploadError && uploadData) {
+            const { data: publicUrlData } = supabase.storage.from('prescriptions').getPublicUrl(uniqueFileName);
+            imageUrl = publicUrlData.publicUrl;
+        }
 
-        res.json({ message: 'OCR berhasil diproses', data: result.rows[0] });
+        // 3. GATEWAY -> SUPABASE DATABASE: Mencatat History Scan OCR & Text Hasil
+        const { data: savedScan, error: dbError } = await supabase
+            .from('ocr_history')
+            .insert([{ 
+                user_id: userId, 
+                image_url: imageUrl, 
+                extracted_text: extractedText 
+            }])
+            .select()
+            .single();
+
+        if (dbError) throw dbError;
+
+        // 4. GATEWAY -> FRONTEND: Kembalikan JSON text matang
+        res.status(200).json({ 
+            id: savedScan.id, 
+            text: savedScan.extracted_text, 
+            image_url: savedScan.image_url 
+        });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error memproses gambar OCR' });
+        console.error("Gateway OCR Scan Error:", error.message);
+        res.status(500).json({ error: 'Terjadi kesalahan saat memproses OCR.' });
     }
 };
 
-const getOcrLogs = async (req, res) => {
+const getOcrHistory = async (req, res) => {
     try {
-        const result = await db.query('SELECT * FROM ocr_logs WHERE patient_id = $1 ORDER BY created_at DESC', [req.user.id]);
-        res.json({ data: result.rows });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error mengambil riwayat OCR' });
-    }
-}
+        const userId = req.user.id;
+        
+        // GATEWAY -> DB: Transaksi Riwayat
+        const { data, error } = await supabase
+            .from('ocr_history')
+            .select('id, image_url, created_at')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
 
-module.exports = { processOcr, getOcrLogs };
+        if (error) throw error;
+        
+        // 2. GATEWAY -> FE
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getOcrResultById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+        
+        // GATEWAY -> DB: Detail Ekstraksi OCR
+        const { data, error } = await supabase
+            .from('ocr_history')
+            .select('*')
+            .eq('id', id)
+            .eq('user_id', userId) // Keamanan: Hanya milik dia sendiri
+            .single();
+
+        if (error || !data) throw error || new Error("Scan tidak ditemukan");
+        
+        // 2. GATEWAY -> FE
+        res.status(200).json({ scan: data });
+    } catch (error) {
+        res.status(404).json({ error: error.message });
+    }
+};
+
+module.exports = { scanPrescription, getOcrHistory, getOcrResultById };

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const chatbotController = require('../controllers/chatbotController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { requireAuth } = require('../middleware/authMiddleware');
 
-router.post('/ask', authenticateToken, chatbotController.askChatbot);
-router.get('/history', authenticateToken, chatbotController.getChatHistory);
+router.use(requireAuth); // Protect all routes
+router.post('/message', chatbotController.sendMessage);
+router.get('/history', chatbotController.getHistory);
 
 module.exports = router;

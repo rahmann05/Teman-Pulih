@@ -1,20 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+
+// Gunakan memoryStorage agar gambar tidak menjadi junk/sampah di harddisk VM Vercel
+const upload = multer({ storage: multer.memoryStorage() });
+
 const ocrController = require('../controllers/ocrController');
-const { authenticateToken } = require('../middleware/authMiddleware');
+const { requireAuth } = require('../middleware/authMiddleware');
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + '-' + file.originalname);
-    }
-});
-const upload = multer({ storage });
+router.use(requireAuth); // Protect all routes
 
-router.post('/upload', authenticateToken, upload.single('image'), ocrController.processOcr);
-router.get('/logs', authenticateToken, ocrController.getOcrLogs);
+router.post('/scan', upload.single('image'), ocrController.scanPrescription);
+router.get('/history', ocrController.getOcrHistory);
+router.get('/result/:id', ocrController.getOcrResultById);
 
 module.exports = router;

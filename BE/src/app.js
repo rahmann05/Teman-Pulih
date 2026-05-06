@@ -2,24 +2,42 @@ const express = require('express');
 const cors = require('cors');
 
 const authRoutes = require('./routes/authRoutes');
-// const chatbotRoutes = require('./routes/chatbotRoutes');
+const chatbotRoutes = require('./routes/chatbotRoutes');
 const medicationRoutes = require('./routes/medicationRoutes');
-// const ocrRoutes = require('./routes/ocrRoutes');
-// const profileRoutes = require('./routes/profileRoutes');
+const ocrRoutes = require('./routes/ocrRoutes');
+const profileRoutes = require('./routes/profileRoutes');
+const profileController = require('./controllers/profileController');
+const { requireAuth } = require('./middleware/authMiddleware');
 
 const app = express();
 
-app.use(cors());
+// ==========================================
+// KONFIGURASI API GATEWAY (BFF / MID-TIER)
+// ==========================================
+// 1. CORS: Hanya izinkan Frontend yang spesifik (misal Localhost:5173 / Domain Vercel)
+// Hal ini mencegah aplikasi lain atau direct browser mencuri jalur komunikasi.
+const corsOptions = {
+    origin: ['http://localhost:5173', 'https://temanpulih.vercel.app'], 
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
-// Routes
-app.use('/api/auth', authRoutes);
-// app.use('/api/chatbot', chatbotRoutes);
-app.use('/api/medications', medicationRoutes);
-// app.use('/api/ocr', ocrRoutes);
-// app.use('/api/profile', profileRoutes);
+// 2. ROUTING BERSENTRAL
+// Frontend HANYA boleh memanggil endpoint di bawah ini.
+// Gateway (Express) inilah yang akan meneruskan logic ke DB atau Service ML.
+app.use('/api/auth', authRoutes);                 // Gateway -> Supabase Auth & DB
+app.use('/api/medications', medicationRoutes);    // Gateway -> Supabase DB
+app.use('/api/chatbot', chatbotRoutes);           // Gateway -> Python ML Backend (Port 8000) & DB
+app.use('/api/ocr', ocrRoutes);                   // Gateway -> ML Backend & Supabase Storage
+app.use('/api/profile', profileRoutes);           // Gateway -> Supabase DB (Profile records)
+
+// Khusus Family Routes (supaya strukturnya rapi sesuai dokumentasi)
+app.post('/api/family/invite', requireAuth, profileController.inviteFamily);
+app.get('/api/family/members', requireAuth, profileController.getFamilyMembers);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`API Gateway is running on port ${PORT}`);
 });
