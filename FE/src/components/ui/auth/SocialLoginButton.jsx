@@ -1,12 +1,19 @@
 // src/components/ui/auth/SocialLoginButton.jsx
 import { FcGoogle } from 'react-icons/fc';
+import { motion } from 'framer-motion';
 
 const SocialLoginButton = ({ provider = 'Google', onClick }) => {
   return (
-    <button type="button" className="social-login" onClick={onClick}>
+    <motion.button 
+      type="button" 
+      className="social-login" 
+      onClick={onClick}
+      whileHover={{ scale: 1.02, backgroundColor: 'var(--bg-muted)' }}
+      whileTap={{ scale: 0.95 }}
+    >
       {provider === 'Google' && <FcGoogle size={20} />}
       Lanjutkan dengan {provider}
-    </button>
+    </motion.button>
   );
 };
 

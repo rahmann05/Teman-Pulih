@@ -15,6 +15,7 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(228, 237, 232, 0.4) 0%, rgba(196, 101, 58, 0.6) 100%);
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   z-index: 1;
 }
@@ -144,15 +145,6 @@
 
 .auth-btn-primary {
   width: 100%;
-  background: var(--accent);
-  color: var(--text-inverse);
-  padding: var(--space-4);
-  border-radius: var(--radius-full);
-  font-weight: 700;
+  justify-content: center;
   margin-top: var(--space-4);
-  transition: transform var(--duration-fast) var(--spring);
-}
-
-.auth-btn-primary:active {
-  transform: scale(0.96);
 }

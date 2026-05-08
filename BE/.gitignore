@@ -9,3 +9,23 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 postman/
+
+# Editor and Tooling
+.agents/
+.vscode/ode/
+.agents/
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# AGENT Guide
+AGENT.MD
+
+# Env
+.env
+.env.*
+!.env.example

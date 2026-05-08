@@ -4,10 +4,16 @@ const { supabase } = require('../config/db');
 const register = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
+        const normalizedEmail = email?.trim().toLowerCase();
+        const normalizedName = name?.trim();
+
+        if (!normalizedEmail || !password || !normalizedName || !role) {
+            return res.status(400).json({ error: 'Data registrasi tidak lengkap' });
+        }
 
         // 1. Daftarkan user ke Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: email,
+            email: normalizedEmail,
             password: password,
         });
 
@@ -17,7 +23,7 @@ const register = async (req, res) => {
         const userId = authData.user.id;
         const { data: userData, error: userError } = await supabase
             .from('users')
-            .insert([{ id: userId, name: name, email: email, role: role }])
+            .insert([{ id: userId, name: normalizedName, email: normalizedEmail, role: role }])
             .select()
             .single();
 
@@ -36,22 +42,59 @@ const register = async (req, res) => {
 // Login User
 const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
+        const normalizedEmail = email?.trim().toLowerCase();
+        const normalizedRole = role?.trim().toLowerCase();
+
+        if (!normalizedEmail || !password) {
+            return res.status(400).json({ error: 'Email dan kata sandi wajib diisi' });
+        }
         
         // 1. Login melalui Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
+            email: normalizedEmail,
             password: password,
         });
 
         if (error) throw error;
 
         // 2. Ambil informasi role user dari tabel public.users
-        const { data: userData, error: userError } = await supabase
+        let { data: userData, error: userError } = await supabase
             .from('users')
             .select('role, name')
             .eq('id', data.user.id)
             .single();
+
+        if (userError || !userData) {
+            const roleFromMetadata = data.user?.user_metadata?.role || data.user?.app_metadata?.role;
+            const resolvedRole = normalizedRole || roleFromMetadata;
+            const resolvedName = data.user?.user_metadata?.name || data.user?.email?.split('@')[0] || 'User';
+
+            if (!resolvedRole) {
+                return res.status(409).json({
+                    error: 'Profil user tidak ditemukan. Sertakan role saat login atau lengkapi metadata role di Supabase Auth.'
+                });
+            }
+
+            const { data: createdUser, error: createError } = await supabase
+                .from('users')
+                .upsert([
+                    {
+                        id: data.user.id,
+                        name: resolvedName,
+                        email: data.user.email,
+                        role: resolvedRole
+                    }
+                ])
+                .select('role, name')
+                .single();
+
+            if (createError || !createdUser) {
+                return res.status(401).json({ error: createError?.message || 'Gagal membuat profil user.' });
+            }
+
+            userData = createdUser;
+        }
 
         res.status(200).json({
             message: 'Login successful',
@@ -76,11 +119,15 @@ const getMe = async (req, res) => {
         if (error) throw error;
 
         // Ambil detail role/nama
-        const { data: userData } = await supabase
+        const { data: userData, error: userError } = await supabase
             .from('users')
             .select('role, name')
             .eq('id', user.id)
             .single();
+
+        if (userError || !userData) {
+            return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
+        }
 
         res.status(200).json({
             user: { id: user.id, email: user.email, ...userData }

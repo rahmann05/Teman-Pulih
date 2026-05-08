@@ -124,7 +124,7 @@ const RegisterPage = () => {
           error={error}
         />
 
-        <button type="submit" className="auth-btn-primary" disabled={loading}>
+        <button type="submit" className="btn-primary auth-btn-primary" disabled={loading}>
           {loading ? 'Mendaftar...' : 'Daftar Sekarang'}
         </button>
       </form>
