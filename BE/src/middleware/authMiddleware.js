@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const db = require('../config/db');
 const { supabase } = require('../config/db');
 
 const authenticateToken = (req, res, next) => {
@@ -29,22 +30,15 @@ const authorizeRole = (roles) => {
 };
 
 const resolveActiveRole = async (userId, requestedRole) => {
-    const { data: caregiverRelation } = await supabase
-        .from('family_relations')
-        .select('id')
-        .eq('caregiver_id', userId)
-        .eq('status', 'accepted')
-        .limit(1)
-        .maybeSingle();
+    // Sesuai permintaan: User bebas memilih login sebagai pasien atau caregiver.
+    // Kita tidak lagi menggunakan tabel roles.
+    const allowedRoles = ['patient', 'caregiver'];
 
-    const allowedRoles = ['patient'];
-    if (caregiverRelation) allowedRoles.push('caregiver');
+    const activeRole = requestedRole && allowedRoles.includes(requestedRole)
+        ? requestedRole
+        : 'patient';
 
-    if (requestedRole && !allowedRoles.includes(requestedRole)) {
-        return { error: 'Role tidak diizinkan untuk akun ini', allowedRoles };
-    }
-
-    return { activeRole: requestedRole || allowedRoles[0], allowedRoles };
+    return { activeRole, allowedRoles };
 };
 
 const requireAuth = async (req, res, next) => {
@@ -54,19 +48,19 @@ const requireAuth = async (req, res, next) => {
             return res.status(401).json({ error: 'Access denied. No token provided.' });
         }
 
+        // 1. Verifikasi token via Supabase Auth
         const { data: { user }, error } = await supabase.auth.getUser(token);
         
         if (error || !user) {
             return res.status(401).json({ error: 'Invalid or expired token.' });
         }
 
-        const { data: appUser, error: appUserError } = await supabase
-            .from('users')
-            .select('id, auth_id, name, email')
-            .eq('auth_id', user.id)
-            .single();
+        // 2. Cari user di tabel public.users menggunakan DB Pool (Bypass RLS)
+        const userQuery = 'SELECT id, auth_id, name, email FROM users WHERE auth_id = $1';
+        const { rows: userRows } = await db.query(userQuery, [user.id]);
+        const appUser = userRows[0];
 
-        if (appUserError || !appUser) {
+        if (!appUser) {
             return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
         }
 
@@ -95,6 +89,7 @@ const requireAuth = async (req, res, next) => {
         };
         next();
     } catch (err) {
+        console.error('Auth Middleware Error:', err.message);
         res.status(500).json({ error: 'Internal server error during authentication.' });
     }
 };

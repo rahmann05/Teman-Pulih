@@ -1,3 +1,4 @@
+const db = require('../config/db');
 const { supabase } = require('../config/db');
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -17,19 +18,18 @@ const getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
         
-        const { data: user, error: userError } = await supabase
-            .from('users')
-            .select('id, name, email')
-            .eq('id', userId)
-            .single();
+        // Menggunakan DB Pool untuk bypass RLS
+        const userQuery = 'SELECT id, name, email FROM users WHERE id = $1';
+        const { rows: userRows } = await db.query(userQuery, [userId]);
+        const user = userRows[0];
 
-        if (userError) throw userError;
+        if (!user) {
+            return res.status(404).json({ error: 'User tidak ditemukan' });
+        }
 
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('id, user_id, phone, address, birth_date, gender')
-            .eq('user_id', userId)
-            .maybeSingle();
+        const profileQuery = 'SELECT id, user_id, phone, address, birth_date, gender FROM profiles WHERE user_id = $1';
+        const { rows: profileRows } = await db.query(profileQuery, [userId]);
+        const profile = profileRows[0];
         
         // Formating ulang response agar rapi
         const formattedProfile = {
@@ -44,7 +44,6 @@ const getProfile = async (req, res) => {
             gender: profile?.gender || null
         };
 
-        // 2. GATEWAY -> FE
         res.status(200).json({ profile: formattedProfile });
     } catch (error) {
         res.status(500).json({ error: error.message });

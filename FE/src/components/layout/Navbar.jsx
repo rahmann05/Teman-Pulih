@@ -6,6 +6,7 @@ const Navbar = () => {
   const { user, logout, switchRole } = useAuth();
 
   const handleRoleSwitch = () => {
+    if (!user) return;
     const otherRole = user.role === 'patient' ? 'caregiver' : 'patient';
     switchRole(otherRole);
   };

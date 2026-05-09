@@ -18,9 +18,9 @@ const app = express();
 // 1. CORS: Hanya izinkan Frontend yang spesifik (misal Localhost:5173 / Domain Vercel)
 // Hal ini mencegah aplikasi lain atau direct browser mencuri jalur komunikasi.
 const corsOptions = {
-    origin: ['http://localhost:5173', 'https://temanpulih.vercel.app'], 
+    origin: [/http:\/\/localhost:\d+$/, 'https://temanpulih.vercel.app'], 
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-active-role']
 };
 app.use(cors(corsOptions));
 app.use(express.json());

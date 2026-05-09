@@ -12,28 +12,6 @@ const normalizePhone = (rawPhone) => {
     return cleaned;
 };
 
-const getAllowedRoles = async (userId) => {
-    const { data: patientRelation } = await supabase
-        .from('family_relations')
-        .select('id')
-        .eq('patient_id', userId)
-        .eq('status', 'accepted')
-        .limit(1)
-        .maybeSingle();
-
-    const { data: caregiverRelation } = await supabase
-        .from('family_relations')
-        .select('id')
-        .eq('caregiver_id', userId)
-        .eq('status', 'accepted')
-        .limit(1)
-        .maybeSingle();
-
-    const allowedRoles = ['patient'];
-    if (caregiverRelation) allowedRoles.push('caregiver');
-    return allowedRoles;
-};
-
 // Registrasi User
 const register = async (req, res) => {
     try {
@@ -54,33 +32,37 @@ const register = async (req, res) => {
             return res.status(400).json({ error: 'Format nomor telepon tidak valid' });
         }
 
-        // 1. Daftarkan user ke Supabase Auth
+        // 1. Daftarkan user ke Supabase Auth dengan Metadata
+        // Trigger on_auth_user_created akan menangani insert ke tabel public.users & profiles
         const { data: authData, error: authError } = await supabase.auth.signUp({
             email: normalizedEmail,
             password: password,
+            options: {
+                data: {
+                    name: normalizedName,
+                    phone: normalizedPhone
+                }
+            }
         });
 
         if (authError) throw authError;
 
-        // 2. Simpan profil tambahan ke tabel public.users
-        const authId = authData.user.id;
-        const { data: userData, error: userError } = await supabase
+        // 2. Ambil profil yang baru dibuat oleh trigger (untuk mengembalikan ID serial)
+        const { data: userData } = await supabase
             .from('users')
-            .insert([{ auth_id: authId, name: normalizedName, email: normalizedEmail }])
-            .select()
+            .select('id, name, email')
+            .eq('auth_id', authData.user.id)
             .single();
 
-        if (userError) throw userError;
-
-        const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([{ user_id: userData.id, phone: normalizedPhone }]);
-
-        if (profileError) throw profileError;
+        const finalUser = userData || { 
+            auth_id: authData.user.id, 
+            email: authData.user.email, 
+            name: normalizedName 
+        };
 
         res.status(201).json({
-            message: 'User registered successfully. Verifikasi email Anda (jika diaktifkan di Supabase).',
-            user: userData,
+            message: 'User registered successfully. You can now login as a Patient or Caregiver.',
+            user: finalUser,
             session: authData.session
         });
     } catch (error) {
@@ -129,7 +111,7 @@ const login = async (req, res) => {
 
         if (error) throw error;
 
-        // 2. Ambil user internal atau buat bila belum ada
+        // 2. Ambil user internal
         let { data: userData, error: userError } = await supabase
             .from('users')
             .select('id, name, email')
@@ -137,31 +119,27 @@ const login = async (req, res) => {
             .single();
 
         if (userError || !userData) {
+             // Re-sync if missing for some reason
             const resolvedName = data.user?.user_metadata?.name || data.user?.email?.split('@')[0] || 'User';
-
-            const { data: inserted, error: insertError } = await supabase
+            const { data: inserted } = await supabase
                 .from('users')
                 .insert([{ auth_id: data.user.id, name: resolvedName, email: data.user.email }])
                 .select('id, name, email')
                 .single();
-            if (insertError) return res.status(401).json({ error: insertError.message });
             userData = inserted;
         }
 
-        const allowedRoles = await getAllowedRoles(userData.id);
-        const requestedRole = normalizedRole && ['patient', 'caregiver'].includes(normalizedRole)
+        // Setiap user diizinkan login sebagai patient atau caregiver
+        const allowedRoles = ['patient', 'caregiver'];
+        const activeRole = normalizedRole && allowedRoles.includes(normalizedRole)
             ? normalizedRole
-            : null;
-
-        // Bypassing strict role check to allow open login. 
-        // A user can be a caregiver without any patients yet (dashboard will be empty).
-        const activeRole = requestedRole || 'patient'; // Default to patient view if none requested, though frontend decides
+            : 'patient';
 
         res.status(200).json({
             message: 'Login successful',
             user: {
-                id: userData.id, // Profile ID pendek (SERIAL)
-                auth_id: data.user.id, // Supabase Auth UUID
+                id: userData.id,
+                auth_id: data.user.id,
                 email: data.user.email,
                 name: userData.name,
                 role: activeRole
@@ -175,16 +153,13 @@ const login = async (req, res) => {
     }
 };
 
-// Mock implementation for auth controller
+// Get Me
 const getMe = async (req, res) => {
     try {
-        // Mendapatkan token dari header
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) throw new Error('Token is missing');
 
-        // Verifikasi token/Dapatkan user
         const { data: { user }, error } = await supabase.auth.getUser(token);
-
         if (error) throw error;
 
         const { data: userData, error: userError } = await supabase
@@ -197,13 +172,18 @@ const getMe = async (req, res) => {
             return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
         }
 
-        const allowedRoles = await getAllowedRoles(userData.id);
+        const allowedRoles = ['patient', 'caregiver'];
+        
+        // Active role is usually passed in header or managed by frontend
+        const activeRole = req.headers['x-active-role'] || 'patient';
+
         res.status(200).json({
             user: {
                 id: userData.id,
                 auth_id: user.id,
                 email: userData.email || user.email,
-                name: userData.name
+                name: userData.name,
+                role: activeRole
             },
             allowed_roles: allowedRoles
         });
@@ -216,17 +196,11 @@ const getMe = async (req, res) => {
 const refreshToken = async (req, res) => {
     try {
         const { refresh_token } = req.body;
-
         if (!refresh_token) {
             return res.status(400).json({ error: 'Refresh token wajib disertakan.' });
         }
-
-        const { data, error } = await supabase.auth.refreshSession({
-            refresh_token: refresh_token
-        });
-
+        const { data, error } = await supabase.auth.refreshSession({ refresh_token });
         if (error) throw error;
-
         res.status(200).json({
             message: 'Token berhasil diperbarui',
             token: data.session.access_token,
