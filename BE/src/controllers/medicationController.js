@@ -1,126 +1,179 @@
-const db = require('../config/db');
 const { supabase } = require('../config/db');
 
-// Tambah jadwal obat (Pasien atau Caregiver)
-const createSchedule = async (req, res) => {
-    const { patient_id, medicine_name, dosage, frequency, time_to_take, start_date, end_date, notes } = req.body;
-    
-    // Asumsi: jika user adalah caregiver, patient_id harus dikirim. Jika pasien, ambil dari token.
-    const targetPatientId = req.user.role === 'patient' ? req.user.id : patient_id;
-
-    try {
-        const result = await db.query(
-            `INSERT INTO medication_schedules 
-            (patient_id, medicine_name, dosage, frequency, time_to_take, start_date, end_date, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-            [targetPatientId, medicine_name, dosage, frequency, time_to_take, start_date, end_date, notes]
-        );
-        res.status(201).json({ message: 'Jadwal berhasil ditambahkan', data: result.rows[0] });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error menambahkan jadwal' });
-    }
-};
-
-// Ambil jadwal (Bisa pasien lihat sendiri, atau caregiver lihat daftar pasiennya)
-const getSchedules = async (req, res) => {
-    const targetPatientId = req.query.patient_id || req.user.id; // Untuk caregiver bisa query by patient_id
-
-    try {
-        const result = await db.query('SELECT * FROM medication_schedules WHERE patient_id = $1 ORDER BY start_date DESC', [targetPatientId]);
-        res.json({ data: result.rows });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error mengambil jadwal' });
-    }
-};
-
-// Medication controllers
+// Ambil daftar obat beserta jadwalnya
 const getMedications = async (req, res) => {
     try {
         const userId = req.user.id;
+        
+        // Caregiver dapat melihat obat pasien dengan query ?patient_id=...
+        const targetUserId = (req.user.role === 'caregiver' && req.query.patient_id) 
+            ? req.query.patient_id 
+            : userId;
+
         const { data, error } = await supabase
             .from('medications')
-            .select('*')
-            .eq('user_id', userId);
+            .select(`
+                id, user_id, name, dosage, instructions, created_at,
+                medication_schedules (
+                    id, frequency, time_slots, start_date, end_date
+                )
+            `)
+            .eq('user_id', targetUserId)
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
-        res.status(200).json(data);
+        res.status(200).json({ data });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
+// Tambah Obat dan Jadwalnya
 const createMedication = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { name, dosage, frequency, start_date, end_date, instructions } = req.body;
-        
-        const { data, error } = await supabase
+        const { patient_id, name, dosage, instructions, schedules } = req.body;
+        // schedules: array of { frequency, time_slots, start_date, end_date }
+
+        const targetUserId = (req.user.role === 'caregiver' && patient_id) ? patient_id : userId;
+
+        if (!name) {
+            return res.status(400).json({ error: 'Nama obat wajib diisi' });
+        }
+
+        // 1. Insert Data Obat
+        const { data: medData, error: medError } = await supabase
             .from('medications')
-            .insert([{ user_id: userId, name, dosage, frequency, start_date, end_date, instructions }])
+            .insert([{ user_id: targetUserId, name, dosage, instructions }])
             .select()
             .single();
 
-        if (error) throw error;
-        res.status(201).json({ medication: data });
+        if (medError) throw medError;
+
+        // 2. Insert Jadwal Obat
+        let createdSchedules = [];
+        if (schedules && schedules.length > 0) {
+            const schedulesToInsert = schedules.map(s => ({
+                medication_id: medData.id,
+                frequency: s.frequency,
+                time_slots: s.time_slots,
+                start_date: s.start_date,
+                end_date: s.end_date
+            }));
+
+            const { data: schedData, error: schedError } = await supabase
+                .from('medication_schedules')
+                .insert(schedulesToInsert)
+                .select();
+                
+            if (schedError) throw schedError;
+            createdSchedules = schedData;
+        }
+
+        res.status(201).json({ 
+            message: 'Obat berhasil ditambahkan', 
+            data: { ...medData, medication_schedules: createdSchedules } 
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
+// Update Data Obat (Informasi Dasarnya saja)
 const updateMedication = async (req, res) => {
     try {
         const { id } = req.params;
-        const updates = req.body;
-        
+        const { name, dosage, instructions } = req.body;
+
         const { data, error } = await supabase
             .from('medications')
-            .update(updates)
+            .update({ name, dosage, instructions })
             .eq('id', id)
-            .eq('user_id', req.user.id)
+            // Memastikan data edit hanya milik yang bersangkutan
             .select()
             .single();
 
         if (error) throw error;
-        res.status(200).json({ medication: data });
+        res.status(200).json({ message: 'Obat berhasil diperbarui', data });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
+// Hapus Obat (Otomatis juga menghapus schedules & logs karena tipe relasi CASCADE)
 const deleteMedication = async (req, res) => {
     try {
         const { id } = req.params;
         const { error } = await supabase
             .from('medications')
             .delete()
-            .eq('id', id)
-            .eq('user_id', req.user.id);
+            .eq('id', id);
 
         if (error) throw error;
-        res.status(200).json({ message: 'Medication deleted successfully' });
+        res.status(200).json({ message: 'Obat beserta jadwalnya berhasil dihapus' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
+// Log minum obat
 const markTaken = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { status } = req.body; // 'taken', 'skipped'
-        
+        const { id } = req.params; // medication_id
+        const { schedule_id, status } = req.body; // status = 'taken', 'missed', 'skipped'
+
+        if (!status) {
+            return res.status(400).json({ error: 'Status wajib diisi (taken/missed/skipped)' });
+        }
+
         const { data, error } = await supabase
             .from('medication_logs')
-            .insert([{ medication_id: id, status, taken_at: new Date().toISOString() }])
+            .insert([{ 
+                medication_id: id, 
+                schedule_id: schedule_id || null, 
+                status, 
+                taken_at: new Date().toISOString() 
+            }])
             .select()
             .single();
 
         if (error) throw error;
-        res.status(201).json({ log: data });
+        res.status(201).json({ message: `Status log diubah menjadi ${status}`, data });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 };
 
-module.exports = { createSchedule, getSchedules, getMedications, createMedication, updateMedication, deleteMedication, markTaken };
+// Ambil riwayat / log obat pasien
+const getMedicationLogs = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const targetUserId = (req.user.role === 'caregiver' && req.query.patient_id) 
+            ? req.query.patient_id 
+            : userId;
+
+        // Ambil log di join dengan info obatnya
+        const { data, error } = await supabase
+            .from('medication_logs')
+            .select(`
+                *,
+                medications!inner (name, dosage, user_id)
+            `)
+            .eq('medications.user_id', targetUserId)
+            .order('taken_at', { ascending: false });
+
+        if (error) throw error;
+        res.status(200).json({ data });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { 
+    getMedications, 
+    createMedication, 
+    updateMedication, 
+    deleteMedication, 
+    markTaken,
+    getMedicationLogs
+};

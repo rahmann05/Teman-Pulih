@@ -10,5 +10,6 @@ router.post('/', medicationController.createMedication);
 router.patch('/:id', medicationController.updateMedication);
 router.delete('/:id', medicationController.deleteMedication);
 router.post('/:id/taken', medicationController.markTaken);
+router.get('/logs', medicationController.getMedicationLogs);
 
 module.exports = router;

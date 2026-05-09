@@ -1,5 +1,5 @@
 import React from 'react';
-import { LuAlertCircle, LuCheckCircle } from 'react-icons/lu';
+import { FiAlertTriangle, FiCheckCircle } from "react-icons/fi";
 
 const TriageHeroCard = ({ status, message }) => {
   const isAlert = status === 'alert';
@@ -7,7 +7,7 @@ const TriageHeroCard = ({ status, message }) => {
   return (
     <div className={`triage-card ${isAlert ? 'alert' : 'safe'}`} data-testid="triage-hero-card">
       <div className="triage-card-top">
-        {isAlert ? <LuAlertCircle className="triage-icon" /> : <LuCheckCircle className="triage-icon" />}
+        {isAlert ?         <FiAlertTriangle className="triage-icon triage-alert" size={24} /> :         <FiCheckCircle className="triage-icon triage-normal" size={24} />}
         <span>{isAlert ? 'Perhatian diperlukan' : 'Status Terkini'}</span>
       </div>
       <h2 className="triage-message">{message}</h2>

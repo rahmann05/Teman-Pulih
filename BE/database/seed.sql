@@ -2,10 +2,12 @@
 -- Hati-hati, ini akan MENGHAPUS data yang sudah ada (untuk keperluan testing local)
 TRUNCATE TABLE chat_history CASCADE;
 TRUNCATE TABLE medication_logs CASCADE;
+TRUNCATE TABLE medication_schedules CASCADE;
 TRUNCATE TABLE medications CASCADE;
 TRUNCATE TABLE family_relations CASCADE;
 TRUNCATE TABLE profiles CASCADE;
 TRUNCATE TABLE users CASCADE;
+TRUNCATE TABLE roles CASCADE;
 
 -- Insert Data User Dummy (Tabel public.users)
 -- PENTING: User ini TIDAK BISA dipakai untuk login via Supabase Auth (karena tidak ada di auth.users).
@@ -13,15 +15,25 @@ TRUNCATE TABLE users CASCADE;
 -- UUID dummy (bisa juga menggunakan id yang ter-generate otomatis jika dari auth)
 DO $$
 DECLARE
-    patient_id UUID := '11111111-1111-1111-1111-111111111111';
-    caregiver_id UUID := '22222222-2222-2222-2222-222222222222';
+    role_admin_id INT := 1;
+    role_patient_id INT := 2;
+    role_caregiver_id INT := 3;
+    patient_id INT := 1;
+    caregiver_id INT := 2;
 BEGIN
 
+    -- 0. Insert Roles
+    INSERT INTO roles (id, name, description)
+    VALUES
+    (role_admin_id, 'admin', 'Administrator sistem'),
+    (role_patient_id, 'patient', 'Pasien yang sedang pemulihan'),
+    (role_caregiver_id, 'caregiver', 'Pendamping pasien');
+
     -- 1. Insert Users
-    INSERT INTO users (id, name, email, role)
+    INSERT INTO users (id, name, email, role_id)
     VALUES 
-    (patient_id, 'Budi Pasien', 'budi@example.com', 'patient'),
-    (caregiver_id, 'Siti Caregiver', 'siti@example.com', 'caregiver');
+    (patient_id, 'Budi Pasien', 'budi@example.com', role_patient_id),
+    (caregiver_id, 'Siti Caregiver', 'siti@example.com', role_caregiver_id);
 
     -- 2. Insert Profiles
     INSERT INTO profiles (user_id, phone, address, birth_date, gender)
@@ -36,17 +48,23 @@ BEGIN
 
     -- 4. Insert Medications (Untuk Pasien Budi)
     -- Amoxicillin & Paracetamol
-    INSERT INTO medications (id, user_id, name, dosage, frequency, start_date, end_date, instructions)
+    INSERT INTO medications (id, user_id, name, dosage, instructions)
     VALUES
-    ('33333333-3333-3333-3333-333333333333', patient_id, 'Amoxicillin', '500 mg', '3x sehari', CURRENT_DATE, CURRENT_DATE + INTERVAL '5 days', 'Sesudah makan, dihabiskan'),
-    ('44444444-4444-4444-4444-444444444444', patient_id, 'Paracetamol', '500 mg', '2x sehari', CURRENT_DATE, CURRENT_DATE + INTERVAL '3 days', 'Bila demam saja');
+    (1, patient_id, 'Amoxicillin', '500 mg', 'Sesudah makan, dihabiskan'),
+    (2, patient_id, 'Paracetamol', '500 mg', 'Bila demam saja');
+
+    -- 4a. Insert Medication Schedules
+    INSERT INTO medication_schedules (id, medication_id, frequency, time_slots, start_date, end_date)
+    VALUES
+    (1, 1, '3x sehari', '08:00,13:00,20:00', CURRENT_DATE, CURRENT_DATE + INTERVAL '5 days'),
+    (2, 2, '2x sehari', '08:00,20:00', CURRENT_DATE, CURRENT_DATE + INTERVAL '3 days');
 
     -- 5. Insert Medication Logs (History Minum Obat kemarin dan hari ini)
-    INSERT INTO medication_logs (medication_id, taken_at, status)
+    INSERT INTO medication_logs (medication_id, schedule_id, taken_at, status)
     VALUES
-    ('33333333-3333-3333-3333-333333333333', NOW() - INTERVAL '1 day', 'taken'),
-    ('33333333-3333-3333-3333-333333333333', NOW(), 'taken'),
-    ('44444444-4444-4444-4444-444444444444', NOW() - INTERVAL '1 day', 'skipped');
+    (1, 1, NOW() - INTERVAL '1 day', 'taken'),
+    (1, 1, NOW(), 'taken'),
+    (2, 2, NOW() - INTERVAL '1 day', 'skipped');
 
     -- 6. Insert Chatbot History
     INSERT INTO chat_history (user_id, message, sender, created_at)
