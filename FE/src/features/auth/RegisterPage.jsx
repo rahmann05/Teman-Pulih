@@ -12,9 +12,9 @@ import api from '../../services/api';
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const [role, setRole] = useState('patient'); // backend expects 'patient' or 'caregiver'
   const [fullName, setFullName] = useState('');
-  const [identifier, setIdentifier] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,11 +22,18 @@ const RegisterPage = () => {
 
   const validate = () => {
     if (!fullName) return 'Nama lengkap wajib diisi';
-    if (!identifier) return 'Email wajib diisi';
+    if (!email) return 'Email wajib diisi';
+    if (!phone) return 'No. Telepon wajib diisi';
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(identifier)) {
+    const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
+
+    if (!emailRegex.test(email)) {
       return 'Format Email tidak valid (harus menggunakan email untuk ini)';
+    }
+
+    if (!phoneRegex.test(phone)) {
+      return 'Format No. Telepon tidak valid';
     }
 
     if (!password) return 'Kata sandi wajib diisi';
@@ -54,16 +61,17 @@ const RegisterPage = () => {
       // 1. Hit the backend endpoint
       const response = await api.post('/auth/register', {
         name: fullName,
-        email: identifier,
-        password: password,
-        role: role === 'pasien' ? 'patient' : role // normalisasi enum
+        email,
+        phone,
+        password: password
       });
 
       // 2. Apabila auto login dari respon session register Supabase:
       // (Backend kita mengembalikan user dan session di register)
       if (response.data.session && response.data.session.access_token) {
-        login(response.data.session.access_token, response.data.user.role);
-        navigate(response.data.user.role === 'patient' ? '/dashboard' : '/caregiver/dashboard');
+        const resolvedRole = response.data.user?.role || 'patient';
+        login(response.data.session.access_token, resolvedRole);
+        navigate(resolvedRole === 'caregiver' ? '/caregiver/dashboard' : '/dashboard');
       } else {
         // Jika butuh email confirmation dulu
         setError('Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi atau coba login.');
@@ -98,10 +106,17 @@ const RegisterPage = () => {
         />
 
         <AuthInputField
-          label="EMAIL / NO. TELEPON"
-          placeholder="nama@email.com atau 08..."
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
+          label="EMAIL"
+          placeholder="nama@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <AuthInputField
+          label="NO. TELEPON"
+          placeholder="08... atau +62..."
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
         />
 
         <AuthInputField

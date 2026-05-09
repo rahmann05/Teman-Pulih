@@ -10,6 +10,8 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  const activeRole = localStorage.getItem('role');
+  if (activeRole) config.headers['x-active-role'] = activeRole;
   return config;
 });
 

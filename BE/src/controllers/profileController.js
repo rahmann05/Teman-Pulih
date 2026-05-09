@@ -1,5 +1,17 @@
 const { supabase } = require('../config/db');
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
+
+const normalizePhone = (rawPhone) => {
+    if (!rawPhone) return null;
+    const cleaned = rawPhone.replace(/\s+/g, '').replace(/-/g, '');
+    if (cleaned.startsWith('+62')) return cleaned;
+    if (cleaned.startsWith('62')) return `+${cleaned}`;
+    if (cleaned.startsWith('08')) return `+62${cleaned.slice(1)}`;
+    return cleaned;
+};
+
 // --- PROFIL ---
 const getProfile = async (req, res) => {
     try {
@@ -7,12 +19,7 @@ const getProfile = async (req, res) => {
         
         const { data: user, error: userError } = await supabase
             .from('users')
-            .select(`
-                id,
-                name,
-                email,
-                roles ( name )
-            `)
+            .select('id, name, email')
             .eq('id', userId)
             .single();
 
@@ -30,7 +37,7 @@ const getProfile = async (req, res) => {
             user_id: user.id,
             name: user.name,
             email: user.email,
-            role: user.roles?.name,
+            role: req.user.role,
             phone: profile?.phone || null,
             address: profile?.address || null,
             birth_date: profile?.birth_date || null,
@@ -47,7 +54,15 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        const updates = req.body; 
+        const updates = { ...req.body };
+
+        if (updates.phone) {
+            const normalizedPhone = normalizePhone(updates.phone);
+            if (!phoneRegex.test(normalizedPhone)) {
+                return res.status(400).json({ error: 'Format nomor telepon tidak valid.' });
+            }
+            updates.phone = normalizedPhone;
+        }
 
         // 1. GATEWAY -> DB: Update data profile
         const { data, error } = await supabase
@@ -70,21 +85,49 @@ const updateProfile = async (req, res) => {
 const inviteFamily = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { email } = req.body; // Email yang diundang
+        const { identifier } = req.body; // Email atau nomor telepon yang diundang
 
-        // 1. Cari User ID berdasarkan Email (karena kita tidak pakai auth.users, kita cek di public.users)
-        const { data: invitedUser, error: findError } = await supabase
-            .from('users')
-            .select('id, role')
-            .eq('email', email)
-            .single();
-
-        if (findError || !invitedUser) {
-            return res.status(404).json({ error: "Pengguna dengan email tersebut tidak ditemukan." });
+        if (!identifier) {
+            return res.status(400).json({ error: 'Email atau nomor telepon wajib diisi.' });
         }
 
-        // Tentukan siapa patient dan siapa caregiver
-        const isSelfPatient = req.user.role === 'patient' || (await checkRole(userId)) === 'patient';
+        const trimmedIdentifier = identifier.trim();
+        const isEmail = emailRegex.test(trimmedIdentifier.toLowerCase());
+        let invitedUser = null;
+
+        if (isEmail) {
+            const { data, error } = await supabase
+                .from('users')
+                .select('id, email')
+                .eq('email', trimmedIdentifier.toLowerCase())
+                .single();
+            if (error) throw error;
+            invitedUser = data;
+        } else {
+            const normalizedPhone = normalizePhone(trimmedIdentifier);
+            if (!phoneRegex.test(normalizedPhone)) {
+                return res.status(400).json({ error: 'Format nomor telepon tidak valid.' });
+            }
+
+            const { data, error } = await supabase
+                .from('profiles')
+                .select('user_id, users ( id, email )')
+                .eq('phone', normalizedPhone)
+                .single();
+            if (error) throw error;
+            invitedUser = data?.users ? { id: data.users.id, email: data.users.email } : null;
+        }
+
+        if (!invitedUser) {
+            return res.status(404).json({ error: "Pengguna tidak ditemukan." });
+        }
+
+        if (!['patient', 'caregiver'].includes(req.user.role)) {
+            return res.status(400).json({ error: 'Role aktif tidak valid.' });
+        }
+
+        // Tentukan siapa patient dan siapa caregiver berdasarkan role aktif
+        const isSelfPatient = req.user.role === 'patient';
         const patientId = isSelfPatient ? userId : invitedUser.id;
         const caregiverId = isSelfPatient ? invitedUser.id : userId;
 
@@ -124,11 +167,5 @@ const getFamilyMembers = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-// Helper
-async function checkRole(uid) {
-    const { data } = await supabase.from('users').select('roles ( name )').eq('id', uid).single();
-    return data?.roles?.name;
-}
 
 module.exports = { getProfile, updateProfile, inviteFamily, getFamilyMembers };

@@ -5,21 +5,12 @@ DROP TABLE IF EXISTS medication_logs CASCADE;
 DROP TABLE IF EXISTS medication_schedules CASCADE;
 DROP TABLE IF EXISTS medications CASCADE;
 DROP TABLE IF EXISTS family_relations CASCADE;
+DROP TABLE IF EXISTS reminder_preferences CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
 
 -- Enable UUID generation (default in Supabase)
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
--- Roles Table
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) UNIQUE NOT NULL,
-    description TEXT,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW()
-);
 
 -- Users Table
 -- Catatan: Di Supabase, untuk autentikasi biasanya menggunakan tabel bawaan "auth.users" (yang menggunakan UUID).
@@ -29,20 +20,29 @@ CREATE TABLE users (
     auth_id UUID UNIQUE, -- Terhubung dengan Supabase auth.users.id
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    role_id INTEGER NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    updated_at TIMESTAMPTZ DEFAULT NOW(),
-    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
+    updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Profiles Table (Extended user info)
 CREATE TABLE profiles (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    phone VARCHAR(20),
+    phone VARCHAR(20) UNIQUE NOT NULL,
     address TEXT,
     birth_date DATE,
     gender VARCHAR(20) CHECK (gender IN ('male', 'female', 'other')),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Reminder Preferences (Whatsapp notifications configured in Supabase)
+CREATE TABLE reminder_preferences (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE,
+    channel VARCHAR(20) NOT NULL DEFAULT 'whatsapp' CHECK (channel IN ('whatsapp')),
+    enabled BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -57,7 +57,9 @@ CREATE TABLE family_relations (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (caregiver_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (caregiver_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT family_relation_unique UNIQUE (patient_id, caregiver_id),
+    CONSTRAINT family_relation_no_self CHECK (patient_id <> caregiver_id)
 );
 
 -- Medications Table (Hanya Data Obat)

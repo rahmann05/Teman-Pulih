@@ -5,9 +5,9 @@ TRUNCATE TABLE medication_logs CASCADE;
 TRUNCATE TABLE medication_schedules CASCADE;
 TRUNCATE TABLE medications CASCADE;
 TRUNCATE TABLE family_relations CASCADE;
+TRUNCATE TABLE reminder_preferences CASCADE;
 TRUNCATE TABLE profiles CASCADE;
 TRUNCATE TABLE users CASCADE;
-TRUNCATE TABLE roles CASCADE;
 
 -- Insert Data User Dummy (Tabel public.users)
 -- PENTING: User ini TIDAK BISA dipakai untuk login via Supabase Auth (karena tidak ada di auth.users).
@@ -15,31 +15,27 @@ TRUNCATE TABLE roles CASCADE;
 -- UUID dummy (bisa juga menggunakan id yang ter-generate otomatis jika dari auth)
 DO $$
 DECLARE
-    role_admin_id INT := 1;
-    role_patient_id INT := 2;
-    role_caregiver_id INT := 3;
     patient_id INT := 1;
     caregiver_id INT := 2;
 BEGIN
 
-    -- 0. Insert Roles
-    INSERT INTO roles (id, name, description)
-    VALUES
-    (role_admin_id, 'admin', 'Administrator sistem'),
-    (role_patient_id, 'patient', 'Pasien yang sedang pemulihan'),
-    (role_caregiver_id, 'caregiver', 'Pendamping pasien');
-
     -- 1. Insert Users
-    INSERT INTO users (id, name, email, role_id)
+    INSERT INTO users (id, name, email)
     VALUES 
-    (patient_id, 'Budi Pasien', 'budi@example.com', role_patient_id),
-    (caregiver_id, 'Siti Caregiver', 'siti@example.com', role_caregiver_id);
+    (patient_id, 'Budi Pasien', 'budi@example.com'),
+    (caregiver_id, 'Siti Caregiver', 'siti@example.com');
 
     -- 2. Insert Profiles
     INSERT INTO profiles (user_id, phone, address, birth_date, gender)
     VALUES
     (patient_id, '081234567890', 'Jl. Merdeka No. 1, Jakarta', '1980-05-15', 'male'),
     (caregiver_id, '089876543210', 'Jl. Merdeka No. 1, Jakarta', '1985-10-20', 'female');
+
+    -- 2a. Insert Reminder Preferences
+    INSERT INTO reminder_preferences (user_id, channel, enabled)
+    VALUES
+    (patient_id, 'whatsapp', TRUE),
+    (caregiver_id, 'whatsapp', TRUE);
 
     -- 3. Insert Family Relations
     INSERT INTO family_relations (patient_id, caregiver_id, status)

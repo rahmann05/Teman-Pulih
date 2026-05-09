@@ -1,14 +1,57 @@
 const { supabase } = require('../config/db');
 
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
+
+const normalizePhone = (rawPhone) => {
+    if (!rawPhone) return null;
+    const cleaned = rawPhone.replace(/\s+/g, '').replace(/-/g, '');
+    if (cleaned.startsWith('+62')) return cleaned;
+    if (cleaned.startsWith('62')) return `+${cleaned}`;
+    if (cleaned.startsWith('08')) return `+62${cleaned.slice(1)}`;
+    return cleaned;
+};
+
+const getAllowedRoles = async (userId) => {
+    const { data: patientRelation } = await supabase
+        .from('family_relations')
+        .select('id')
+        .eq('patient_id', userId)
+        .eq('status', 'accepted')
+        .limit(1)
+        .maybeSingle();
+
+    const { data: caregiverRelation } = await supabase
+        .from('family_relations')
+        .select('id')
+        .eq('caregiver_id', userId)
+        .eq('status', 'accepted')
+        .limit(1)
+        .maybeSingle();
+
+    const allowedRoles = ['patient'];
+    if (caregiverRelation) allowedRoles.push('caregiver');
+    return allowedRoles;
+};
+
 // Registrasi User
 const register = async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { name, email, phone, password } = req.body;
         const normalizedEmail = email?.trim().toLowerCase();
         const normalizedName = name?.trim();
+        const normalizedPhone = normalizePhone(phone?.trim());
 
-        if (!normalizedEmail || !password || !normalizedName || !role) {
+        if (!normalizedEmail || !password || !normalizedName || !normalizedPhone) {
             return res.status(400).json({ error: 'Data registrasi tidak lengkap' });
+        }
+
+        if (!emailRegex.test(normalizedEmail)) {
+            return res.status(400).json({ error: 'Format email tidak valid' });
+        }
+
+        if (!phoneRegex.test(normalizedPhone)) {
+            return res.status(400).json({ error: 'Format nomor telepon tidak valid' });
         }
 
         // 1. Daftarkan user ke Supabase Auth
@@ -19,27 +62,21 @@ const register = async (req, res) => {
 
         if (authError) throw authError;
 
-        // 2. Ambil role_id dari tabel roles
-        const { data: roleData, error: roleError } = await supabase
-            .from('roles')
-            .select('id')
-            .eq('name', role)
-            .single();
-
-        if (roleError || !roleData) {
-            // Jika role belum ada, insert perlahan atau lemparkan error
-            return res.status(400).json({ error: "Role tidak valid atau belum disetup di database." });
-        }
-
-        // 3. Simpan profil tambahan/role_id ke tabel public.users
+        // 2. Simpan profil tambahan ke tabel public.users
         const authId = authData.user.id;
         const { data: userData, error: userError } = await supabase
             .from('users')
-            .insert([{ auth_id: authId, name: normalizedName, email: normalizedEmail, role_id: roleData.id }])
+            .insert([{ auth_id: authId, name: normalizedName, email: normalizedEmail }])
             .select()
             .single();
 
         if (userError) throw userError;
+
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([{ user_id: userData.id, phone: normalizedPhone }]);
+
+        if (profileError) throw profileError;
 
         res.status(201).json({
             message: 'User registered successfully. Verifikasi email Anda (jika diaktifkan di Supabase).',
@@ -54,81 +91,73 @@ const register = async (req, res) => {
 // Login User
 const login = async (req, res) => {
     try {
-        const { email, password, role } = req.body;
-        const normalizedEmail = email?.trim().toLowerCase();
+        const { identifier, password, role } = req.body;
+        const normalizedIdentifier = identifier?.trim();
         const normalizedRole = role?.trim().toLowerCase();
-        const fallbackRole = normalizedRole || 'patient';
 
-        if (!normalizedEmail || !password) {
-            return res.status(400).json({ error: 'Email dan kata sandi wajib diisi' });
+        if (!normalizedIdentifier || !password) {
+            return res.status(400).json({ error: 'Email/No. Telepon dan kata sandi wajib diisi' });
+        }
+
+        const isEmail = emailRegex.test(normalizedIdentifier.toLowerCase());
+        const normalizedPhone = normalizePhone(normalizedIdentifier);
+        let resolvedEmail = isEmail ? normalizedIdentifier.toLowerCase() : null;
+
+        if (!isEmail) {
+            if (!phoneRegex.test(normalizedPhone)) {
+                return res.status(400).json({ error: 'Format nomor telepon tidak valid' });
+            }
+
+            const { data: phoneOwner, error: phoneLookupError } = await supabase
+                .from('profiles')
+                .select('user_id, phone, users ( id, auth_id, email, name )')
+                .eq('phone', normalizedPhone)
+                .single();
+
+            if (phoneLookupError || !phoneOwner?.users?.email) {
+                return res.status(404).json({ error: 'Nomor telepon belum terdaftar' });
+            }
+
+            resolvedEmail = phoneOwner.users.email;
         }
 
         // 1. Login melalui Supabase Auth
         const { data, error } = await supabase.auth.signInWithPassword({
-            email: normalizedEmail,
+            email: resolvedEmail,
             password: password,
         });
 
         if (error) throw error;
 
-        // 2. Ambil informasi role user dari tabel public.users beserta relasinya ke roles
+        // 2. Ambil user internal atau buat bila belum ada
         let { data: userData, error: userError } = await supabase
             .from('users')
-            .select(`
-                id,
-                name,
-                role_id,
-                roles ( name )
-            `)
+            .select('id, name, email')
             .eq('auth_id', data.user.id)
             .single();
 
         if (userError || !userData) {
-            const roleFromMetadata = data.user?.user_metadata?.role || data.user?.app_metadata?.role;
-            const resolvedRole = normalizedRole || roleFromMetadata || 'patient';
             const resolvedName = data.user?.user_metadata?.name || data.user?.email?.split('@')[0] || 'User';
 
-            // Ambil role_id dari tabel roles
-            const { data: roleData, error: roleError } = await supabase
-                .from('roles')
-                .select('id, name')
-                .eq('name', resolvedRole)
-                .single();
-
-            if (roleError || !roleData) {
-                return res.status(400).json({ error: "Role tidak valid." });
-            }
-
-            // Upsert menggunakan filter eq karena id internal adalah SERIAL
-            // Cek terlebih dahulu
-            let createdUser;
-            const { data: existingUser } = await supabase
+            const { data: inserted, error: insertError } = await supabase
                 .from('users')
-                .select('id')
-                .eq('auth_id', data.user.id)
+                .insert([{ auth_id: data.user.id, name: resolvedName, email: data.user.email }])
+                .select('id, name, email')
                 .single();
-
-            if(existingUser) {
-                 const { data: updated, error: updateError } = await supabase
-                    .from('users')
-                    .update({ name: resolvedName, email: data.user.email, role_id: roleData.id })
-                    .eq('auth_id', data.user.id)
-                    .select(`id, name, role_id, roles ( name )`)
-                    .single();
-                 if (updateError) return res.status(401).json({ error: updateError.message });
-                 createdUser = updated;
-            } else {
-                 const { data: inserted, error: insertError } = await supabase
-                    .from('users')
-                    .insert([{ auth_id: data.user.id, name: resolvedName, email: data.user.email, role_id: roleData.id }])
-                    .select(`id, name, role_id, roles ( name )`)
-                    .single();
-                 if (insertError) return res.status(401).json({ error: insertError.message });
-                 createdUser = inserted;
-            }
-
-            userData = createdUser;
+            if (insertError) return res.status(401).json({ error: insertError.message });
+            userData = inserted;
         }
+
+        const allowedRoles = await getAllowedRoles(userData.id);
+        const requestedRole = normalizedRole && ['patient', 'caregiver'].includes(normalizedRole)
+            ? normalizedRole
+            : null;
+
+        if (requestedRole && !allowedRoles.includes(requestedRole)) {
+            return res.status(403).json({ error: 'Role tidak diizinkan untuk akun ini' });
+        }
+
+        const activeRole = requestedRole || allowedRoles[0];
 
         res.status(200).json({
             message: 'Login successful',
@@ -137,8 +166,9 @@ const login = async (req, res) => {
                 auth_id: data.user.id, // Supabase Auth UUID
                 email: data.user.email,
                 name: userData.name,
-                role: userData.roles?.name || fallbackRole
+                role: activeRole
             },
+            allowed_roles: allowedRoles,
             token: data.session.access_token,
             refresh_token: data.session.refresh_token
         });
@@ -159,14 +189,9 @@ const getMe = async (req, res) => {
 
         if (error) throw error;
 
-        // Ambil detail role/nama beserta tabel join roles
         const { data: userData, error: userError } = await supabase
             .from('users')
-            .select(`
-                id,
-                name,
-                roles ( name )
-            `)
+            .select('id, name, email')
             .eq('auth_id', user.id)
             .single();
 
@@ -174,14 +199,15 @@ const getMe = async (req, res) => {
             return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
         }
 
+        const allowedRoles = await getAllowedRoles(userData.id);
         res.status(200).json({
             user: {
                 id: userData.id,
                 auth_id: user.id,
-                email: user.email,
-                name: userData.name,
-                role: userData.roles?.name
-            }
+                email: userData.email || user.email,
+                name: userData.name
+            },
+            allowed_roles: allowedRoles
         });
     } catch (error) {
         res.status(401).json({ error: error.message });

@@ -24,7 +24,7 @@ const LoginPage = () => {
     if (!identifier) return 'Email atau No. Telepon wajib diisi';
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const phoneRegex = /^(?:\+62|08)\d{8,11}$/;
+    const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
 
     const isEmail = emailRegex.test(identifier);
     const isPhone = phoneRegex.test(identifier);
@@ -32,8 +32,6 @@ const LoginPage = () => {
     if (!isEmail && !isPhone) {
       return 'Format Email atau No. Telepon tidak valid';
     }
-
-    if (isPhone) return 'Login via email saja untuk saat ini';
 
     if (!password) return 'Kata sandi wajib diisi';
     if (password.length < 8) return 'Kata sandi minimal 8 karakter';
@@ -52,7 +50,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const { data } = await api.post('/auth/login', {
-        email: identifier.trim(),
+        identifier: identifier.trim(),
         password,
         role: role === 'pasien' ? 'patient' : role
       });

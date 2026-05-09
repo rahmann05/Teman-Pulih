@@ -28,6 +28,25 @@ const authorizeRole = (roles) => {
     };
 };
 
+const resolveActiveRole = async (userId, requestedRole) => {
+    const { data: caregiverRelation } = await supabase
+        .from('family_relations')
+        .select('id')
+        .eq('caregiver_id', userId)
+        .eq('status', 'accepted')
+        .limit(1)
+        .maybeSingle();
+
+    const allowedRoles = ['patient'];
+    if (caregiverRelation) allowedRoles.push('caregiver');
+
+    if (requestedRole && !allowedRoles.includes(requestedRole)) {
+        return { error: 'Role tidak diizinkan untuk akun ini', allowedRoles };
+    }
+
+    return { activeRole: requestedRole || allowedRoles[0], allowedRoles };
+};
+
 const requireAuth = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -43,18 +62,26 @@ const requireAuth = async (req, res, next) => {
 
         const { data: appUser, error: appUserError } = await supabase
             .from('users')
-            .select(`
-                id,
-                auth_id,
-                name,
-                email,
-                roles ( name )
-            `)
+            .select('id, auth_id, name, email')
             .eq('auth_id', user.id)
             .single();
 
         if (appUserError || !appUser) {
             return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
+        }
+
+        const requestedRoleRaw = req.headers['x-active-role'];
+        const requestedRole = typeof requestedRoleRaw === 'string'
+            ? requestedRoleRaw.trim().toLowerCase()
+            : null;
+
+        const { activeRole, allowedRoles, error: roleError } = await resolveActiveRole(
+            appUser.id,
+            requestedRole && ['patient', 'caregiver'].includes(requestedRole) ? requestedRole : null
+        );
+
+        if (roleError) {
+            return res.status(403).json({ error: roleError, allowed_roles: allowedRoles });
         }
 
         // Simpan data user internal agar controller memakai primary key database.
@@ -63,7 +90,8 @@ const requireAuth = async (req, res, next) => {
             auth_id: appUser.auth_id,
             email: appUser.email || user.email,
             name: appUser.name,
-            role: appUser.roles?.name,
+            role: activeRole,
+            allowed_roles: allowedRoles
         };
         next();
     } catch (err) {

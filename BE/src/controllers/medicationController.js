@@ -1,14 +1,44 @@
 const { supabase } = require('../config/db');
 
+const canAccessPatient = async (caregiverId, patientId) => {
+    const { data } = await supabase
+        .from('family_relations')
+        .select('id')
+        .eq('caregiver_id', caregiverId)
+        .eq('patient_id', patientId)
+        .eq('status', 'accepted')
+        .limit(1)
+        .maybeSingle();
+    return Boolean(data);
+};
+
+const resolveTargetPatientId = async (req, candidatePatientId) => {
+    if (!candidatePatientId) return req.user.id;
+
+    if (req.user.role === 'caregiver') {
+        const allowed = await canAccessPatient(req.user.id, candidatePatientId);
+        if (!allowed) {
+            return { error: 'Anda tidak memiliki akses ke pasien ini.' };
+        }
+        return { patientId: candidatePatientId };
+    }
+
+    if (String(candidatePatientId) !== String(req.user.id)) {
+        return { error: 'Anda tidak memiliki akses ke pasien ini.' };
+    }
+
+    return { patientId: req.user.id };
+};
+
 // Ambil daftar obat beserta jadwalnya
 const getMedications = async (req, res) => {
     try {
         const userId = req.user.id;
         
         // Caregiver dapat melihat obat pasien dengan query ?patient_id=...
-        const targetUserId = (req.user.role === 'caregiver' && req.query.patient_id) 
-            ? req.query.patient_id 
-            : userId;
+        const { patientId, error: relationError } = await resolveTargetPatientId(req, req.query.patient_id);
+        if (relationError) return res.status(403).json({ error: relationError });
+        const targetUserId = patientId || userId;
 
         const { data, error } = await supabase
             .from('medications')
@@ -35,7 +65,9 @@ const createMedication = async (req, res) => {
         const { patient_id, name, dosage, instructions, schedules } = req.body;
         // schedules: array of { frequency, time_slots, start_date, end_date }
 
-        const targetUserId = (req.user.role === 'caregiver' && patient_id) ? patient_id : userId;
+        const { patientId, error: relationError } = await resolveTargetPatientId(req, patient_id);
+        if (relationError) return res.status(403).json({ error: relationError });
+        const targetUserId = patientId || userId;
 
         if (!name) {
             return res.status(400).json({ error: 'Nama obat wajib diisi' });
@@ -85,11 +117,23 @@ const updateMedication = async (req, res) => {
         const { id } = req.params;
         const { name, dosage, instructions } = req.body;
 
+        const { data: medication, error: medicationError } = await supabase
+            .from('medications')
+            .select('id, user_id')
+            .eq('id', id)
+            .single();
+
+        if (medicationError || !medication) {
+            return res.status(404).json({ error: 'Obat tidak ditemukan' });
+        }
+
+        const { patientId, error: relationError } = await resolveTargetPatientId(req, medication.user_id);
+        if (relationError) return res.status(403).json({ error: relationError });
+
         const { data, error } = await supabase
             .from('medications')
             .update({ name, dosage, instructions })
-            .eq('id', id)
-            // Memastikan data edit hanya milik yang bersangkutan
+            .eq('id', medication.id)
             .select()
             .single();
 
@@ -104,10 +148,23 @@ const updateMedication = async (req, res) => {
 const deleteMedication = async (req, res) => {
     try {
         const { id } = req.params;
+        const { data: medication, error: medicationError } = await supabase
+            .from('medications')
+            .select('id, user_id')
+            .eq('id', id)
+            .single();
+
+        if (medicationError || !medication) {
+            return res.status(404).json({ error: 'Obat tidak ditemukan' });
+        }
+
+        const { patientId, error: relationError } = await resolveTargetPatientId(req, medication.user_id);
+        if (relationError) return res.status(403).json({ error: relationError });
+
         const { error } = await supabase
             .from('medications')
             .delete()
-            .eq('id', id);
+            .eq('id', medication.id);
 
         if (error) throw error;
         res.status(200).json({ message: 'Obat beserta jadwalnya berhasil dihapus' });
@@ -126,10 +183,23 @@ const markTaken = async (req, res) => {
             return res.status(400).json({ error: 'Status wajib diisi (taken/missed/skipped)' });
         }
 
+        const { data: medication, error: medicationError } = await supabase
+            .from('medications')
+            .select('id, user_id')
+            .eq('id', id)
+            .single();
+
+        if (medicationError || !medication) {
+            return res.status(404).json({ error: 'Obat tidak ditemukan' });
+        }
+
+        const { patientId, error: relationError } = await resolveTargetPatientId(req, medication.user_id);
+        if (relationError) return res.status(403).json({ error: relationError });
+
         const { data, error } = await supabase
             .from('medication_logs')
             .insert([{ 
-                medication_id: id, 
+                medication_id: medication.id, 
                 schedule_id: schedule_id || null, 
                 status, 
                 taken_at: new Date().toISOString() 
@@ -148,9 +218,9 @@ const markTaken = async (req, res) => {
 const getMedicationLogs = async (req, res) => {
     try {
         const userId = req.user.id;
-        const targetUserId = (req.user.role === 'caregiver' && req.query.patient_id) 
-            ? req.query.patient_id 
-            : userId;
+        const { patientId, error: relationError } = await resolveTargetPatientId(req, req.query.patient_id);
+        if (relationError) return res.status(403).json({ error: relationError });
+        const targetUserId = patientId || userId;
 
         // Ambil log di join dengan info obatnya
         const { data, error } = await supabase
