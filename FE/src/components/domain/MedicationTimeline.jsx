@@ -1,11 +1,17 @@
 import React from 'react';
 
-const MedicationTimeline = () => {
-  const schedule = [
-    { id: 1, time: '08:00', name: 'Amoxicillin', desc: '500 mg - Sesudah makan', progress: '1/3 diminum', state: 'next' },
-    { id: 2, time: '13:00', name: 'Paracetamol', desc: '500 mg - Sesudah makan', progress: '0/3 diminum', state: 'upcoming' },
-    { id: 3, time: '20:00', name: 'Vitamin C', desc: '1 Tablet', progress: '0/1 diminum', state: 'upcoming' },
-  ];
+const MedicationTimeline = ({ schedule = [], emptyMessage = 'Belum ada jadwal obat hari ini.' }) => {
+  if (schedule.length === 0) {
+    return (
+      <div className="timeline-section" data-testid="med-timeline">
+        <div className="section-header">
+          <h3 className="section-title">Jadwal Hari Ini</h3>
+          <a href="/medications" className="section-link">Lihat Semua</a>
+        </div>
+        <p className="empty-state-text">{emptyMessage}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="timeline-section" data-testid="med-timeline">

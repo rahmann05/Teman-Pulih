@@ -41,8 +41,30 @@ const requireAuth = async (req, res, next) => {
             return res.status(401).json({ error: 'Invalid or expired token.' });
         }
 
-        // Simpan data user ke object request untuk dipakai controller berikutnya
-        req.user = user;
+        const { data: appUser, error: appUserError } = await supabase
+            .from('users')
+            .select(`
+                id,
+                auth_id,
+                name,
+                email,
+                roles ( name )
+            `)
+            .eq('auth_id', user.id)
+            .single();
+
+        if (appUserError || !appUser) {
+            return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
+        }
+
+        // Simpan data user internal agar controller memakai primary key database.
+        req.user = {
+            id: appUser.id,
+            auth_id: appUser.auth_id,
+            email: appUser.email || user.email,
+            name: appUser.name,
+            role: appUser.roles?.name,
+        };
         next();
     } catch (err) {
         res.status(500).json({ error: 'Internal server error during authentication.' });

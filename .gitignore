@@ -5,4 +5,5 @@ dist/
 .env
 .env.*
 !.env.example
-.AGENT.MD
+AGENT.MD
+skills-lock.json

@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../../components/layout/auth/AuthLayout';
-import AuthToggle from '../../components/ui/auth/AuthToggle';
 import AuthInputField from '../../components/ui/auth/AuthInputField';
 import SocialLoginButton from '../../components/ui/auth/SocialLoginButton';
 import AuthDivider from '../../components/ui/auth/AuthDivider';
@@ -85,8 +84,6 @@ const RegisterPage = () => {
         title="Daftar Akun"
         subtitle="Mulai perjalanan pemulihan Anda"
       />
-
-      <AuthToggle role={role} setRole={setRole} />
 
       <SocialLoginButton provider="Google" onClick={() => console.log('Google register')} />
 

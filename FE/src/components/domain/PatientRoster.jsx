@@ -1,11 +1,20 @@
 import React from 'react';
 import { LuPlus } from 'react-icons/lu';
 
-const PatientRoster = () => {
-  const patients = [
-    { id: 1, name: 'Ayah', initials: 'A', status: 'alert', adherence: '3/4 obat diminum' },
-    { id: 2, name: 'Ibu', initials: 'I', status: 'safe', adherence: 'Semua jadwal aman' },
-  ];
+const PatientRoster = ({ patients = [], emptyMessage = 'Belum ada anggota keluarga yang terhubung.' }) => {
+  if (patients.length === 0) {
+    return (
+      <div className="roster-section" data-testid="patient-roster">
+        <div className="roster-header">
+          <h3 className="roster-title">Pasien Pantauan</h3>
+          <button className="add-patient-btn" aria-label="Tambah Pasien">
+            <LuPlus />
+          </button>
+        </div>
+        <p className="empty-state-text">{emptyMessage}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="roster-section" data-testid="patient-roster">

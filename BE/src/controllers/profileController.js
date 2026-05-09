@@ -5,29 +5,36 @@ const getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
         
-        // 1. GATEWAY -> DB: Ambil dari table profiles beserta data nama & role dari users
-        const { data: profile, error } = await supabase
-            .from('profiles')
+        const { data: user, error: userError } = await supabase
+            .from('users')
             .select(`
-                *,
-                users:user_id (name, email, role)
+                id,
+                name,
+                email,
+                roles ( name )
             `)
-            .eq('user_id', userId)
+            .eq('id', userId)
             .single();
 
-        if (error) throw error;
+        if (userError) throw userError;
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('id, user_id, phone, address, birth_date, gender')
+            .eq('user_id', userId)
+            .maybeSingle();
         
         // Formating ulang response agar rapi
         const formattedProfile = {
-            id: profile.id,
-            user_id: profile.user_id,
-            name: profile.users?.name,
-            email: profile.users?.email,
-            role: profile.users?.role,
-            phone: profile.phone,
-            address: profile.address,
-            birth_date: profile.birth_date,
-            gender: profile.gender
+            id: profile?.id || null,
+            user_id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.roles?.name,
+            phone: profile?.phone || null,
+            address: profile?.address || null,
+            birth_date: profile?.birth_date || null,
+            gender: profile?.gender || null
         };
 
         // 2. GATEWAY -> FE
@@ -77,7 +84,7 @@ const inviteFamily = async (req, res) => {
         }
 
         // Tentukan siapa patient dan siapa caregiver
-        const isSelfPatient = req.user.user_metadata?.role === 'patient' || (await checkRole(userId)) === 'patient';
+        const isSelfPatient = req.user.role === 'patient' || (await checkRole(userId)) === 'patient';
         const patientId = isSelfPatient ? userId : invitedUser.id;
         const caregiverId = isSelfPatient ? invitedUser.id : userId;
 
@@ -120,8 +127,8 @@ const getFamilyMembers = async (req, res) => {
 
 // Helper
 async function checkRole(uid) {
-    const { data } = await supabase.from('users').select('role').eq('id', uid).single();
-    return data?.role;
+    const { data } = await supabase.from('users').select('roles ( name )').eq('id', uid).single();
+    return data?.roles?.name;
 }
 
 module.exports = { getProfile, updateProfile, inviteFamily, getFamilyMembers };

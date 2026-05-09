@@ -57,6 +57,7 @@ const login = async (req, res) => {
         const { email, password, role } = req.body;
         const normalizedEmail = email?.trim().toLowerCase();
         const normalizedRole = role?.trim().toLowerCase();
+        const fallbackRole = normalizedRole || 'patient';
 
         if (!normalizedEmail || !password) {
             return res.status(400).json({ error: 'Email dan kata sandi wajib diisi' });
@@ -136,7 +137,7 @@ const login = async (req, res) => {
                 auth_id: data.user.id, // Supabase Auth UUID
                 email: data.user.email,
                 name: userData.name,
-                role: userData.roles?.name || resolvedRole
+                role: userData.roles?.name || fallbackRole
             },
             token: data.session.access_token,
             refresh_token: data.session.refresh_token
