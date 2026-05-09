@@ -55,7 +55,7 @@ const LoginPage = () => {
         role: role === 'pasien' ? 'patient' : role
       });
       const resolvedRole = data.user?.role || role;
-      login(data.token, resolvedRole);
+      login(data.token, resolvedRole, data.allowed_roles, data.user);
       navigate(resolvedRole === 'caregiver' ? '/caregiver/dashboard' : '/dashboard');
     } catch (err) {
       const message = err.response?.data?.error || 'Login gagal. Coba lagi.';

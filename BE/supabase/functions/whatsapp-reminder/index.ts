@@ -2,7 +2,11 @@ import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 type ReminderRequest = {
-  user_id: number;
+  type?: 'medication_reminder' | 'caregiver_request';
+  user_id?: number; // Patient ID for reminders
+  patient_id?: number; // For caregiver request
+  caregiver_id?: number; // For caregiver request
+  relation_id?: number; // For caregiver request
   message: string;
 };
 
@@ -28,18 +32,28 @@ serve(async (req) => {
     return new Response("Invalid JSON payload", { status: 400 });
   }
 
-  if (!payload?.user_id || !payload?.message) {
-    return new Response("user_id and message are required", { status: 400 });
+  // Determine the target user to notify based on the event type
+  const targetUserId = payload.type === 'caregiver_request' ? payload.patient_id : payload.user_id;
+
+  if (!targetUserId || !payload?.message) {
+    return new Response("Target user ID and message are required", { status: 400 });
   }
 
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("phone, users ( id, email )")
-    .eq("user_id", payload.user_id)
+    .eq("user_id", targetUserId)
     .single();
 
   if (profileError || !profile?.phone) {
     return new Response("Phone number not found", { status: 404 });
+  }
+
+  // Construct message based on type
+  let finalMessage = payload.message;
+  if (payload.type === 'caregiver_request') {
+      const approvalUrl = `https://temanpulih.vercel.app/approve-caregiver?id=${payload.relation_id}`;
+      finalMessage = `${payload.message}\n\nKlik link berikut untuk menyetujui: ${approvalUrl}`;
   }
 
   const response = await fetch(whatsappWebhookUrl, {
@@ -49,9 +63,10 @@ serve(async (req) => {
     },
     body: JSON.stringify({
       to: profile.phone,
-      message: payload.message,
-      user_id: payload.user_id,
+      message: finalMessage,
+      user_id: targetUserId,
       email: profile?.users?.email ?? null,
+      type: payload.type || 'medication_reminder'
     }),
   });
 

@@ -6,6 +6,7 @@ const chatbotRoutes = require('./routes/chatbotRoutes');
 const medicationRoutes = require('./routes/medicationRoutes');
 const ocrRoutes = require('./routes/ocrRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const relationRoutes = require('./routes/relationRoutes');
 const profileController = require('./controllers/profileController');
 const { requireAuth } = require('./middleware/authMiddleware');
 
@@ -32,6 +33,7 @@ app.use('/api/medications', medicationRoutes);    // Gateway -> Supabase DB
 app.use('/api/chatbot', chatbotRoutes);           // Gateway -> Python ML Backend (Port 8000) & DB
 app.use('/api/ocr', ocrRoutes);                   // Gateway -> ML Backend & Supabase Storage
 app.use('/api/profile', profileRoutes);           // Gateway -> Supabase DB (Profile records)
+app.use('/api/relations', relationRoutes);        // Gateway -> Caregiver request & approval
 
 // Khusus Family Routes (supaya strukturnya rapi sesuai dokumentasi)
 app.post('/api/family/invite', requireAuth, profileController.inviteFamily);
