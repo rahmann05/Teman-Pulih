@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LuBell } from 'react-icons/lu';
 import TriageHeroCard from '../../components/domain/TriageHeroCard';
 import PatientRoster from '../../components/domain/PatientRoster';
 import UpcomingTimeline from '../../components/domain/UpcomingTimeline';
+import BottomNav from '../../components/layout/BottomNav';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/features/CaregiverDashboard.css';
@@ -190,11 +191,28 @@ const CaregiverDashboard = () => {
   }, [user?.name]);
 
   if (dashboardData.loading) {
-    return <div className="cg-dashboard-container">Memuat dashboard caregiver...</div>;
+    return (
+      <div className="cg-dashboard-container">
+        <div className="dashboard-skeleton">
+          <div className="skeleton-block" style={{ height: 56 }} />
+          <div className="skeleton-block" style={{ height: 200 }} />
+          <div className="skeleton-block" style={{ height: 120 }} />
+          <div className="skeleton-block" style={{ height: 160 }} />
+        </div>
+        <BottomNav caregiverMode />
+      </div>
+    );
   }
 
   if (dashboardData.error) {
-    return <div className="cg-dashboard-container">{dashboardData.error}</div>;
+    return (
+      <div className="cg-dashboard-container">
+        <p style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          {dashboardData.error}
+        </p>
+        <BottomNav caregiverMode />
+      </div>
+    );
   }
 
   return (
@@ -203,6 +221,7 @@ const CaregiverDashboard = () => {
       <TriageHeroCard status={dashboardData.triageStatus} message={dashboardData.triageMessage} />
       <PatientRoster patients={dashboardData.roster} />
       <UpcomingTimeline schedule={dashboardData.timeline} />
+      <BottomNav caregiverMode />
     </div>
   );
 };

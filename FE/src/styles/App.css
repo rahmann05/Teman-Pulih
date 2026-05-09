@@ -1097,3 +1097,108 @@
   }
 }
 
+/* ============================================
+   BOTTOM NAVIGATION
+   Sticky mobile nav — always visible on protected routes
+   ============================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 1280px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-light);
+  padding: var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  z-index: 100;
+  box-shadow: 0 -4px 24px rgba(26, 26, 46, 0.06);
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  padding: var(--space-2) 0;
+  color: var(--text-muted);
+  text-decoration: none;
+  position: relative;
+  transition: color var(--duration-fast) var(--ease-out-expo);
+  min-height: 52px;
+}
+
+.bottom-nav-item.active {
+  color: var(--accent);
+}
+
+.bottom-nav-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.bottom-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+}
+
+.bottom-nav-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  position: absolute;
+  bottom: 4px;
+}
+
+/* Scan elevated FAB */
+.bottom-nav-scan {
+  flex: none;
+  width: 56px;
+}
+
+.scan-fab {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.40);
+  margin-top: -18px;
+  transition: transform var(--duration-fast) var(--spring),
+              box-shadow var(--duration-fast);
+  flex-shrink: 0;
+}
+
+.bottom-nav-scan:hover .scan-fab {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(196, 101, 58, 0.45);
+}
+
+.bottom-nav-scan:active .scan-fab {
+  transform: scale(0.94);
+}
+
+/* desktop-only helper from Navbar */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .desktop-only { display: inline; }
+  .bottom-nav   { display: none; }
+}
+

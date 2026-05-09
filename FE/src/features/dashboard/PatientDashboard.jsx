@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LuBell } from 'react-icons/lu';
 import NextMedicationHero from '../../components/domain/NextMedicationHero';
 import QuickActionGrid from '../../components/domain/QuickActionGrid';
 import MedicationTimeline from '../../components/domain/MedicationTimeline';
 import HealthTipsCarousel from '../../components/domain/HealthTipsCarousel';
+import BottomNav from '../../components/layout/BottomNav';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/features/Dashboard.css';
@@ -148,11 +149,28 @@ const PatientDashboard = () => {
   }, [user?.name]);
 
   if (dashboardData.loading) {
-    return <div className="dashboard-container">Memuat dashboard pasien...</div>;
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-skeleton">
+          <div className="skeleton-block" style={{ height: 56 }} />
+          <div className="skeleton-block" style={{ height: 220 }} />
+          <div className="skeleton-block" style={{ height: 148 }} />
+          <div className="skeleton-block" style={{ height: 148 }} />
+        </div>
+        <BottomNav />
+      </div>
+    );
   }
 
   if (dashboardData.error) {
-    return <div className="dashboard-container">{dashboardData.error}</div>;
+    return (
+      <div className="dashboard-container">
+        <p style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          {dashboardData.error}
+        </p>
+        <BottomNav />
+      </div>
+    );
   }
 
   return (
@@ -166,6 +184,7 @@ const PatientDashboard = () => {
       <QuickActionGrid />
       <MedicationTimeline schedule={dashboardData.timeline} />
       <HealthTipsCarousel />
+      <BottomNav />
     </div>
   );
 };

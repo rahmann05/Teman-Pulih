@@ -6,8 +6,21 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
-    const savedAllowedRoles = JSON.parse(localStorage.getItem('allowed_roles') || '["patient"]');
-    const savedUserData = JSON.parse(localStorage.getItem('user_data') || 'null');
+    const savedAllowedRolesRaw = localStorage.getItem('allowed_roles');
+    let savedAllowedRoles = ["patient"];
+    try {
+      if (savedAllowedRolesRaw && savedAllowedRolesRaw !== "undefined") {
+        savedAllowedRoles = JSON.parse(savedAllowedRolesRaw);
+      }
+    } catch (e) { console.error("Error parsing allowed_roles", e); }
+
+    const savedUserDataRaw = localStorage.getItem('user_data');
+    let savedUserData = null;
+    try {
+      if (savedUserDataRaw && savedUserDataRaw !== "undefined") {
+        savedUserData = JSON.parse(savedUserDataRaw);
+      }
+    } catch (e) { console.error("Error parsing user_data", e); }
     
     return savedToken ? { 
       token: savedToken, 
