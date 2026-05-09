@@ -405,3 +405,81 @@
 @media (prefers-reduced-motion: reduce) {
   .triage-card, .patient-card, .glass-btn { transition: none; }
 }
+
+/* ── Mobile Optimizations (Max 480px) ─────────────────────── */
+@media (max-width: 480px) {
+  .cg-dashboard-header {
+    padding: var(--space-4) var(--space-4) var(--space-2);
+  }
+
+  .cg-avatar-circle {
+    width: 40px;
+    height: 40px;
+  }
+
+  .cg-greeting-name {
+    font-size: var(--text-md);
+  }
+
+  .triage-card {
+    margin: 0 var(--space-4) var(--space-4);
+    min-height: 180px;
+  }
+
+  .triage-card-body {
+    padding: var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .triage-message {
+    font-size: var(--text-lg);
+  }
+
+  .glass-btn {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-sm);
+  }
+
+  .roster-section,
+  .upcoming-section {
+    padding: 0 var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .roster-title,
+  .upcoming-title {
+    font-size: var(--text-lg);
+  }
+
+  .patient-card {
+    min-width: 110px;
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .patient-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: var(--text-sm);
+  }
+
+  .patient-name {
+    font-size: var(--text-xs);
+  }
+
+  .upcoming-list::before {
+    left: 32px;
+  }
+
+  .upcoming-time {
+    width: 32px;
+    font-size: 10px;
+  }
+
+  .upcoming-card {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .upcoming-med-name {
+    font-size: var(--text-sm);
+  }
+}

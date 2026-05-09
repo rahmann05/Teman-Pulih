@@ -1115,7 +1115,7 @@
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--border-light);
-  padding: var(--space-2) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-1) 0 calc(var(--space-2) + env(safe-area-inset-bottom, 0px));
   z-index: 100;
   box-shadow: 0 -4px 24px rgba(26, 26, 46, 0.06);
 }
@@ -1125,14 +1125,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: 2px;
   flex: 1;
-  padding: var(--space-2) 0;
+  padding: var(--space-1) 0;
   color: var(--text-muted);
   text-decoration: none;
   position: relative;
   transition: color var(--duration-fast) var(--ease-out-expo);
-  min-height: 52px;
+  min-height: 48px;
 }
 
 .bottom-nav-item.active {
@@ -1140,44 +1140,44 @@
 }
 
 .bottom-nav-icon {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
 }
 
 .bottom-nav-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   line-height: 1;
 }
 
 .bottom-nav-dot {
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
   border-radius: var(--radius-full);
   background: var(--accent);
   position: absolute;
-  bottom: 4px;
+  bottom: 2px;
 }
 
 /* Scan elevated FAB */
 .bottom-nav-scan {
   flex: none;
-  width: 56px;
+  width: 64px;
 }
 
 .scan-fab {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: var(--radius-full);
   background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.40);
-  margin-top: -18px;
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.40);
+  margin-top: -14px;
   transition: transform var(--duration-fast) var(--spring),
               box-shadow var(--duration-fast);
   flex-shrink: 0;

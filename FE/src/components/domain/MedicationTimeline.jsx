@@ -1,3 +1,5 @@
+import { LuCalendarX } from 'react-icons/lu';
+
 const MedicationTimeline = ({ schedule = [], emptyMessage = 'Belum ada jadwal obat hari ini.' }) => {
   return (
     <div className="timeline-section" data-testid="med-timeline">
@@ -7,7 +9,10 @@ const MedicationTimeline = ({ schedule = [], emptyMessage = 'Belum ada jadwal ob
       </div>
 
       {schedule.length === 0 ? (
-        <p className="empty-state-text">{emptyMessage}</p>
+        <div className="empty-state-card">
+          <LuCalendarX size={32} className="empty-state-icon" />
+          <p className="empty-state-text">{emptyMessage}</p>
+        </div>
       ) : (
         <div className="timeline-list">
           {schedule.map((item) => (

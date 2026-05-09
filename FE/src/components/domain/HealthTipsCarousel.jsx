@@ -12,14 +12,14 @@ const TIPS = [
   {
     id: 3,
     text: 'Tidur cukup 7–8 jam agar proses pemulihan berjalan optimal.',
-    image: 'https://images.unsplash.com/photo-1531971736651-fc83da8fded4?auto=format&fit=crop&w=400&q=80',
+    image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=400&q=80',
   },
 ];
 
 const HealthTipsCarousel = () => {
   return (
-    <div data-testid="health-tips">
-      <div className="section-header" style={{ padding: '0 var(--space-5)' }}>
+    <div className="dashboard-section tips-section" data-testid="health-tips">
+      <div className="section-header">
         <h3 className="section-title">Tips Pemulihan</h3>
       </div>
       <div className="carousel-container">
