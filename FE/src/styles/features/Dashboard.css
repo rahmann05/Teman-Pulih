@@ -646,3 +646,68 @@
     font-size: var(--text-sm);
   }
 }
+
+/* ============================================
+   Desktop Overrides
+   ============================================ */
+@media (min-width: 1024px) {
+  .dashboard-container {
+    padding-bottom: var(--space-8);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .dashboard-header {
+    padding: var(--space-6) 0;
+    background: transparent;
+  }
+
+  .section-title {
+    font-size: var(--text-2xl);
+  }
+
+  .greeting-name {
+    font-size: var(--text-2xl);
+  }
+
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: clamp(16px, 2vw, 24px);
+    align-items: start;
+  }
+
+  /* Adjust components inside grid */
+  .hero-card {
+    min-height: 240px;
+    margin: 0 0 var(--space-5);
+  }
+  
+  .med-name {
+    font-size: clamp(28px, 3.5vw, 36px);
+    line-height: 1.1;
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  }
+
+  .action-card {
+    height: 160px;
+  }
+
+  /* Tips: grid instead of scroll on desktop */
+  .carousel-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    overflow: visible;
+    padding: 0;
+  }
+
+  .tip-card {
+    width: auto;
+    min-width: unset;
+    scroll-snap-align: none;
+  }
+}

@@ -7,23 +7,23 @@ export const AuthProvider = ({ children }) => {
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
     const savedAllowedRolesRaw = localStorage.getItem('allowed_roles');
-    let savedAllowedRoles = ["patient"];
+    let savedAllowedRoles = ['patient'];
     try {
-      if (savedAllowedRolesRaw && savedAllowedRolesRaw !== "undefined") {
+      if (savedAllowedRolesRaw && savedAllowedRolesRaw !== 'undefined') {
         savedAllowedRoles = JSON.parse(savedAllowedRolesRaw);
       }
-    } catch (e) { console.error("Error parsing allowed_roles", e); }
+    } catch (e) { console.error('Error parsing allowed_roles', e); }
 
     const savedUserDataRaw = localStorage.getItem('user_data');
     let savedUserData = null;
     try {
-      if (savedUserDataRaw && savedUserDataRaw !== "undefined") {
+      if (savedUserDataRaw && savedUserDataRaw !== 'undefined') {
         savedUserData = JSON.parse(savedUserDataRaw);
       }
-    } catch (e) { console.error("Error parsing user_data", e); }
-    
-    return savedToken ? { 
-      token: savedToken, 
+    } catch (e) { console.error('Error parsing user_data', e); }
+
+    return savedToken ? {
+      token: savedToken,
       role: savedRole || 'patient',
       allowed_roles: savedAllowedRoles,
       ...savedUserData
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
   const switchRole = (newRole) => {
     if (user?.allowed_roles?.includes(newRole)) {
       localStorage.setItem('role', newRole);
-      setUser(prev => ({ ...prev, role: newRole }));
+      setUser((prev) => ({ ...prev, role: newRole }));
       window.location.reload(); // Reload to refresh data based on new role
     }
   };

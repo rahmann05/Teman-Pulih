@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { id: 'scan',  label: 'Scan',  icon: LuScanLine,      path: '/scan' },
   { id: 'obat',  label: 'Obat',  icon: LuPill,          path: '/medications' },
   { id: 'chat',  label: 'Chat',  icon: LuMessageCircle, path: '/chatbot' },
-  { id: 'profil',label: 'Profil',icon: LuUser,          path: '/profile' },
+  { id: 'profil', label: 'Profil', icon: LuUser,          path: '/profile' },
 ];
 
 const BottomNav = ({ caregiverMode = false }) => {

@@ -53,10 +53,10 @@ const RegisterPage = () => {
       setError(validationError);
       return;
     }
-    
+
     setError('');
     setLoading(true);
-    
+
     try {
       // 1. Hit the backend endpoint
       const response = await api.post('/auth/register', {
@@ -77,7 +77,7 @@ const RegisterPage = () => {
         setError('Pendaftaran berhasil! Silakan cek email Anda untuk verifikasi atau coba login.');
         // navigate('/login'); // Opsional: redirect ke login
       }
-      
+
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.error || err.message || 'Terjadi kesalahan saat mendaftar');

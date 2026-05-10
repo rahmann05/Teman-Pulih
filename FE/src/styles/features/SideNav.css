@@ -1,0 +1,144 @@
+/* src/styles/features/SideNav.css */
+
+.sidenav-desktop {
+  display: none;
+}
+
+/* ── Tablet (Collapsed Sidebar) ─────────────── */
+@media (min-width: 768px) {
+  .sidenav-desktop {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 80px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    left: 0;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border-light);
+    z-index: 50;
+    padding: var(--space-6) 0;
+    transition: width var(--duration-normal) var(--ease);
+  }
+
+  .sidenav-top, .sidenav-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .sidenav-brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--space-8);
+    text-decoration: none;
+  }
+
+  .logo-mark {
+    background: var(--accent);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .logo-text {
+    display: none; /* Hidden on tablet */
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: var(--text-xl);
+    color: var(--text);
+  }
+
+  .sidenav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+    padding: 0 var(--space-3);
+  }
+
+  .sidenav-item, .sidenav-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .sidenav-label {
+    display: none; /* Hidden on tablet */
+    font-weight: 600;
+    font-size: var(--text-sm);
+  }
+
+  .sidenav-icon {
+    flex-shrink: 0;
+  }
+
+  .sidenav-item:hover, .sidenav-action-btn:hover {
+    color: var(--text);
+    background-color: var(--bg-muted);
+  }
+
+  .sidenav-item.active {
+    color: var(--accent);
+    background-color: var(--accent-light);
+  }
+
+  .sidenav-action-btn.logout:hover {
+    color: #dc2626;
+    background-color: #fee2e2;
+  }
+}
+
+/* ── Desktop (Expanded Sidebar) ─────────────── */
+@media (min-width: 1024px) {
+  .sidenav-desktop {
+    width: 260px;
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .sidenav-top, .sidenav-bottom {
+    align-items: stretch;
+  }
+
+  .sidenav-brand {
+    justify-content: flex-start;
+    gap: var(--space-3);
+    padding: 0 var(--space-2);
+  }
+
+  .logo-text {
+    display: block;
+  }
+
+  .sidenav-menu {
+    padding: 0;
+  }
+
+  .sidenav-item, .sidenav-action-btn {
+    justify-content: flex-start;
+    padding: 0 var(--space-4);
+    gap: var(--space-3);
+  }
+
+  .sidenav-label {
+    display: block;
+  }
+}

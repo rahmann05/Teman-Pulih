@@ -483,3 +483,50 @@
     font-size: var(--text-sm);
   }
 }
+
+/* ============================================
+   Desktop Overrides
+   ============================================ */
+@media (min-width: 1024px) {
+  .cg-dashboard-container {
+    padding-bottom: var(--space-8);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .cg-dashboard-header {
+    padding: var(--space-6) 0;
+  }
+
+  .cg-greeting-name {
+    font-size: var(--text-2xl);
+  }
+
+  .roster-title,
+  .upcoming-title {
+    font-size: var(--text-2xl);
+  }
+
+  .cg-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: var(--space-6);
+    align-items: start;
+  }
+
+  .triage-card {
+    margin: 0 0 var(--space-5);
+    min-height: 220px;
+  }
+
+  .roster-carousel {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    overflow: visible;
+    padding: 0;
+  }
+
+  .patient-card {
+    min-width: unset;
+  }
+}

@@ -4,9 +4,9 @@ import { motion } from 'framer-motion';
 
 const SocialLoginButton = ({ provider = 'Google', onClick }) => {
   return (
-    <motion.button 
-      type="button" 
-      className="social-login" 
+    <motion.button
+      type="button"
+      className="social-login"
       onClick={onClick}
       whileHover={{ scale: 1.02, backgroundColor: 'var(--bg-muted)' }}
       whileTap={{ scale: 0.95 }}

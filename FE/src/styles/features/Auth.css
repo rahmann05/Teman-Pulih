@@ -1,22 +1,40 @@
 /* src/features/auth/Auth.css */
+
+/* ── Base / Mobile ────────────────────────────── */
 .auth-container {
   min-height: 100dvh;
   width: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
   position: relative;
+  overflow: hidden;
+  background-image: var(--auth-bg);
   background-size: cover;
   background-position: center;
-  overflow: hidden;
 }
 
-.auth-overlay {
+/* Branding panel — hidden below desktop */
+.auth-branding-panel {
+  display: none;
+}
+
+/* Form wrapper — the main form area */
+.auth-form-panel {
+  position: relative;
+  flex: 1;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.auth-bg-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(228, 237, 232, 0.4) 0%, rgba(196, 101, 58, 0.6) 100%);
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
+  background: linear-gradient(135deg, rgba(196, 101, 58, 0.1) 0%, rgba(26, 26, 46, 0.85) 100%);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   z-index: 1;
 }
 
@@ -32,6 +50,7 @@
   margin: var(--space-4);
 }
 
+/* ── Form Elements ────────────────────────────── */
 .auth-toggle {
   display: flex;
   background: var(--bg-muted);
@@ -85,7 +104,8 @@
   font-weight: 600;
   margin-bottom: var(--space-6);
   transition: background var(--duration-fast);
-  background: white; /* Added to ensure contrast on overlays */
+  background: white;
+  /* Added to ensure contrast on overlays */
 }
 
 .social-login:hover {
@@ -102,7 +122,8 @@
   text-transform: uppercase;
 }
 
-.auth-divider::before, .auth-divider::after {
+.auth-divider::before,
+.auth-divider::after {
   content: "";
   flex: 1;
   height: 1px;
@@ -147,4 +168,306 @@
   width: 100%;
   justify-content: center;
   margin-top: var(--space-4);
+}
+
+.auth-back-link {
+  display: none;
+  /* Hidden on mobile */
+}
+
+/* ── Tablet (768px – 1023px) ─────────────────── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .auth-bg-overlay {
+    display: block;
+    background: linear-gradient(135deg, rgba(26, 26, 46, 0.4) 0%, rgba(26, 26, 46, 0.9) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .auth-content-layout {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    padding: var(--space-8);
+  }
+
+  .auth-branding-panel {
+    display: none;
+  }
+
+  .auth-form-panel {
+    width: 100%;
+    max-width: 480px;
+    background: transparent;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .auth-card {
+    background: var(--bg-card);
+    padding: var(--space-10) var(--space-8);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    margin: 0;
+  }
+
+  .auth-back-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-sm);
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--text-sm);
+  }
+}
+
+/* ── Desktop (≥1024px) — Cinematic Premium Layout ─────────── */
+@media (min-width: 1024px) {
+  .auth-container {
+    display: flex;
+    min-height: 100vh;
+    background: var(--bg);
+    background-image: none;
+    /* Warm cream background for desktop */
+  }
+
+  .auth-bg-overlay {
+    display: none;
+    /* Overlay only for mobile/tablet where text is on top of image */
+  }
+
+  .auth-content-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr; /* Right side dominant */
+    width: 100%;
+    min-height: 100vh;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Left Side: Branding & Trust */
+  .auth-branding-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    /* Right align elements */
+    text-align: right;
+    /* Right align text */
+    color: white;
+    padding: 64px 80px;
+    background-image: var(--auth-bg);
+    background-size: cover;
+    background-position: center center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .auth-branding-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(196, 101, 58, 0.18) 0%, rgba(26, 26, 46, 0.9) 100%);
+    z-index: 1;
+  }
+
+  .auth-brand-logo,
+  .auth-trust-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .auth-branding-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .auth-back-link {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    transition: all 0.2s;
+    z-index: 10;
+  }
+
+  .auth-back-link:hover {
+    color: var(--accent);
+    transform: translateX(-4px);
+  }
+
+  .auth-brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--text-2xl);
+    text-decoration: none;
+    color: #fff !important;
+  }
+
+  .auth-brand-logo .logo-text {
+    color: #fff !important;
+  }
+
+  .auth-brand-logo .logo-mark {
+    background: var(--accent);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    display: flex;
+  }
+
+  .auth-trust-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    max-width: 500px;
+  }
+
+  .trust-main h2 {
+    font-size: clamp(36px, 4vw, 48px);
+    font-weight: 800;
+    margin-bottom: var(--space-4);
+    color: white;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    max-width: 480px;
+    /* Prevent it from being too wide while right aligned */
+  }
+
+  .trust-main p {
+    font-size: var(--text-lg);
+    opacity: 0.85;
+    line-height: 1.6;
+  }
+
+  /* Trust Badges */
+  .trust-badges {
+    display: flex;
+    justify-content: flex-end;
+    /* Align badges to right */
+    gap: var(--space-4);
+  }
+
+  .trust-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    padding: var(--space-2) var(--space-4);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-full);
+    backdrop-filter: blur(8px);
+  }
+
+  .trust-badge svg {
+    color: var(--accent-light);
+  }
+
+  /* Floating Widget */
+  .floating-widget {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    /* Align internal content if needed */
+    gap: var(--space-4);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-xl);
+    color: #fff;
+    max-width: 340px;
+    margin-top: var(--space-4);
+    margin-left: auto;
+    /* Push to right in flex container */
+    text-align: left;
+    /* Keep content readable */
+  }
+
+  .widget-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--accent-light);
+    color: var(--accent-dark);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .widget-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .widget-text strong {
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .widget-text span {
+    font-size: var(--text-xs);
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  /* Right Side: Form */
+  .auth-form-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: var(--bg);
+    padding: 100px 80px 40px; /* Aligned with back button but high up */
+    position: relative;
+    overflow-y: auto;
+  }
+
+  .auth-card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+  }
+
+  .auth-form-header h1 {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
 }

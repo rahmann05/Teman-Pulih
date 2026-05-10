@@ -7,4 +7,5 @@ dist/
 .env.*
 !.env.example
 AGENT.MD
+AGENT_STYLE_GUIDE.MD
 skills-lock.json

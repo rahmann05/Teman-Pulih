@@ -86,9 +86,9 @@ const LoginPage = () => {
       <AuthDivider />
 
       <AnimatePresence mode="wait">
-        <motion.form 
+        <motion.form
           key={role}
-          onSubmit={handleLogin} 
+          onSubmit={handleLogin}
           noValidate
           variants={formVariants}
           initial="hidden"
@@ -118,9 +118,9 @@ const LoginPage = () => {
             error={error}
           />
 
-          <motion.button 
-            type="submit" 
-            className="btn-primary auth-btn-primary" 
+          <motion.button
+            type="submit"
+            className="btn-primary auth-btn-primary"
             disabled={loading}
             whileHover={{ scale: 1.02, backgroundColor: 'var(--accent-hover, var(--accent))' }}
             whileTap={{ scale: 0.95 }}

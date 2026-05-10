@@ -3,7 +3,7 @@ import { LuBell } from 'react-icons/lu';
 import TriageHeroCard from '../../components/domain/TriageHeroCard';
 import PatientRoster from '../../components/domain/PatientRoster';
 import UpcomingTimeline from '../../components/domain/UpcomingTimeline';
-import BottomNav from '../../components/layout/BottomNav';
+import DashboardLayout from '../../components/layout/DashboardLayout';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/features/CaregiverDashboard.css';
@@ -192,37 +192,46 @@ const CaregiverDashboard = () => {
 
   if (dashboardData.loading) {
     return (
-      <div className="cg-dashboard-container">
-        <div className="dashboard-skeleton">
-          <div className="skeleton-block" style={{ height: 56 }} />
-          <div className="skeleton-block" style={{ height: 200 }} />
-          <div className="skeleton-block" style={{ height: 120 }} />
-          <div className="skeleton-block" style={{ height: 160 }} />
+      <DashboardLayout caregiverMode>
+        <div className="cg-dashboard-container">
+          <div className="dashboard-skeleton">
+            <div className="skeleton-block" style={{ height: 56 }} />
+            <div className="skeleton-block" style={{ height: 200 }} />
+            <div className="skeleton-block" style={{ height: 120 }} />
+            <div className="skeleton-block" style={{ height: 160 }} />
+          </div>
         </div>
-        <BottomNav caregiverMode />
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (dashboardData.error) {
     return (
-      <div className="cg-dashboard-container">
-        <p style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          {dashboardData.error}
-        </p>
-        <BottomNav caregiverMode />
-      </div>
+      <DashboardLayout caregiverMode>
+        <div className="cg-dashboard-container">
+          <p style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            {dashboardData.error}
+          </p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="cg-dashboard-container" data-testid="caregiver-dashboard">
-      <CaregiverDashboardHeader userName={dashboardData.caregiverName} initials={dashboardData.initials} />
-      <TriageHeroCard status={dashboardData.triageStatus} message={dashboardData.triageMessage} />
-      <PatientRoster patients={dashboardData.roster} />
-      <UpcomingTimeline schedule={dashboardData.timeline} />
-      <BottomNav caregiverMode />
-    </div>
+    <DashboardLayout caregiverMode>
+      <div className="cg-dashboard-container" data-testid="caregiver-dashboard">
+        <CaregiverDashboardHeader userName={dashboardData.caregiverName} initials={dashboardData.initials} />
+        <div className="cg-dashboard-grid">
+          <div className="cg-dashboard-main">
+            <TriageHeroCard status={dashboardData.triageStatus} message={dashboardData.triageMessage} />
+            <PatientRoster patients={dashboardData.roster} />
+          </div>
+          <div className="cg-dashboard-aside">
+            <UpcomingTimeline schedule={dashboardData.timeline} />
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 };
 

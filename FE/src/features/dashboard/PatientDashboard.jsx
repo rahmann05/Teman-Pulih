@@ -4,7 +4,7 @@ import NextMedicationHero from '../../components/domain/NextMedicationHero';
 import QuickActionGrid from '../../components/domain/QuickActionGrid';
 import MedicationTimeline from '../../components/domain/MedicationTimeline';
 import HealthTipsCarousel from '../../components/domain/HealthTipsCarousel';
-import BottomNav from '../../components/layout/BottomNav';
+import DashboardLayout from '../../components/layout/DashboardLayout';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/features/Dashboard.css';
@@ -150,42 +150,51 @@ const PatientDashboard = () => {
 
   if (dashboardData.loading) {
     return (
-      <div className="dashboard-container">
-        <div className="dashboard-skeleton">
-          <div className="skeleton-block" style={{ height: 56 }} />
-          <div className="skeleton-block" style={{ height: 220 }} />
-          <div className="skeleton-block" style={{ height: 148 }} />
-          <div className="skeleton-block" style={{ height: 148 }} />
+      <DashboardLayout>
+        <div className="dashboard-container">
+          <div className="dashboard-skeleton">
+            <div className="skeleton-block" style={{ height: 56 }} />
+            <div className="skeleton-block" style={{ height: 220 }} />
+            <div className="skeleton-block" style={{ height: 148 }} />
+            <div className="skeleton-block" style={{ height: 148 }} />
+          </div>
         </div>
-        <BottomNav />
-      </div>
+      </DashboardLayout>
     );
   }
 
   if (dashboardData.error) {
     return (
-      <div className="dashboard-container">
-        <p style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          {dashboardData.error}
-        </p>
-        <BottomNav />
-      </div>
+      <DashboardLayout>
+        <div className="dashboard-container">
+          <p style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--text-secondary)' }}>
+            {dashboardData.error}
+          </p>
+        </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="dashboard-container" data-testid="patient-dashboard">
-      <DashboardHeader userName={dashboardData.patientName} initials={dashboardData.initials} />
-      <NextMedicationHero
-        time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada jadwal'}
-        medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
-        instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
-      />
-      <QuickActionGrid />
-      <MedicationTimeline schedule={dashboardData.timeline} />
-      <HealthTipsCarousel />
-      <BottomNav />
-    </div>
+    <DashboardLayout>
+      <div className="dashboard-container" data-testid="patient-dashboard">
+        <DashboardHeader userName={dashboardData.patientName} initials={dashboardData.initials} />
+        <div className="dashboard-grid">
+          <div className="dashboard-main">
+            <NextMedicationHero
+              time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada jadwal'}
+              medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
+              instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
+            />
+            <QuickActionGrid />
+          </div>
+          <div className="dashboard-aside">
+            <MedicationTimeline schedule={dashboardData.timeline} />
+            <HealthTipsCarousel />
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 };
 
