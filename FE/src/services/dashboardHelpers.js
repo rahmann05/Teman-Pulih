@@ -42,6 +42,8 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
       if (timeSlots.length === 0) {
         items.push({
           id: `${medication.id}-${schedule.id}`,
+          medicationId: medication.id,
+          scheduleId: schedule.id,
           time: 'Belum dijadwalkan',
           medName: medication.name,
           instruction: formatInstruction(medication),
@@ -54,6 +56,8 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
       timeSlots.forEach((time) => {
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
+          medicationId: medication.id,
+          scheduleId: schedule.id,
           time,
           medName: medication.name,
           instruction: formatInstruction(medication),

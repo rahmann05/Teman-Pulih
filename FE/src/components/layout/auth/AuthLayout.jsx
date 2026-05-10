@@ -32,13 +32,13 @@ const AuthLayout = ({ children }) => {
               <span className="logo-text">Teman Pulih</span>
             </Link>
           </div>
-          
+
           <div className="auth-trust-content">
             <div className="trust-main">
               <h2>Pulih lebih aman & terarah bersama pendamping digital.</h2>
               <p>Sistem terintegrasi untuk pasien dan keluarga. Pantau progres pemulihan dengan akurasi dan kemudahan.</p>
             </div>
-            
+
             {/* Trust Badges */}
             <div className="trust-badges">
               <div className="trust-badge">
@@ -50,7 +50,7 @@ const AuthLayout = ({ children }) => {
                 <span>Terpercaya</span>
               </div>
             </div>
-            
+
             {/* Floating Widget Mockup */}
             <div className="floating-widget reveal d2 visible">
               <div className="widget-icon">

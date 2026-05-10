@@ -1,7 +1,15 @@
 import { LuPill } from 'react-icons/lu';
 import heroImg from '../../../assets/images/hero-recovery.png';
 
-const NextMedicationHero = ({ time, medName, instruction }) => {
+const NextMedicationHero = ({
+  time,
+  medName,
+  instruction,
+  id,
+  medicationId,
+  scheduleId,
+  onMarkTaken
+}) => {
   return (
     <div className="hero-card" data-testid="next-med-hero">
       <img
@@ -24,9 +32,15 @@ const NextMedicationHero = ({ time, medName, instruction }) => {
           <h2 className="med-name">{medName}</h2>
           <p className="med-instruction">{instruction}</p>
         </div>
-        <button className="glass-btn" type="button">
-          Sudah Diminum
-        </button>
+        {id && (
+          <button
+            className="glass-btn"
+            type="button"
+            onClick={() => onMarkTaken && onMarkTaken(id, medicationId, scheduleId)}
+          >
+            Sudah Diminum
+          </button>
+        )}
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ dist/
 .env
 .env.*
 !.env.example
+.gemini
 AGENT.MD
 AGENT_STYLE_GUIDE.MD
 skills-lock.json

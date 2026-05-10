@@ -126,6 +126,11 @@ CREATE TABLE chat_history (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- PERFORMANCE INDEXES --
+CREATE INDEX IF NOT EXISTS idx_medications_user_id ON public.medications USING btree (user_id);
+CREATE INDEX IF NOT EXISTS idx_medication_logs_medication_id ON public.medication_logs USING btree (medication_id);
+CREATE INDEX IF NOT EXISTS idx_medication_schedules_medication_id ON public.medication_schedules USING btree (medication_id);
+
 -- TRIGGERS & FUNCTIONS --
 
 -- Function to handle new user registration from Supabase Auth

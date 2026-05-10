@@ -6,9 +6,19 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedToken = localStorage.getItem('token');
     const savedRole = localStorage.getItem('role');
+    const savedUserDataRaw = localStorage.getItem('user_data');
     const savedAllowedRolesRaw = localStorage.getItem('allowed_roles');
     let savedAllowedRoles = ['patient'];
-    
+    let savedUserData = null;
+
+    if (savedUserDataRaw) {
+      try {
+        savedUserData = JSON.parse(savedUserDataRaw);
+      } catch (e) {
+        console.error('Error parsing user_data from localStorage:', e);
+      }
+    }
+
     if (savedAllowedRolesRaw) {
       try {
         savedAllowedRoles = JSON.parse(savedAllowedRolesRaw);
@@ -18,28 +28,32 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (savedToken && savedRole) {
-      return { token: savedToken, role: savedRole, allowedRoles: savedAllowedRoles };
+      return { token: savedToken, role: savedRole, allowedRoles: savedAllowedRoles, ...savedUserData };
     }
     return null;
   });
 
-  const login = (token, role, allowedRoles) => {
+  const login = (token, role, allowedRoles, userData) => {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
     localStorage.setItem('allowed_roles', JSON.stringify(allowedRoles));
-    setUser({ token, role, allowedRoles });
+    if (userData) {
+      localStorage.setItem('user_data', JSON.stringify(userData));
+    }
+    setUser({ token, role, allowedRoles, ...userData });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('allowed_roles');
+    localStorage.removeItem('user_data');
     setUser(null);
   };
 
   const updateAllowedRoles = (newRoles) => {
     localStorage.setItem('allowed_roles', JSON.stringify(newRoles));
-    setUser(prev => prev ? { ...prev, allowedRoles: newRoles } : null);
+    setUser((prev) => prev ? { ...prev, allowedRoles: newRoles } : null);
   };
 
   return (

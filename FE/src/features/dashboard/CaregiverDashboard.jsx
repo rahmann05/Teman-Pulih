@@ -40,15 +40,15 @@ const CaregiverDashboard = () => {
   return (
     <DashboardLayout caregiverMode>
       <div className="cg-dashboard-container" data-testid="caregiver-dashboard">
-        <CaregiverDashboardHeader 
-          userName={dashboardData.caregiverName} 
-          initials={dashboardData.initials} 
+        <CaregiverDashboardHeader
+          userName={dashboardData.caregiverName}
+          initials={dashboardData.initials}
         />
         <div className="cg-dashboard-grid">
           <div className="cg-dashboard-main">
-            <TriageHeroCard 
-              status={dashboardData.triageStatus} 
-              message={dashboardData.triageMessage} 
+            <TriageHeroCard
+              status={dashboardData.triageStatus}
+              message={dashboardData.triageMessage}
             />
             <PatientRoster patients={dashboardData.roster} />
           </div>

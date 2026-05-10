@@ -45,9 +45,13 @@ const PatientDashboard = () => {
         <div className="dashboard-grid">
           <div className="dashboard-main">
             <NextMedicationHero
+              id={dashboardData.nextMedication?.id}
+              medicationId={dashboardData.nextMedication?.medicationId}
+              scheduleId={dashboardData.nextMedication?.scheduleId}
               time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada jadwal'}
               medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
               instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
+              onMarkTaken={dashboardData.markAsTakenAction}
             />
             <QuickActionGrid />
           </div>

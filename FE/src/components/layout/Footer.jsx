@@ -41,7 +41,7 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        
+
         <div className="footer-bottom">
           <div className="footer-copyright">
             © 2026 Teman Pulih · Tim CC26-PSU347
