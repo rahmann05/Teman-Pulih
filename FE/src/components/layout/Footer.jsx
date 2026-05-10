@@ -1,4 +1,5 @@
 import { LuHeartPulse } from 'react-icons/lu';
+import '../../styles/features/Footer.css';
 
 const Footer = () => {
   return (

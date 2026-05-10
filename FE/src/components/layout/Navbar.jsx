@@ -1,4 +1,5 @@
 import { LuHeartPulse, LuUser, LuLogOut, LuArrowLeftRight } from 'react-icons/lu';
+import '../../styles/features/Navbar.css';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -14,7 +15,7 @@ const Navbar = () => {
   return (
     <nav className="nav" aria-label="Main">
       <div className="logo">
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', color: 'inherit' }}>
+        <Link to="/">
           <div className="logo-mark">
             <LuHeartPulse size={18} />
           </div>

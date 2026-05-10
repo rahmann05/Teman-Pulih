@@ -1,0 +1,159 @@
+/* src/styles/features/Navbar.css */
+
+.nav {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 0;
+}
+
+.logo a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.logo-text {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 10px 18px;
+  border-radius: var(--radius-full);
+  transition: background 0.2s;
+  line-height: 1;
+}
+
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-solid {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  padding: 10px 22px;
+  border-radius: var(--radius-full);
+  transition: all 0.25s var(--spring);
+  line-height: 1;
+}
+
+.btn-solid:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.btn-solid:active {
+  transform: scale(0.97);
+}
+
+/* ── Tablet ───────────────────────────────────── */
+@media (min-width: 768px) {
+  .nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 32px 48px 0;
+  }
+
+  .logo a {
+    gap: 12px;
+  }
+
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+  }
+
+  .logo-text {
+    font-size: 26px;
+    font-weight: 800;
+    color: #fff;
+  }
+}
+
+/* ── Desktop ──────────────────────────────────── */
+@media (min-width: 1024px) {
+  .nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 32px clamp(40px, 5vw, 80px) 0;
+    max-width: 1440px;
+    margin: 0 auto;
+    z-index: 50;
+  }
+
+  .logo a {
+    gap: 16px;
+  }
+
+  .logo-mark {
+    width: 44px;
+    height: 44px;
+  }
+
+  .logo-text {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--text);
+  }
+
+  .btn-ghost {
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+    background: transparent;
+  }
+
+  .btn-ghost:hover {
+    background: var(--bg-muted);
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+
+  .btn-ghost, .btn-solid {
+    padding: 14px 32px;
+    font-size: 17px;
+  }
+}

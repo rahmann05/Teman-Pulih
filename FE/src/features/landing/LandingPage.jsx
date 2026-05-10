@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import '../../styles/features/LandingPage.css';
 import LandingHero from '../../components/domain/LandingHero';
 import LandingServiceChips from '../../components/domain/LandingServiceChips';
 import LandingFeatureGrid from '../../components/domain/LandingFeatureGrid';

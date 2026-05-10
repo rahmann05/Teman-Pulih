@@ -8,55 +8,42 @@ export const AuthProvider = ({ children }) => {
     const savedRole = localStorage.getItem('role');
     const savedAllowedRolesRaw = localStorage.getItem('allowed_roles');
     let savedAllowedRoles = ['patient'];
-    try {
-      if (savedAllowedRolesRaw && savedAllowedRolesRaw !== 'undefined') {
+    
+    if (savedAllowedRolesRaw) {
+      try {
         savedAllowedRoles = JSON.parse(savedAllowedRolesRaw);
+      } catch (e) {
+        console.error('Error parsing allowed_roles from localStorage:', e);
       }
-    } catch (e) { console.error('Error parsing allowed_roles', e); }
+    }
 
-    const savedUserDataRaw = localStorage.getItem('user_data');
-    let savedUserData = null;
-    try {
-      if (savedUserDataRaw && savedUserDataRaw !== 'undefined') {
-        savedUserData = JSON.parse(savedUserDataRaw);
-      }
-    } catch (e) { console.error('Error parsing user_data', e); }
-
-    return savedToken ? {
-      token: savedToken,
-      role: savedRole || 'patient',
-      allowed_roles: savedAllowedRoles,
-      ...savedUserData
-    } : null;
+    if (savedToken && savedRole) {
+      return { token: savedToken, role: savedRole, allowedRoles: savedAllowedRoles };
+    }
+    return null;
   });
-  const [loading] = useState(false);
 
-  const login = (token, role, allowedRoles, userData) => {
+  const login = (token, role, allowedRoles) => {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
     localStorage.setItem('allowed_roles', JSON.stringify(allowedRoles));
-    localStorage.setItem('user_data', JSON.stringify(userData));
-    setUser({ token, role, allowed_roles: allowedRoles, ...userData });
-  };
-
-  const switchRole = (newRole) => {
-    if (user?.allowed_roles?.includes(newRole)) {
-      localStorage.setItem('role', newRole);
-      setUser((prev) => ({ ...prev, role: newRole }));
-      window.location.reload(); // Reload to refresh data based on new role
-    }
+    setUser({ token, role, allowedRoles });
   };
 
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('allowed_roles');
-    localStorage.removeItem('user_data');
     setUser(null);
   };
 
+  const updateAllowedRoles = (newRoles) => {
+    localStorage.setItem('allowed_roles', JSON.stringify(newRoles));
+    setUser(prev => prev ? { ...prev, allowedRoles: newRoles } : null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, switchRole, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateAllowedRoles }}>
       {children}
     </AuthContext.Provider>
   );
