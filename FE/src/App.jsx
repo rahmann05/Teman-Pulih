@@ -14,6 +14,8 @@ const CaregiverDashboard = lazy(() => import('./features/dashboard/CaregiverDash
 const ScanPage = lazy(() => import('./features/scan/ScanPage'));
 const ScanCropPage = lazy(() => import('./features/scan/ScanCropPage'));
 const ScanResultPage = lazy(() => import('./features/scan/ScanResultPage'));
+const MedicationListPage = lazy(() => import('./features/medications/MedicationListPage'));
+const MedicationDetailPage = lazy(() => import('./features/medications/MedicationDetailPage'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -83,6 +85,24 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <PageTransition><ScanResultPage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Route Obat — Patient & Caregiver */}
+          <Route
+            path="/medications"
+            element={
+              <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
+                <PageTransition><MedicationListPage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/medications/:id"
+            element={
+              <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
+                <PageTransition><MedicationDetailPage /></PageTransition>
               </ProtectedRoute>
             }
           />
