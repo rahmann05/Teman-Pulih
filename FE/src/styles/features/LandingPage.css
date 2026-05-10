@@ -458,7 +458,7 @@
   .hero-desc { font-size: clamp(18px, 2.2vw, 24px); max-width: 650px; color: var(--text-secondary); }
 
   .features { padding: 64px clamp(40px, 5vw, 80px) 80px; max-width: 1100px; margin: 0 auto; }
-  .chips-section { position: sticky; top: 0; z-index: 100; padding: 16px 0; backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); display: flex; justify-content: center; }
+  .chips-section { position: sticky; top: 0; z-index: 100; padding: 16px 0; background: rgba(250, 248, 245, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border-light); display: flex; justify-content: center; }
   .chips-scroll { max-width: 1100px; padding: 0 80px; justify-content: center; overflow: visible; }
   .chip { padding: 12px 24px; font-size: 14px; }
   .features-grid { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: clamp(16px, 2vw, 24px); }
@@ -467,10 +467,15 @@
   .features-row { gap: 24px; }
 
   .stats { padding: 80px clamp(40px, 5vw, 80px); }
-  .stats-header, .stats-grid { max-width: 900px; margin: 0 auto; }
+  .stats-header, .stats-grid { max-width: 1100px; margin: 0 auto; }
+  .stats-header { margin-bottom: 48px; }
+  .stats-title { font-size: 36px; }
   .stats-grid { gap: 24px; }
+  
   .steps { padding: 80px clamp(40px, 5vw, 80px); }
-  .steps-header, .steps-list { max-width: 900px; margin: 0 auto; }
+  .steps-header, .steps-list { max-width: 1100px; margin: 0 auto; }
+  .steps-header { margin-bottom: 48px; }
+  .steps-title { font-size: 36px; }
 
   .testimonial { padding: 100px 80px; }
   .t-quote { font-size: 28px; max-width: 900px; margin: 0 auto 32px; }

@@ -1,7 +1,7 @@
 import { HiOutlineChevronRight } from 'react-icons/hi2';
-import featureScan from '../../assets/images/feature-scan.png';
-import featureMeds from '../../assets/images/feature-medication.png';
-import featureChat from '../../assets/images/feature-chatbot.png';
+import featureScan from '../../../assets/images/feature-scan.png';
+import featureMeds from '../../../assets/images/feature-medication.png';
+import featureChat from '../../../assets/images/feature-chatbot.png';
 
 const LandingFeatureGrid = () => {
   return (

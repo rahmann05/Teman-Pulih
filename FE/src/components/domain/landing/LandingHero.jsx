@@ -1,7 +1,7 @@
 import { HiOutlineArrowRight } from 'react-icons/hi2';
 import { Link } from 'react-router-dom';
-import Navbar from '../layout/Navbar';
-import heroImg from '../../assets/images/hero-recovery.png';
+import Navbar from '../../layout/Navbar';
+import heroImg from '../../../assets/images/hero-recovery.png';
 
 const LandingHero = () => {
   return (

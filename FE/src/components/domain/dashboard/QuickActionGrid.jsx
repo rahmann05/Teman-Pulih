@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { LuScanLine, LuPill, LuMessageCircle, LuUsers } from 'react-icons/lu';
-import scanImg   from '../../assets/images/feature-scan.png';
-import medImg    from '../../assets/images/feature-medication.png';
-import chatImg   from '../../assets/images/feature-chatbot.png';
-import familyImg from '../../assets/images/hero-recovery.png';
+import scanImg   from '../../../assets/images/feature-scan.png';
+import medImg    from '../../../assets/images/feature-medication.png';
+import chatImg   from '../../../assets/images/feature-chatbot.png';
+import familyImg from '../../../assets/images/hero-recovery.png';
 
 const ACTIONS = [
   {

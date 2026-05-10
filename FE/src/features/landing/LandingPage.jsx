@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
 import '../../styles/features/LandingPage.css';
-import LandingHero from '../../components/domain/LandingHero';
-import LandingServiceChips from '../../components/domain/LandingServiceChips';
-import LandingFeatureGrid from '../../components/domain/LandingFeatureGrid';
-import LandingStats from '../../components/domain/LandingStats';
-import LandingSteps from '../../components/domain/LandingSteps';
-import LandingTestimonial from '../../components/domain/LandingTestimonial';
-import LandingBottomCTA from '../../components/domain/LandingBottomCTA';
+import LandingHero from '../../components/domain/landing/LandingHero';
+import LandingServiceChips from '../../components/domain/landing/LandingServiceChips';
+import LandingFeatureGrid from '../../components/domain/landing/LandingFeatureGrid';
+import LandingStats from '../../components/domain/landing/LandingStats';
+import LandingSteps from '../../components/domain/landing/LandingSteps';
+import LandingTestimonial from '../../components/domain/landing/LandingTestimonial';
+import LandingBottomCTA from '../../components/domain/landing/LandingBottomCTA';
 import Footer from '../../components/layout/Footer';
 
 const LandingPage = () => {

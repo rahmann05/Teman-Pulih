@@ -1,10 +1,10 @@
 /* src/features/dashboard/PatientDashboard.jsx */
-import NextMedicationHero from '../../components/domain/NextMedicationHero';
-import QuickActionGrid from '../../components/domain/QuickActionGrid';
-import MedicationTimeline from '../../components/domain/MedicationTimeline';
-import HealthTipsCarousel from '../../components/domain/HealthTipsCarousel';
+import NextMedicationHero from '../../components/domain/dashboard/NextMedicationHero';
+import QuickActionGrid from '../../components/domain/dashboard/QuickActionGrid';
+import MedicationTimeline from '../../components/domain/medication/MedicationTimeline';
+import HealthTipsCarousel from '../../components/domain/dashboard/HealthTipsCarousel';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import DashboardHeader from '../../components/domain/DashboardHeader';
+import DashboardHeader from '../../components/domain/dashboard/DashboardHeader';
 import { usePatientDashboard } from '../../hooks/usePatientDashboard';
 import '../../styles/features/Dashboard.css';
 

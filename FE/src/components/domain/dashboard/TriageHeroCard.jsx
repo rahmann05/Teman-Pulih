@@ -1,5 +1,5 @@
 import { LuTriangleAlert, LuCircleCheck } from 'react-icons/lu';
-import heroImg from '../../assets/images/hero-recovery.png';
+import heroImg from '../../../assets/images/hero-recovery.png';
 
 const TriageHeroCard = ({ status, message }) => {
   const isAlert = status === 'alert';

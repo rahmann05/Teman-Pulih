@@ -1,9 +1,9 @@
 /* src/features/dashboard/CaregiverDashboard.jsx */
-import TriageHeroCard from '../../components/domain/TriageHeroCard';
-import PatientRoster from '../../components/domain/PatientRoster';
-import UpcomingTimeline from '../../components/domain/UpcomingTimeline';
+import TriageHeroCard from '../../components/domain/dashboard/TriageHeroCard';
+import PatientRoster from '../../components/domain/dashboard/PatientRoster';
+import UpcomingTimeline from '../../components/domain/dashboard/UpcomingTimeline';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import CaregiverDashboardHeader from '../../components/domain/CaregiverDashboardHeader';
+import CaregiverDashboardHeader from '../../components/domain/dashboard/CaregiverDashboardHeader';
 import { useCaregiverDashboard } from '../../hooks/useCaregiverDashboard';
 import '../../styles/features/CaregiverDashboard.css';
 
