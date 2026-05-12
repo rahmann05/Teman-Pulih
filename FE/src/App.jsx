@@ -9,6 +9,7 @@ import './styles/App.css';
 const LandingPage = lazy(() => import('./features/landing/LandingPage'));
 const LoginPage = lazy(() => import('./features/auth/LoginPage'));
 const RegisterPage = lazy(() => import('./features/auth/RegisterPage'));
+const AuthCallback = lazy(() => import('./features/auth/AuthCallback'));
 const PatientDashboard = lazy(() => import('./features/dashboard/PatientDashboard'));
 const CaregiverDashboard = lazy(() => import('./features/dashboard/CaregiverDashboard'));
 const ScanPage = lazy(() => import('./features/scan/ScanPage'));
@@ -55,6 +56,7 @@ const AnimatedRoutes = () => {
           <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
           <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
           <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+          <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
 
           {/* Route Khusus Patient */}
           <Route

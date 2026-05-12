@@ -33,7 +33,7 @@ const sendMessage = async (req, res) => {
         // Kita harus memastikan tidak ada role berturut-turut yang sama.
         let sanitizedHistory = [];
         let expectedRole = 'user';
-        
+
         for (const msg of historyData) {
             const role = msg.sender === 'ai' ? 'model' : 'user';
             if (role === expectedRole) {
@@ -54,7 +54,7 @@ const sendMessage = async (req, res) => {
 
         // 4. Inisialisasi model dan kirim pesan
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-        
+
         const chatSession = model.startChat({
             history: sanitizedHistory,
         });
@@ -89,7 +89,7 @@ const sendMessage = async (req, res) => {
 const getHistory = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         const { data, error } = await supabase
             .from('chat_history')
             .select('*')
@@ -97,7 +97,7 @@ const getHistory = async (req, res) => {
             .order('created_at', { ascending: true });
 
         if (error) throw error;
-        
+
         res.status(200).json(data);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -107,14 +107,14 @@ const getHistory = async (req, res) => {
 const clearHistory = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
         const { error } = await supabase
             .from('chat_history')
             .delete()
             .eq('user_id', userId);
 
         if (error) throw error;
-        
+
         res.status(200).json({ message: 'Riwayat chat berhasil dihapus' });
     } catch (error) {
         res.status(500).json({ error: error.message });

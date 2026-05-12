@@ -10,6 +10,7 @@ import AuthDivider from '../../components/ui/auth/AuthDivider';
 import AuthFormHeader from '../../components/ui/auth/AuthFormHeader';
 import api from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabaseClient';
 
 const LoginPage = () => {
   const [role, setRole] = useState('pasien');
@@ -65,6 +66,21 @@ const LoginPage = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    try {
+      localStorage.setItem('oauth_role', role === 'pasien' ? 'patient' : role);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message || 'Gagal login dengan Google.');
+    }
+  };
+
   // Define animation variants for the form
   const formVariants = {
     hidden: { opacity: 0, x: -20 },
@@ -81,7 +97,7 @@ const LoginPage = () => {
 
       <AuthToggle role={role} setRole={setRole} />
 
-      <SocialLoginButton onClick={() => console.log('Google login')} />
+      <SocialLoginButton onClick={handleGoogleLogin} />
 
       <AuthDivider />
 

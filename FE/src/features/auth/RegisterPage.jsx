@@ -8,6 +8,7 @@ import AuthDivider from '../../components/ui/auth/AuthDivider';
 import AuthFormHeader from '../../components/ui/auth/AuthFormHeader';
 import { useAuth } from '../../hooks/useAuth';
 import api from '../../services/api';
+import { supabase } from '../../lib/supabaseClient';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -44,6 +45,22 @@ const RegisterPage = () => {
     }
 
     return '';
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      // Default ke patient saat pendaftaran awal via Google
+      localStorage.setItem('oauth_role', 'patient');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      if (error) throw error;
+    } catch (err) {
+      setError(err.message || 'Gagal daftar dengan Google.');
+    }
   };
 
   const handleRegister = async (e) => {
@@ -93,7 +110,7 @@ const RegisterPage = () => {
         subtitle="Mulai perjalanan pemulihan Anda"
       />
 
-      <SocialLoginButton provider="Google" onClick={() => console.log('Google register')} />
+      <SocialLoginButton provider="Google" onClick={handleGoogleLogin} />
 
       <AuthDivider text="atau daftar dengan email" />
 

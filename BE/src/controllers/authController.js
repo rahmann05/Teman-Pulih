@@ -153,6 +153,131 @@ const login = async (req, res) => {
     }
 };
 
+// OAuth Login
+const oauthLogin = async (req, res) => {
+    try {
+        const { access_token, role } = req.body;
+        const normalizedRole = role?.trim().toLowerCase() || 'patient';
+
+        console.log('--- OAuth Login Attempt ---');
+        console.log('Role requested:', normalizedRole);
+
+        if (!access_token) {
+            return res.status(400).json({ error: 'Access token wajib disertakan.' });
+        }
+
+        // 1. Verifikasi token via Supabase
+        const { data: { user }, error: authError } = await supabase.auth.getUser(access_token);
+        
+        if (authError || !user) {
+            console.error('Auth verification error:', authError);
+            throw new Error('Token tidak valid atau kedaluwarsa.');
+        }
+
+        console.log('Authenticated User:', user.email);
+
+        // Create a scoped client with the user's token to satisfy RLS
+        const { createClient } = require('@supabase/supabase-js');
+        const userSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+            global: { headers: { Authorization: `Bearer ${access_token}` } }
+        });
+
+        // 2. Pastikan user ada di tabel public.users
+        let { data: userData, error: userError } = await userSupabase
+            .from('users')
+            .select('id, name, email')
+            .eq('auth_id', user.id)
+            .single();
+
+        if (userError || !userData) {
+            console.log('User not found in public.users, creating...');
+            const resolvedName = user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+            // This insert should now work because we're using the user's token
+            const { data: inserted, error: insertError } = await userSupabase
+                .from('users')
+                .insert([{ auth_id: user.id, name: resolvedName, email: user.email }])
+                .select('id, name, email')
+                .single();
+            
+            if (insertError) {
+                console.error('Failed to create user:', insertError);
+                throw insertError;
+            }
+            userData = inserted;
+        }
+
+        console.log('Internal User Data:', userData);
+
+        // 3. Pastikan role terdaftar di user_roles
+        const { data: roleData, error: roleLookupError } = await userSupabase
+            .from('roles')
+            .select('id')
+            .eq('name', normalizedRole)
+            .single();
+
+        if (roleLookupError || !roleData) {
+            console.error('Role lookup error:', roleLookupError);
+            // Don't throw, just use a default or log
+        } else {
+            console.log('Syncing role:', normalizedRole, 'ID:', roleData.id);
+            // Cek apakah user sudah punya role ini
+            const { data: existingUserRole } = await userSupabase
+                .from('user_roles')
+                .select('role_id')
+                .eq('user_id', userData.id)
+                .eq('role_id', roleData.id)
+                .single();
+
+            if (!existingUserRole) {
+                console.log('Adding new role to user');
+                await userSupabase
+                    .from('user_roles')
+                    .insert([{ user_id: userData.id, role_id: roleData.id }]);
+            }
+        }
+
+        // 4. Pastikan profile ada
+        const { data: profileData } = await userSupabase
+            .from('profiles')
+            .select('id')
+            .eq('user_id', userData.id)
+            .single();
+
+        if (!profileData) {
+            console.log('Creating missing profile');
+            await userSupabase
+                .from('profiles')
+                .insert([{ user_id: userData.id }]);
+        }
+
+        // 5. Ambil semua role yang dimiliki user untuk response
+        const { data: userRoles } = await userSupabase
+            .from('user_roles')
+            .select('roles (name)')
+            .eq('user_id', userData.id);
+        
+        const allowedRoles = userRoles?.map(ur => ur.roles.name) || [normalizedRole];
+
+        console.log('OAuth Login Success for:', user.email);
+
+        res.status(200).json({
+            message: 'OAuth Login successful',
+            user: {
+                id: userData.id,
+                auth_id: user.id,
+                email: user.email,
+                name: userData.name,
+                role: normalizedRole
+            },
+            allowed_roles: allowedRoles,
+            token: access_token
+        });
+    } catch (error) {
+        console.error('OAuth Login Error:', error);
+        res.status(401).json({ error: error.message });
+    }
+};
+
 // Get Me
 const getMe = async (req, res) => {
     try {
@@ -211,4 +336,4 @@ const refreshToken = async (req, res) => {
     }
 };
 
-module.exports = { register, login, getMe, refreshToken };
+module.exports = { register, login, oauthLogin, getMe, refreshToken };
