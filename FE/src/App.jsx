@@ -16,6 +16,7 @@ const ScanCropPage = lazy(() => import('./features/scan/ScanCropPage'));
 const ScanResultPage = lazy(() => import('./features/scan/ScanResultPage'));
 const MedicationListPage = lazy(() => import('./features/medications/MedicationListPage'));
 const MedicationDetailPage = lazy(() => import('./features/medications/MedicationDetailPage'));
+const ChatbotPage = lazy(() => import('./features/chatbot/ChatbotPage'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -85,6 +86,14 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <PageTransition><ScanResultPage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/chatbot"
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <PageTransition><ChatbotPage /></PageTransition>
               </ProtectedRoute>
             }
           />

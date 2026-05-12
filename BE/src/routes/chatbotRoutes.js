@@ -6,5 +6,6 @@ const { requireAuth } = require('../middleware/authMiddleware');
 router.use(requireAuth); // Protect all routes
 router.post('/message', chatbotController.sendMessage);
 router.get('/history', chatbotController.getHistory);
+router.delete('/history', chatbotController.clearHistory);
 
 module.exports = router;

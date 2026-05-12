@@ -1,6 +1,7 @@
 // src/context/AuthProvider.jsx
 import { useState } from 'react';
 import { AuthContext } from './AuthContext';
+import api from '../services/api';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
@@ -44,6 +45,11 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Attempt to clear chat history from database before logging out
+    if (localStorage.getItem('token')) {
+      api.delete('/chatbot/history').catch(console.error);
+    }
+
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('allowed_roles');

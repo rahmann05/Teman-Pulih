@@ -40,7 +40,7 @@ const LandingFeatureGrid = () => {
             <img src={featureChat} alt="Chatbot medis AI" className="f-card-img" />
             <div className="f-card-overlay" />
             <div className="f-card-content">
-              <div className="f-card-label">MedGemma</div>
+              <div className="f-card-label">Asisten</div>
               <div className="f-card-name">Chatbot AI</div>
             </div>
             <button className="f-card-btn" type="button" aria-label="Lihat detail chatbot AI">
