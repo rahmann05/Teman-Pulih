@@ -19,6 +19,7 @@ const MedicationListPage = lazy(() => import('./features/medications/MedicationL
 const MedicationDetailPage = lazy(() => import('./features/medications/MedicationDetailPage'));
 const ChatbotPage = lazy(() => import('./features/chatbot/ChatbotPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
+const FamilySyncPage = lazy(() => import('./features/profile/FamilySyncPage'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -124,6 +125,15 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
                 <PageTransition><ProfilePage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/family-sync"
+            element={
+              <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
+                <PageTransition><FamilySyncPage /></PageTransition>
               </ProtectedRoute>
             }
           />

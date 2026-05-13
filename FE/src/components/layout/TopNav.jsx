@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight } from 'react-icons/lu';
+import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight, LuUsers } from 'react-icons/lu';
 import { useAuth } from '../../hooks/useAuth';
 
 const NAV_ITEMS = [
@@ -7,6 +7,7 @@ const NAV_ITEMS = [
   { id: 'scan',  label: 'Scan',  icon: LuScanLine,      path: '/scan' },
   { id: 'obat',  label: 'Obat',  icon: LuPill,          path: '/medications' },
   { id: 'chat',  label: 'Chat',  icon: LuMessageCircle, path: '/chatbot' },
+  { id: 'family',  label: 'Family Sync',  icon: LuUsers, path: '/family-sync' },
 ];
 
 const TopNav = ({ caregiverMode = false }) => {

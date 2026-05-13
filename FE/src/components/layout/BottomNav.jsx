@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser } from 'react-icons/lu';
+import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuUsers } from 'react-icons/lu';
 
 const NAV_ITEMS = [
   { id: 'home',  label: 'Home',  icon: LuHouse,          path: '/dashboard' },
   { id: 'scan',  label: 'Scan',  icon: LuScanLine,      path: '/scan' },
   { id: 'obat',  label: 'Obat',  icon: LuPill,          path: '/medications' },
   { id: 'chat',  label: 'Chat',  icon: LuMessageCircle, path: '/chatbot' },
+  { id: 'family', label: 'Family', icon: LuUsers,          path: '/family-sync' },
   { id: 'profil', label: 'Profil', icon: LuUser,          path: '/profile' },
 ];
 

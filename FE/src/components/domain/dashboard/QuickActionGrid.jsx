@@ -34,7 +34,7 @@ const ACTIONS = [
     id:    'sync',
     label: 'Family\nSync',
     icon:  LuUsers,
-    path:  '/profile',
+    path:  '/family-sync',
     img:   familyImg,
     alt:   'Family sync',
   },

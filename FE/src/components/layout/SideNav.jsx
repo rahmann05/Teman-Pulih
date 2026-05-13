@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight } from 'react-icons/lu';
+import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight, LuUsers } from 'react-icons/lu';
 import { useAuth } from '../../hooks/useAuth';
 import '../../styles/features/SideNav.css';
 
@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { id: 'scan',  label: 'Scan Obat',  icon: LuScanLine,      path: '/scan' },
   { id: 'obat',  label: 'Jadwal Obat',  icon: LuPill,          path: '/medications' },
   { id: 'chat',  label: 'Konsultasi',  icon: LuMessageCircle, path: '/chatbot' },
+  { id: 'family',  label: 'Family Sync',  icon: LuUsers, path: '/family-sync' },
 ];
 
 const SideNav = ({ caregiverMode = false }) => {

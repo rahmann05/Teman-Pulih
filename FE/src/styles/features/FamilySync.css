@@ -1,0 +1,584 @@
+/* Family Sync styles */
+
+.family-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  background: var(--bg);
+  min-height: 100dvh;
+  padding: var(--space-5);
+  padding-bottom: 80px;
+}
+
+.family-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.family-back-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background var(--duration-fast);
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.family-back-btn:hover {
+  background: var(--bg-muted);
+}
+
+.family-header-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+}
+
+.family-error {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.family-invite-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  border: 1.5px solid var(--accent-light);
+}
+
+.family-invite-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.family-invite-title-icon {
+  color: var(--accent);
+}
+
+.family-invite-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.family-invite-row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.family-invite-input {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 48px;
+  transition: border-color var(--duration-fast);
+}
+
+.family-invite-input::placeholder {
+  color: var(--text-muted);
+}
+
+.family-invite-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.family-invite-input.error {
+  border-color: #dc2626;
+}
+
+.family-invite-btn {
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--accent);
+  color: var(--text-inverse);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 48px;
+  min-height: 48px;
+  transition: all var(--duration-fast) var(--spring);
+  box-shadow: 0 2px 12px rgba(196, 101, 58, 0.3);
+  border: none;
+  cursor: pointer;
+}
+
+.family-invite-btn:hover {
+  transform: translateY(-1px);
+}
+
+.family-invite-btn:active {
+  transform: scale(0.95);
+}
+
+.family-invite-btn:disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.family-invite-error {
+  font-size: var(--text-xs);
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.family-invite-success {
+  font-size: var(--text-xs);
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.family-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.family-section-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.family-section-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.family-section-count {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 22px;
+  text-align: center;
+}
+
+.family-request-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.family-request-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-left: 4px solid #d97706;
+}
+
+.family-request-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.family-request-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+
+.family-request-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.family-request-name {
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.family-request-email {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.family-request-date {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.family-request-actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.family-approve-btn,
+.family-reject-btn {
+  flex: 1;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-family: var(--font-heading);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  transition: all var(--duration-fast) var(--spring);
+  border: none;
+  cursor: pointer;
+}
+
+.family-approve-btn {
+  background: var(--accent);
+  color: var(--text-inverse);
+  box-shadow: 0 2px 12px rgba(196, 101, 58, 0.3);
+}
+
+.family-approve-btn:hover {
+  transform: translateY(-1px);
+}
+
+.family-approve-btn:active {
+  transform: scale(0.97);
+}
+
+.family-reject-btn {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+}
+
+.family-reject-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.family-reject-btn:active {
+  transform: scale(0.97);
+}
+
+.family-member-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.family-member-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  transition: transform var(--duration-fast) var(--spring);
+}
+
+.family-member-card:hover {
+  transform: translateY(-1px);
+}
+
+.family-member-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+
+.family-member-avatar--caregiver {
+  background: var(--sage-light);
+  color: var(--sage);
+}
+
+.family-member-avatar--patient {
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.family-member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.family-member-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.family-member-role {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.family-status-badge {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+.family-status-badge--active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.family-status-badge--pending {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.family-empty-state {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  border: 1px dashed var(--border);
+  text-align: center;
+}
+
+.family-empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--text-muted);
+}
+
+.family-empty-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+.family-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.family-skeleton-block {
+  border-radius: var(--radius-lg);
+  background: var(--bg-muted);
+  position: relative;
+  overflow: hidden;
+}
+
+.family-skeleton-block::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%);
+  animation: family-shimmer 1.4s infinite;
+}
+
+@keyframes family-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.family-invite-success,
+.family-invite-error {
+  animation: family-fade-in 250ms var(--ease-out-expo);
+}
+
+@keyframes family-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 520px) {
+  .family-container {
+    padding: var(--space-4);
+    padding-bottom: 80px;
+  }
+
+  .family-invite-card {
+    padding: var(--space-4);
+  }
+
+  .family-invite-input {
+    font-size: var(--text-xs);
+  }
+
+  .family-request-card {
+    padding: var(--space-3);
+  }
+
+  .family-request-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: var(--text-xs);
+  }
+
+  .family-request-name {
+    font-size: var(--text-sm);
+  }
+
+  .family-approve-btn,
+  .family-reject-btn {
+    font-size: var(--text-xs);
+    padding: var(--space-2) var(--space-3);
+    min-height: 40px;
+  }
+
+  .family-invite-row {
+    flex-direction: column;
+  }
+}
+
+@media (min-width: 768px) {
+  .family-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+
+  .family-invite-row {
+    flex-direction: row;
+  }
+
+  .family-member-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+  }
+
+  .family-request-card {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .family-request-actions {
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .family-approve-btn,
+  .family-reject-btn {
+    white-space: nowrap;
+    flex: unset;
+  }
+}
+
+@media (min-width: 1024px) {
+  .family-container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: var(--space-8) 0;
+    padding-bottom: var(--space-10);
+  }
+
+  .family-header {
+    padding: 0 0 var(--space-4);
+  }
+
+  .family-invite-card {
+    padding: var(--space-6);
+  }
+
+  .family-invite-input {
+    font-size: var(--text-base);
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .family-member-list {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .family-request-card {
+    padding: var(--space-5);
+  }
+
+  .family-request-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .family-empty-state {
+    padding: var(--space-10) var(--space-8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .family-member-card,
+  .family-approve-btn,
+  .family-reject-btn,
+  .family-invite-btn {
+    transition: none;
+  }
+
+  .family-invite-success,
+  .family-invite-error {
+    animation: none;
+  }
+
+  .family-skeleton-block::after {
+    animation: none;
+  }
+}
