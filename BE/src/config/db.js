@@ -34,7 +34,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Gunakan service role di server bila tersedia untuk akses tabel dengan RLS.
 const supabase = createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey);
 
+const createSupabaseClient = (accessToken) => {
+  if (!accessToken) {
+    return createClient(supabaseUrl, supabaseAnonKey);
+  }
+
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } }
+  });
+};
+
 module.exports = {
   query: (text, params) => pool.query(text, params),
-  supabase
+  supabase,
+  createSupabaseClient
 };

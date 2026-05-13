@@ -1,5 +1,3 @@
-const { supabase } = require('../config/db');
-
 const normalizePhone = (rawPhone) => {
     if (!rawPhone) return null;
     const cleaned = rawPhone.replace(/\s+/g, '').replace(/-/g, '');
@@ -9,11 +7,19 @@ const normalizePhone = (rawPhone) => {
     return cleaned;
 };
 
+const getSupabaseClient = (req) => {
+    if (!req.supabase) {
+        throw new Error('Supabase client is not initialized for this request.');
+    }
+    return req.supabase;
+};
+
 // Request access to a patient
 const requestAccess = async (req, res) => {
     try {
         const caregiverId = req.user.id; // From authMiddleware
         const { identifier } = req.body; // email or phone
+        const supabase = getSupabaseClient(req);
 
         if (!identifier) {
             return res.status(400).json({ error: 'Email atau nomor telepon pasien wajib diisi.' });
@@ -118,6 +124,7 @@ const approveAccess = async (req, res) => {
     try {
         const patientId = req.user.id;
         const { relation_id, status } = req.body; // status should be 'accepted' or 'rejected'
+        const supabase = getSupabaseClient(req);
 
         if (!['accepted', 'rejected'].includes(status)) {
             return res.status(400).json({ error: 'Status tidak valid.' });
@@ -145,6 +152,7 @@ const approveAccess = async (req, res) => {
 const getPendingRequests = async (req, res) => {
     try {
         const patientId = req.user.id;
+        const supabase = getSupabaseClient(req);
         
         const { data, error } = await supabase
             .from('family_relations')

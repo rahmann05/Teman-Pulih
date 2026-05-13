@@ -1,13 +1,20 @@
-const { supabase } = require('../config/db');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 // Inisialisasi Google Generative AI dengan API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
 
+const getSupabaseClient = (req) => {
+    if (!req.supabase) {
+        throw new Error('Supabase client is not initialized for this request.');
+    }
+    return req.supabase;
+};
+
 const sendMessage = async (req, res) => {
     try {
         const userId = req.user.id;
         const { message } = req.body;
+        const supabase = getSupabaseClient(req);
 
         if (!message) return res.status(400).json({ error: 'Message is required' });
 
@@ -89,6 +96,7 @@ const sendMessage = async (req, res) => {
 const getHistory = async (req, res) => {
     try {
         const userId = req.user.id;
+        const supabase = getSupabaseClient(req);
 
         const { data, error } = await supabase
             .from('chat_history')
@@ -107,6 +115,7 @@ const getHistory = async (req, res) => {
 const clearHistory = async (req, res) => {
     try {
         const userId = req.user.id;
+        const supabase = getSupabaseClient(req);
 
         const { error } = await supabase
             .from('chat_history')

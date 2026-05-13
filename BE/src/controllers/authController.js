@@ -281,33 +281,19 @@ const oauthLogin = async (req, res) => {
 // Get Me
 const getMe = async (req, res) => {
     try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) throw new Error('Token is missing');
-
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (error) throw error;
-
-        const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('id, name, email')
-            .eq('auth_id', user.id)
-            .single();
-
-        if (userError || !userData) {
-            return res.status(404).json({ error: 'Profil user tidak ditemukan.' });
+        if (!req.user) {
+            return res.status(401).json({ error: 'Unauthorized' });
         }
 
-        const allowedRoles = ['patient', 'caregiver'];
-        
-        // Active role is usually passed in header or managed by frontend
-        const activeRole = req.headers['x-active-role'] || 'patient';
+        const allowedRoles = req.user.allowed_roles || ['patient', 'caregiver'];
+        const activeRole = req.user.role || 'patient';
 
         res.status(200).json({
             user: {
-                id: userData.id,
-                auth_id: user.id,
-                email: userData.email || user.email,
-                name: userData.name,
+                id: req.user.id,
+                auth_id: req.user.auth_id,
+                email: req.user.email,
+                name: req.user.name,
                 role: activeRole
             },
             allowed_roles: allowedRoles

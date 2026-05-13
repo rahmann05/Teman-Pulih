@@ -1,5 +1,4 @@
 const db = require('../config/db');
-const { supabase } = require('../config/db');
 
 const canAccessPatient = async (caregiverId, patientId) => {
     const query = 'SELECT id FROM family_relations WHERE caregiver_id = $1 AND patient_id = $2 AND status = $3 LIMIT 1';
@@ -23,6 +22,13 @@ const resolveTargetPatientId = async (req, candidatePatientId) => {
     }
 
     return { patientId: req.user.id };
+};
+
+const getSupabaseClient = (req) => {
+    if (!req.supabase) {
+        throw new Error('Supabase client is not initialized for this request.');
+    }
+    return req.supabase;
 };
 
 // Ambil daftar obat beserta jadwalnya
@@ -68,6 +74,7 @@ const createMedication = async (req, res) => {
     try {
         const userId = req.user.id;
         const { patient_id, name, dosage, instructions, schedules } = req.body;
+        const supabase = getSupabaseClient(req);
 
         const { patientId, error: relationError } = await resolveTargetPatientId(req, patient_id);
         if (relationError) return res.status(403).json({ error: relationError });
@@ -119,6 +126,7 @@ const updateMedication = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, dosage, instructions } = req.body;
+        const supabase = getSupabaseClient(req);
 
         const queryFind = 'SELECT id, user_id FROM medications WHERE id = $1';
         const { rows: meds } = await db.query(queryFind, [id]);
@@ -149,6 +157,7 @@ const updateMedication = async (req, res) => {
 const deleteMedication = async (req, res) => {
     try {
         const { id } = req.params;
+        const supabase = getSupabaseClient(req);
         const queryFind = 'SELECT id, user_id FROM medications WHERE id = $1';
         const { rows: meds } = await db.query(queryFind, [id]);
         const medication = meds[0];
@@ -177,6 +186,7 @@ const markTaken = async (req, res) => {
     try {
         const { id } = req.params; // medication_id
         const { schedule_id, status } = req.body;
+        const supabase = getSupabaseClient(req);
 
         if (!status) {
             return res.status(400).json({ error: 'Status wajib diisi (taken/missed/skipped)' });

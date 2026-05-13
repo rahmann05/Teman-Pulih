@@ -1,13 +1,20 @@
-const { supabase } = require('../config/db');
 const axios = require('axios');
 const FormData = require('form-data');
 
 // URL dari Backend Machine Learning (misal Python FastAPI/Flask)
 const ML_BACKEND_URL = process.env.ML_API_URL || 'http://localhost:8000';
 
+const getSupabaseClient = (req) => {
+    if (!req.supabase) {
+        throw new Error('Supabase client is not initialized for this request.');
+    }
+    return req.supabase;
+};
+
 const scanPrescription = async (req, res) => {
     try {
         const userId = req.user.id; // Authentication Middleware Gateway
+        const supabase = getSupabaseClient(req);
         
         // Multer file interception di router memastikan file ada di req.file
         if (!req.file) {
@@ -75,6 +82,7 @@ const scanPrescription = async (req, res) => {
 const getOcrHistory = async (req, res) => {
     try {
         const userId = req.user.id;
+        const supabase = getSupabaseClient(req);
         
         // GATEWAY -> DB: Transaksi Riwayat
         const { data, error } = await supabase
@@ -96,6 +104,7 @@ const getOcrResultById = async (req, res) => {
     try {
         const { id } = req.params;
         const userId = req.user.id;
+        const supabase = getSupabaseClient(req);
         
         // GATEWAY -> DB: Detail Ekstraksi OCR
         const { data, error } = await supabase

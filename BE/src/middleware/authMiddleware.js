@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
-const { supabase } = require('../config/db');
+const { supabase, createSupabaseClient } = require('../config/db');
 
 const authenticateToken = (req, res, next) => {
     // Ambil token dari header Authorization: Bearer <token>
@@ -87,6 +87,7 @@ const requireAuth = async (req, res, next) => {
             role: activeRole,
             allowed_roles: allowedRoles
         };
+        req.supabase = createSupabaseClient(token);
         next();
     } catch (err) {
         console.error('Auth Middleware Error:', err.message);

@@ -1,5 +1,4 @@
 const db = require('../config/db');
-const { supabase } = require('../config/db');
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
@@ -11,6 +10,13 @@ const normalizePhone = (rawPhone) => {
     if (cleaned.startsWith('62')) return `+${cleaned}`;
     if (cleaned.startsWith('08')) return `+62${cleaned.slice(1)}`;
     return cleaned;
+};
+
+const getSupabaseClient = (req) => {
+    if (!req.supabase) {
+        throw new Error('Supabase client is not initialized for this request.');
+    }
+    return req.supabase;
 };
 
 // --- PROFIL ---
@@ -54,6 +60,7 @@ const updateProfile = async (req, res) => {
     try {
         const userId = req.user.id;
         const updates = { ...req.body };
+        const supabase = getSupabaseClient(req);
 
         if (updates.phone) {
             const normalizedPhone = normalizePhone(updates.phone);
@@ -85,6 +92,7 @@ const inviteFamily = async (req, res) => {
     try {
         const userId = req.user.id;
         const { identifier } = req.body; // Email atau nomor telepon yang diundang
+        const supabase = getSupabaseClient(req);
 
         if (!identifier) {
             return res.status(400).json({ error: 'Email atau nomor telepon wajib diisi.' });
@@ -147,6 +155,7 @@ const inviteFamily = async (req, res) => {
 const getFamilyMembers = async (req, res) => {
     try {
         const userId = req.user.id;
+        const supabase = getSupabaseClient(req);
         
         // GATEWAY -> DB: Ambil daftar relasi yang mencakup user ini (Bisa sebagai Patient atau Caregiver)
         const { data, error } = await supabase
