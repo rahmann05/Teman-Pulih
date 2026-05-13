@@ -1,5 +1,5 @@
 import { LuPill, LuChevronRight } from 'react-icons/lu';
-import MedicationProgressBar from './MedicationProgressBar';
+import MedicationProgressBar from '../../ui/medication/MedicationProgressBar';
 
 /**
  * Compute how many unique time slots a medication has in total.

@@ -1,3 +1,26 @@
+import StepItem from '../../ui/landing/StepItem';
+
+const STEPS_DATA = [
+  {
+    number: 1,
+    title: 'Buat Profil',
+    text: 'Daftar sebagai Pasien atau Caregiver. Tambahkan data dasar untuk pengalaman yang dipersonalisasi.',
+    delayClass: 'd1'
+  },
+  {
+    number: 2,
+    title: 'Scan Resep Anda',
+    text: 'Ambil foto etiket obat. AI membaca dan menjelaskan setiap instruksi dalam bahasa yang mudah dipahami.',
+    delayClass: 'd2'
+  },
+  {
+    number: 3,
+    title: 'Pantau & Pulih',
+    text: 'Terima pengingat, pantau progres kepatuhan, dan tanyakan hal medis ke chatbot AI kapan saja.',
+    delayClass: 'd3'
+  }
+];
+
 const LandingSteps = () => {
   return (
     <section className="steps">
@@ -6,27 +29,15 @@ const LandingSteps = () => {
         <h2 className="steps-title">Tiga Langkah Mudah</h2>
       </div>
       <div className="steps-list">
-        <div className="step reveal d1">
-          <div className="step-num">1</div>
-          <h3 className="step-name">Buat Profil</h3>
-          <p className="step-text">
-            Daftar sebagai Pasien atau Caregiver. Tambahkan data dasar untuk pengalaman yang dipersonalisasi.
-          </p>
-        </div>
-        <div className="step reveal d2">
-          <div className="step-num">2</div>
-          <h3 className="step-name">Scan Resep Anda</h3>
-          <p className="step-text">
-            Ambil foto etiket obat. AI membaca dan menjelaskan setiap instruksi dalam bahasa yang mudah dipahami.
-          </p>
-        </div>
-        <div className="step reveal d3">
-          <div className="step-num">3</div>
-          <h3 className="step-name">Pantau & Pulih</h3>
-          <p className="step-text">
-            Terima pengingat, pantau progres kepatuhan, dan tanyakan hal medis ke chatbot AI kapan saja.
-          </p>
-        </div>
+        {STEPS_DATA.map((step) => (
+          <StepItem
+            key={step.number}
+            number={step.number}
+            title={step.title}
+            text={step.text}
+            delayClass={step.delayClass}
+          />
+        ))}
       </div>
     </section>
   );

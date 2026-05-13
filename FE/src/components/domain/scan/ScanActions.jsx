@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { LuCamera, LuImagePlus } from 'react-icons/lu';
+import ScanActionButton from '../../ui/scan/ScanActionButton';
 
 /**
  * ScanActions — Camera and gallery upload buttons.
@@ -36,25 +37,21 @@ const ScanActions = ({ onFileSelect, disabled }) => {
         aria-hidden="true"
       />
 
-      <button
-        className="scan-action-btn scan-action-btn--primary"
+      <ScanActionButton
+        label="Ambil Foto"
+        icon={LuCamera}
         onClick={() => cameraRef.current?.click()}
         disabled={disabled}
-        aria-label="Ambil foto dari kamera"
-      >
-        <LuCamera size={18} />
-        <span>Ambil Foto</span>
-      </button>
+        variant="primary"
+      />
 
-      <button
-        className="scan-action-btn scan-action-btn--outline"
+      <ScanActionButton
+        label="Dari Galeri"
+        icon={LuImagePlus}
         onClick={() => galleryRef.current?.click()}
         disabled={disabled}
-        aria-label="Unggah dari galeri"
-      >
-        <LuImagePlus size={18} />
-        <span>Dari Galeri</span>
-      </button>
+        variant="outline"
+      />
     </div>
   );
 };

@@ -1,3 +1,5 @@
+import MedicationChip from '../../ui/medication/MedicationChip';
+
 /**
  * MedicationFilterChips — horizontal scroll filter pills for medication list.
  * @param {string}   activeFilter  - 'all' | 'today' | 'done'
@@ -12,16 +14,12 @@ const FILTERS = [
 const MedicationFilterChips = ({ activeFilter, onFilterChange }) => (
   <div className="med-filter-chips" role="tablist" aria-label="Filter jadwal obat">
     {FILTERS.map(({ key, label }) => (
-      <button
+      <MedicationChip
         key={key}
-        role="tab"
-        aria-selected={activeFilter === key}
-        className={`med-chip${activeFilter === key ? ' active' : ''}`}
+        label={label}
+        active={activeFilter === key}
         onClick={() => onFilterChange(key)}
-        type="button"
-      >
-        {label}
-      </button>
+      />
     ))}
   </div>
 );

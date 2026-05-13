@@ -1,3 +1,28 @@
+import StatCard from '../../ui/landing/StatCard';
+
+const STATS_DATA = [
+  {
+    value: '30–50%',
+    description: 'Pasien tidak patuh minum obat setelah rawat inap',
+    delayClass: 'd1'
+  },
+  {
+    value: '1/3',
+    description: 'Pasien salah memahami instruksi resep dokter',
+    delayClass: 'd2'
+  },
+  {
+    value: '24/7',
+    description: 'Akses chatbot medis kapan saja dibutuhkan',
+    delayClass: 'd3'
+  },
+  {
+    value: '2 min',
+    description: 'Waktu rata-rata scan dan terjemahkan resep obat',
+    delayClass: 'd4'
+  }
+];
+
 const LandingStats = () => {
   return (
     <section className="stats">
@@ -6,22 +31,14 @@ const LandingStats = () => {
         <h2 className="stats-title">Fakta Pemulihan</h2>
       </div>
       <div className="stats-grid">
-        <div className="stat reveal d1">
-          <div className="stat-value">30–50%</div>
-          <div className="stat-desc">Pasien tidak patuh minum obat setelah rawat inap</div>
-        </div>
-        <div className="stat reveal d2">
-          <div className="stat-value">1/3</div>
-          <div className="stat-desc">Pasien salah memahami instruksi resep dokter</div>
-        </div>
-        <div className="stat reveal d3">
-          <div className="stat-value">24/7</div>
-          <div className="stat-desc">Akses chatbot medis kapan saja dibutuhkan</div>
-        </div>
-        <div className="stat reveal d4">
-          <div className="stat-value">2 min</div>
-          <div className="stat-desc">Waktu rata-rata scan dan terjemahkan resep obat</div>
-        </div>
+        {STATS_DATA.map((stat, index) => (
+          <StatCard 
+            key={index}
+            value={stat.value}
+            description={stat.description}
+            delayClass={stat.delayClass}
+          />
+        ))}
       </div>
     </section>
   );

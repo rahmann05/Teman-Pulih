@@ -1,3 +1,5 @@
+/* src/components/ui/medication/MedicationProgressBar.jsx */
+
 /**
  * MedicationProgressBar — shows dose completion as a filled bar + text.
  * @param {number} taken  - number of doses taken

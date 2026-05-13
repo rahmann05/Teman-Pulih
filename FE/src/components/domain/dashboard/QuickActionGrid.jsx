@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom';
 import { LuScanLine, LuPill, LuMessageCircle, LuUsers } from 'react-icons/lu';
 import scanImg   from '../../../assets/images/feature-scan.png';
 import medImg    from '../../../assets/images/feature-medication.png';
 import chatImg   from '../../../assets/images/feature-chatbot.png';
 import familyImg from '../../../assets/images/hero-recovery.png';
+import ActionTile from '../../ui/dashboard/ActionTile';
 
 const ACTIONS = [
   {
@@ -47,22 +47,15 @@ const QuickActionGrid = () => {
         <h3 className="section-title">Layanan Cepat</h3>
       </div>
       <div className="quick-actions-grid" data-testid="quick-action-grid">
-        {ACTIONS.map(({ id, label, icon: Icon, path, img, alt }) => (
-          <Link key={id} to={path} className="action-card" aria-label={label.replace('\n', ' ')}>
-            <img
-              src={img}
-              alt={alt}
-              className="action-card-img"
-              loading="lazy"
-            />
-            <div className="action-card-overlay" aria-hidden="true" />
-            <div className="action-card-content">
-              <Icon size={20} className="action-icon" aria-hidden="true" />
-              <span className="action-label" style={{ whiteSpace: 'pre-line' }}>
-                {label}
-              </span>
-            </div>
-          </Link>
+        {ACTIONS.map(({ id, label, icon, path, img, alt }) => (
+          <ActionTile
+            key={id}
+            to={path}
+            label={label}
+            icon={icon}
+            image={img}
+            alt={alt}
+          />
         ))}
       </div>
     </div>

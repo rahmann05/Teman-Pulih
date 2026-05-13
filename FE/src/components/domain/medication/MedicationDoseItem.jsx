@@ -1,4 +1,4 @@
-import { LuCircleCheck, LuCircleX, LuClock } from 'react-icons/lu';
+import DoseStatusIcon from '../../ui/medication/DoseStatusIcon';
 
 /**
  * MedicationDoseItem — single row in the today's dose timeline.
@@ -8,25 +8,12 @@ import { LuCircleCheck, LuCircleX, LuClock } from 'react-icons/lu';
  * @param {string}   scheduleId - schedule ID (for logging)
  * @param {Function} onLog      - (medId, scheduleId, status) => void
  */
-const STATUS_META = {
-  taken:   { icon: LuCircleCheck, label: 'Sudah diminum',  cls: 'taken' },
-  missed:  { icon: LuCircleX,     label: 'Tidak diminum', cls: 'missed' },
-  pending: { icon: LuClock,       label: 'Belum',          cls: 'pending' },
-};
-
 const MedicationDoseItem = ({ time, status = 'pending', medId, scheduleId, onLog }) => {
-  const meta = STATUS_META[status] || STATUS_META.pending;
-  const Icon = meta.icon;
-
   return (
     <div className="med-dose-item" data-testid={`dose-item-${time}`}>
       <span className="med-dose-time">{time}</span>
 
-      <span className={`med-dose-status-icon ${meta.cls}`} aria-hidden="true">
-        <Icon size={16} />
-      </span>
-
-      <span className="med-dose-label">{meta.label}</span>
+      <DoseStatusIcon status={status} />
 
       {status === 'pending' && onLog && (
         <button

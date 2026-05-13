@@ -1,5 +1,35 @@
 import { LuHeartPulse } from 'react-icons/lu';
 import '../../styles/features/Footer.css';
+import FooterColumn from '../ui/layout/FooterColumn';
+
+const FOOTER_COLUMNS = [
+  {
+    title: 'Layanan',
+    links: [
+      { label: 'OCR Resep', href: '#' },
+      { label: 'Pengingat Obat', href: '#' },
+      { label: 'Chatbot Medis', href: '#' },
+      { label: 'Family Care', href: '#' },
+    ]
+  },
+  {
+    title: 'Perusahaan',
+    links: [
+      { label: 'Tentang Kami', href: '#' },
+      { label: 'Karir', href: '#' },
+      { label: 'Blog', href: '#' },
+      { label: 'Kontak', href: '#' },
+    ]
+  },
+  {
+    title: 'Bantuan',
+    links: [
+      { label: 'Pusat Bantuan', href: '#' },
+      { label: 'Ketentuan Layanan', href: '#' },
+      { label: 'Kebijakan Privasi', href: '#' },
+    ]
+  }
+];
 
 const Footer = () => {
   return (
@@ -19,26 +49,9 @@ const Footer = () => {
           </div>
 
           <div className="footer-grid">
-            <div className="footer-col">
-              <h4 className="footer-title">Layanan</h4>
-              <a href="#" className="footer-link">OCR Resep</a>
-              <a href="#" className="footer-link">Pengingat Obat</a>
-              <a href="#" className="footer-link">Chatbot Medis</a>
-              <a href="#" className="footer-link">Family Care</a>
-            </div>
-            <div className="footer-col">
-              <h4 className="footer-title">Perusahaan</h4>
-              <a href="#" className="footer-link">Tentang Kami</a>
-              <a href="#" className="footer-link">Karir</a>
-              <a href="#" className="footer-link">Blog</a>
-              <a href="#" className="footer-link">Kontak</a>
-            </div>
-            <div className="footer-col">
-              <h4 className="footer-title">Bantuan</h4>
-              <a href="#" className="footer-link">Pusat Bantuan</a>
-              <a href="#" className="footer-link">Ketentuan Layanan</a>
-              <a href="#" className="footer-link">Kebijakan Privasi</a>
-            </div>
+            {FOOTER_COLUMNS.map((col, index) => (
+              <FooterColumn key={index} title={col.title} links={col.links} />
+            ))}
           </div>
         </div>
 

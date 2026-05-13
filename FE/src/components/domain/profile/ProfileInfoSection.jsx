@@ -1,5 +1,12 @@
 import { LuUser } from 'react-icons/lu';
 import ProfileSectionTitle from '../../ui/profile/ProfileSectionTitle';
+import ProfileField from '../../ui/profile/ProfileField';
+
+const GENDER_OPTIONS = [
+  { value: 'Laki-laki', label: 'Laki-laki' },
+  { value: 'Perempuan', label: 'Perempuan' },
+  { value: 'Lainnya', label: 'Lainnya' },
+];
 
 const ProfileInfoSection = ({
   isEditing,
@@ -14,68 +21,45 @@ const ProfileInfoSection = ({
     <ProfileSectionTitle icon={LuUser} title="Informasi Pribadi" />
 
     <div className="profile-info-card">
-      {isEditing ? (
-        <>
-          <div className="profile-field">
-            <label className="profile-field-label" htmlFor="profile-phone">Telepon</label>
-            <input
-              id="profile-phone"
-              className="profile-field-input"
-              type="tel"
-              value={formData.phone}
-              onChange={onFieldChange('phone')}
-              placeholder="08... atau +62..."
-            />
-          </div>
+      <ProfileField
+        label="Telepon"
+        id="profile-phone"
+        type="tel"
+        value={isEditing ? formData.phone : (infoFields.find(f => f.label === 'Telepon')?.value)}
+        isEditing={isEditing}
+        onChange={onFieldChange('phone')}
+        placeholder="08... atau +62..."
+      />
 
-          <div className="profile-field">
-            <label className="profile-field-label" htmlFor="profile-address">Alamat</label>
-            <textarea
-              id="profile-address"
-              className="profile-field-input profile-field-textarea"
-              value={formData.address}
-              onChange={onFieldChange('address')}
-              placeholder="Masukkan alamat"
-              rows={3}
-            />
-          </div>
+      <ProfileField
+        label="Alamat"
+        id="profile-address"
+        type="textarea"
+        value={isEditing ? formData.address : (infoFields.find(f => f.label === 'Alamat')?.value)}
+        isEditing={isEditing}
+        onChange={onFieldChange('address')}
+        placeholder="Masukkan alamat"
+        rows={3}
+      />
 
-          <div className="profile-field">
-            <label className="profile-field-label" htmlFor="profile-birth">Tanggal Lahir</label>
-            <input
-              id="profile-birth"
-              className="profile-field-input"
-              type="date"
-              value={formData.birth_date}
-              onChange={onFieldChange('birth_date')}
-            />
-          </div>
+      <ProfileField
+        label="Tanggal Lahir"
+        id="profile-birth"
+        type="date"
+        value={isEditing ? formData.birth_date : (infoFields.find(f => f.label === 'Tanggal Lahir')?.value)}
+        isEditing={isEditing}
+        onChange={onFieldChange('birth_date')}
+      />
 
-          <div className="profile-field">
-            <label className="profile-field-label" htmlFor="profile-gender">Jenis Kelamin</label>
-            <select
-              id="profile-gender"
-              className="profile-field-select"
-              value={formData.gender}
-              onChange={onFieldChange('gender')}
-            >
-              <option value="">Pilih</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-              <option value="Lainnya">Lainnya</option>
-            </select>
-          </div>
-        </>
-      ) : (
-        infoFields.map((field) => (
-          <div key={field.label} className="profile-field">
-            <span className="profile-field-label">{field.label}</span>
-            <span className={`profile-field-value${field.isEmpty ? ' empty' : ''}`}>
-              {field.value}
-            </span>
-          </div>
-        ))
-      )}
+      <ProfileField
+        label="Jenis Kelamin"
+        id="profile-gender"
+        type="select"
+        value={isEditing ? formData.gender : (infoFields.find(f => f.label === 'Jenis Kelamin')?.value)}
+        isEditing={isEditing}
+        onChange={onFieldChange('gender')}
+        options={GENDER_OPTIONS}
+      />
     </div>
 
     <button

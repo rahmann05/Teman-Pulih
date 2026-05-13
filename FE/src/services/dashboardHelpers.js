@@ -53,7 +53,11 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
         return;
       }
 
-      timeSlots.forEach((time) => {
+      timeSlots.forEach((time, index) => {
+        // Jika sudah diminum (berdasarkan jumlah log), jangan masukkan ke timeline dashboard utama
+        // Ini memastikan 'Next Medication' selalu menunjukkan yang belum diminum.
+        if (index < takenCount) return;
+
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
           medicationId: medication.id,
