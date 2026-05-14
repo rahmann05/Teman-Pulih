@@ -63,18 +63,30 @@ const sendMessage = async (req, res) => {
         // RAG Integration: Ambil konteks yang relevan dari ChromaDB
         let ragContext = "";
         try {
-            const collection = await chromaClient.getCollection({ name: process.env.CHROMA_DATABASE || 'RAG-TemanPulih' });
-            
-            // Chroma Hybrid Search Query
-            const queryResults = await collection.query({
+            // Pengambilan data Info Penyakit
+            const penyakitCollection = await chromaClient.getCollection({ name: process.env.CHROMA_DATABASE || 'RAG-TemanPulih' });
+            const queryPenyakit = await penyakitCollection.query({
                 queryTexts: [message],
-                nResults: 3 // Ambil 3 chunk dokumen teratas
+                nResults: 2 // Ambil 2 chunk dokumen teratas untuk penyakit
             });
 
-            if (queryResults && queryResults.documents && queryResults.documents.length > 0) {
-                // Kombinasikan dokumen-dokumen yang relevan
-                const contextDocs = queryResults.documents[0];
-                ragContext = contextDocs.join("\n\n");
+            // Pengambilan data Info Obat
+            const obatCollection = await chromaClient.getCollection({ name: process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat' });
+            const queryObat = await obatCollection.query({
+                queryTexts: [message],
+                nResults: 2 // Ambil 2 chunk dokumen teratas untuk informasi obat
+            });
+
+            const combinedDocs = [];
+            if (queryPenyakit && queryPenyakit.documents && queryPenyakit.documents.length > 0) {
+                combinedDocs.push("--- INFO PENYAKIT ---\n" + queryPenyakit.documents[0].join("\n\n"));
+            }
+            if (queryObat && queryObat.documents && queryObat.documents.length > 0) {
+                combinedDocs.push("--- INFO OBAT ---\n" + queryObat.documents[0].join("\n\n"));
+            }
+            
+            if (combinedDocs.length > 0) {
+                ragContext = combinedDocs.join("\n\n");
             }
         } catch (chromaError) {
             console.error("ChromaDB Query Error:", chromaError.message);
