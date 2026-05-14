@@ -209,7 +209,7 @@
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--duration-fast);
-  min-height: 36px;
+  min-height: 44px;
   display: flex; align-items: center;
 }
 
@@ -267,6 +267,8 @@
   box-shadow: 0 2px 12px rgba(196, 101, 58, 0.35);
   border: none;
   cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
 }
 
 .chat-send-btn:hover { transform: scale(1.05); }
@@ -335,12 +337,12 @@
 @media (max-width: 520px) {
   .chat-header { padding: var(--space-3) var(--space-4); }
   .chat-header-avatar { width: 36px; height: 36px; font-size: 18px; }
-  .chat-header-name { font-size: var(--text-sm); }
-  .chat-bubble { font-size: var(--text-xs); padding: var(--space-2) var(--space-3); }
+  .chat-header-name { font-size: 14px; }
+  .chat-bubble { font-size: 13px; padding: var(--space-2) var(--space-3); }
   .chat-bubble-wrapper { max-width: 90%; }
-  .chat-input { font-size: var(--text-xs); }
-  .chat-send-btn { width: 40px; height: 40px; font-size: 16px; }
-  .chat-quick-chip { font-size: 11px; padding: var(--space-1) var(--space-3); min-height: 32px; }
+  .chat-input { font-size: 14px; }
+  .chat-send-btn { width: 44px; height: 44px; font-size: 16px; }
+  .chat-quick-chip { font-size: 13px; padding: var(--space-2) var(--space-4); min-height: 44px; }
 }
 
 @media (min-width: 768px) {
@@ -359,7 +361,7 @@
 
 @media (min-width: 1024px) {
   .chat-container {
-    max-width: 800px;
+    max-width: 900px;
     margin: var(--space-6) auto;
     height: calc(100dvh - 2 * var(--space-6));
     border-radius: var(--radius-2xl);
@@ -374,7 +376,7 @@
     padding: var(--space-6) var(--space-8);
     gap: var(--space-5);
   }
-  .chat-bubble-wrapper { max-width: 70%; }
+  .chat-bubble-wrapper { max-width: 75%; }
   .chat-bubble {
     font-size: var(--text-base);
     padding: var(--space-4) var(--space-5);

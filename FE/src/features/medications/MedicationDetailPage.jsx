@@ -110,65 +110,71 @@ const MedicationDetailPage = () => {
           <h1 className="med-list-title">{medication.name}</h1>
         </header>
 
-        {/* Info Grid */}
-        <section className="med-detail-info" aria-label="Informasi obat">
-          <div className="med-detail-field">
-            <span className="med-detail-label">Dosis</span>
-            <span className="med-detail-value">{medication.dosage || '—'}</span>
-          </div>
-          <div className="med-detail-field">
-            <span className="med-detail-label">Instruksi</span>
-            <span className="med-detail-value">{medication.instructions || '—'}</span>
-          </div>
-          {schedule && (
-            <>
-              <div className="med-detail-field">
-                <span className="med-detail-label">Frekuensi</span>
-                <span className="med-detail-value">{schedule.frequency || '—'}</span>
-              </div>
-              <div className="med-detail-field">
-                <span className="med-detail-label">Waktu</span>
-                <span className="med-detail-value">
-                  {Array.isArray(schedule.time_slots)
-                    ? schedule.time_slots.join(', ')
-                    : schedule.time_slots || '—'}
-                </span>
-              </div>
-              <div className="med-detail-field">
-                <span className="med-detail-label">Periode</span>
-                <span className="med-detail-value">
-                  {formatDate(schedule.start_date)} – {formatDate(schedule.end_date)}
-                </span>
-              </div>
-            </>
-          )}
-        </section>
+        {/* Detail Grid (Desktop Split Layout) */}
+        <div className="med-detail-grid">
+          {/* Info Grid (Left Side) */}
+          <section className="med-detail-info" aria-label="Informasi obat">
+            <div className="med-detail-field">
+              <span className="med-detail-label">Dosis</span>
+              <span className="med-detail-value">{medication.dosage || '—'}</span>
+            </div>
+            <div className="med-detail-field">
+              <span className="med-detail-label">Instruksi</span>
+              <span className="med-detail-value">{medication.instructions || '—'}</span>
+            </div>
+            {schedule && (
+              <>
+                <div className="med-detail-field">
+                  <span className="med-detail-label">Frekuensi</span>
+                  <span className="med-detail-value">{schedule.frequency || '—'}</span>
+                </div>
+                <div className="med-detail-field">
+                  <span className="med-detail-label">Waktu</span>
+                  <span className="med-detail-value">
+                    {Array.isArray(schedule.time_slots)
+                      ? schedule.time_slots.join(', ')
+                      : schedule.time_slots || '—'}
+                  </span>
+                </div>
+                <div className="med-detail-field">
+                  <span className="med-detail-label">Periode</span>
+                  <span className="med-detail-value">
+                    {formatDate(schedule.start_date)} – {formatDate(schedule.end_date)}
+                  </span>
+                </div>
+              </>
+            )}
+          </section>
 
-        {/* Today's Dose Timeline */}
-        <MedicationDoseTimeline
-          medication={medication}
-          logs={logs}
-          onLog={logDose}
-        />
+          {/* Right Side */}
+          <div className="med-detail-right">
+            {/* Today's Dose Timeline */}
+            <MedicationDoseTimeline
+              medication={medication}
+              logs={logs}
+              onLog={logDose}
+            />
 
-        {/* Action Buttons */}
-        <div className="med-detail-actions">
-          <button
-            className="med-edit-btn"
-            type="button"
-            onClick={() => setShowEdit(true)}
-            aria-label="Edit obat"
-          >
-            <LuPencil size={16} /> Edit
-          </button>
-          <button
-            className="med-delete-btn"
-            type="button"
-            onClick={() => setShowConfirm(true)}
-            aria-label="Hapus obat"
-          >
-            <LuTrash2 size={16} /> Hapus
-          </button>
+            {/* Action Buttons */}
+            <div className="med-detail-actions">
+              <button
+                className="med-edit-btn"
+                type="button"
+                onClick={() => setShowEdit(true)}
+                aria-label="Edit obat"
+              >
+                <LuPencil size={16} /> Edit
+              </button>
+              <button
+                className="med-delete-btn"
+                type="button"
+                onClick={() => setShowConfirm(true)}
+                aria-label="Hapus obat"
+              >
+                <LuTrash2 size={16} /> Hapus
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

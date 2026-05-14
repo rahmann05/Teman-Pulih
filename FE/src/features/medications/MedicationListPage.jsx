@@ -24,6 +24,7 @@ const MedicationListPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const {
+    medications,
     filteredMedications,
     logs,
     loading,
@@ -33,6 +34,13 @@ const MedicationListPage = () => {
     addMedication,
     fetchAll,
   } = useMedications(isCaregiver ? selectedPatientId : undefined);
+
+  // Calculate real compliance from logs
+  const calculateCompliance = () => {
+    if (!logs || logs.length === 0) return 0; // Reset to 0 if no data
+    const taken = logs.filter(l => l.status === 'taken').length;
+    return Math.round((taken / logs.length) * 100);
+  };
 
   const handleAdd = async (data) => {
     await addMedication(data);
@@ -69,6 +77,24 @@ const MedicationListPage = () => {
           onFilterChange={setActiveFilter}
         />
 
+        {/* Desktop Overview Banner */}
+        <div className="med-overview-banner">
+          <div className="med-overview-stat">
+            <div className="med-overview-value">{medications.length}</div>
+            <div className="med-overview-label">Total Daftar Obat</div>
+          </div>
+          <div className="med-overview-stat">
+            <div className="med-overview-value">{calculateCompliance()}%</div>
+            <div className="med-overview-label">Kepatuhan Total</div>
+          </div>
+          <div className="med-overview-stat">
+            <div className="med-overview-value">
+              {medications.filter(m => m.medication_schedules?.length > 0).length}
+            </div>
+            <div className="med-overview-label">Memiliki Jadwal Rutin</div>
+          </div>
+        </div>
+
         {/* Content */}
         {loading ? (
           <div className="med-skeleton">
@@ -91,6 +117,34 @@ const MedicationListPage = () => {
               />
             ))}
           </div>
+        )}
+
+        {/* Log History Section */}
+        {!loading && logs.length > 0 && (
+          <section className="med-history-section">
+            <h2 className="med-section-title">Riwayat Aktivitas</h2>
+            <div className="med-history-list">
+              {logs.slice(0, 10).map((log) => {
+                const med = medications.find((m) => m.id === log.medication_id);
+                return (
+                  <div key={log.id} className="med-history-item">
+                    <div className={`med-history-status ${log.status}`}>
+                      {log.status === 'taken' ? 'Diminum' : log.status === 'missed' ? 'Terlewat' : 'Lewati'}
+                    </div>
+                    <div className="med-history-info">
+                      <span className="med-history-name">{med?.name || 'Obat'}</span>
+                      <span className="med-history-time">
+                        {new Date(log.taken_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {log.time_slot}
+                      </span>
+                    </div>
+                    <div className="med-history-date">
+                      {new Date(log.taken_at).toLocaleDateString([], { day: 'numeric', month: 'short' })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
         )}
 
         {/* FAB — Add Medication */}
