@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { chromaClient } = require('../config/chroma.js');
 
 // Inisialisasi Google Generative AI dengan API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
@@ -59,6 +60,27 @@ const sendMessage = async (req, res) => {
             .from('chat_history')
             .insert([{ user_id: userId, message, sender: 'user' }]);
 
+        // RAG Integration: Ambil konteks yang relevan dari ChromaDB
+        let ragContext = "";
+        try {
+            const collection = await chromaClient.getCollection({ name: process.env.CHROMA_DATABASE || 'RAG-TemanPulih' });
+            
+            // Chroma Hybrid Search Query
+            const queryResults = await collection.query({
+                queryTexts: [message],
+                nResults: 3 // Ambil 3 chunk dokumen teratas
+            });
+
+            if (queryResults && queryResults.documents && queryResults.documents.length > 0) {
+                // Kombinasikan dokumen-dokumen yang relevan
+                const contextDocs = queryResults.documents[0];
+                ragContext = contextDocs.join("\n\n");
+            }
+        } catch (chromaError) {
+            console.error("ChromaDB Query Error:", chromaError.message);
+            // Tetap lanjutkan meskipun ChromaDB error (fallback ke Gemini murni)
+        }
+
         // 4. Inisialisasi model dan kirim pesan
         const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
@@ -66,10 +88,25 @@ const sendMessage = async (req, res) => {
             history: sanitizedHistory,
         });
 
-        // Jika riwayat kosong, sisipkan instruksi awal sebagai konteks tersembunyi pada pesan pertama
+        // Modifikasi Prompt untuk menyertakan RAG Context
+        let systemPrompt = `Anda adalah asisten medis digital bernama Teman Pulih Chatbot. Anda membantu pasien pasca-rawat inap. Berikan jawaban yang empatik, profesional, mudah dipahami, dan berbahasa Indonesia. Jangan mendiagnosis secara medis secara pasti. `;
+        
+        let promptWithContext = `Pertanyaan Pengguna: "${message}"\n\n`;
+        
+        if (ragContext) {
+            promptWithContext += `\nReferensi Informasi Medis (gunakan sebagai panduan primer jika relevan dengan pertanyaan):\n"""\n${ragContext}\n"""\n\nJawablah pertanyaan tersebut berdasarkan referensi medis di atas jika sesuai. Jika referensi tidak cukup menjawab, gunakan pengetahuan Anda dengan tetap mengedepankan keamanan pasien.`;
+        }
+
         let finalMessage = message;
         if (historyData.length === 0) {
-            finalMessage = `Sebagai informasi awal, Anda adalah asisten medis digital bernama Chatbot AI di aplikasi Teman Pulih. Anda membantu pasien pasca-rawat inap. Berikan jawaban yang empatik, profesional, mudah dipahami, dan berbahasa Indonesia. Jangan mendiagnosis secara medis secara pasti, melainkan arahkan untuk konsultasi dokter bila berbahaya. Pertanyaan pertama pengguna: ${message}`;
+            finalMessage = `${systemPrompt}\n\n${promptWithContext}`;
+        } else {
+            // Jika sudah ada riwayat, tambahkan sedikit reminder konteks jika ada RAG data
+            if (ragContext) {
+                 finalMessage = `Konteks Medis Ekstra (gunakan jika relevan):\n${ragContext}\n\nPertanyaan: ${message}`;
+            } else {
+                 finalMessage = message;
+            }
         }
 
         const result = await chatSession.sendMessage(finalMessage);
