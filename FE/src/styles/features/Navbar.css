@@ -108,7 +108,11 @@
   .logo-text {
     font-size: 26px;
     font-weight: 800;
-    color: #fff;
+    color: var(--text);
+  }
+
+  .btn-ghost {
+    color: var(--text-secondary);
   }
 }
 
