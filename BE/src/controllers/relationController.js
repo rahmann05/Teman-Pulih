@@ -89,29 +89,6 @@ const requestAccess = async (req, res) => {
 
         if (relationError) throw relationError;
 
-        // Trigger Notification via Edge Function
-        // Using HTTP request to the Edge Function URL directly or via Supabase client if configured
-        const edgeFunctionUrl = process.env.SUPABASE_EDGE_FUNCTION_URL || 'https://dbirwtkutyhvywhexwhr.supabase.co/functions/v1/whatsapp-reminder';
-        
-        try {
-            await fetch(edgeFunctionUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`
-                },
-                body: JSON.stringify({
-                    type: 'caregiver_request',
-                    relation_id: relation.id,
-                    patient_id: patientId,
-                    caregiver_id: caregiverId,
-                    message: `Halo, ada pengguna yang ingin mengakses jadwal obat Anda sebagai Caregiver. Jika ini benar Anda, silakan buka aplikasi Teman Pulih untuk menyetujui permintaan ini.`
-                })
-            });
-        } catch (fetchError) {
-            console.error("Failed to trigger edge function for notification:", fetchError);
-            // We don't fail the whole request if notification fails, just log it.
-        }
 
         res.status(200).json({ message: 'Permintaan akses berhasil dikirim ke pasien.', relation });
     } catch (error) {
