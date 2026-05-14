@@ -36,7 +36,23 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
     const schedules = medication.medication_schedules || [];
     schedules.forEach((schedule) => {
       const timeSlots = parseTimeSlots(schedule.time_slots);
-      const takenCount = logs.filter((log) => log.schedule_id === schedule.id && log.status === 'taken').length;
+      const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+      
+      // Get unique time slots taken today for this schedule
+      const takenTodaySlots = new Set(
+        logs
+          .filter((log) => {
+            const logDate = log.taken_at ? new Date(log.taken_at).toLocaleDateString('en-CA') : null;
+            return (
+              log.schedule_id === schedule.id && 
+              log.status === 'taken' && 
+              logDate === todayStr &&
+              log.time_slot // Ensure time_slot matches system
+            );
+          })
+          .map((log) => log.time_slot)
+      );
+
       const totalCount = Math.max(timeSlots.length, 1);
 
       if (timeSlots.length === 0) {
@@ -47,16 +63,15 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
           time: 'Belum dijadwalkan',
           medName: medication.name,
           instruction: formatInstruction(medication),
-          progress: `${takenCount}/${totalCount} diminum`,
+          progress: `${takenTodaySlots.size}/${totalCount} diminum`,
           state: 'upcoming',
         });
         return;
       }
 
-      timeSlots.forEach((time, index) => {
-        // Jika sudah diminum (berdasarkan jumlah log), jangan masukkan ke timeline dashboard utama
-        // Ini memastikan 'Next Medication' selalu menunjukkan yang belum diminum.
-        if (index < takenCount) return;
+      timeSlots.forEach((time) => {
+        // Jika slot ini sudah diminum hari ini, jangan masukkan ke timeline dashboard utama
+        if (takenTodaySlots.has(time)) return;
 
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
@@ -65,7 +80,7 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
           time,
           medName: medication.name,
           instruction: formatInstruction(medication),
-          progress: `${takenCount}/${totalCount} diminum`,
+          progress: `${takenTodaySlots.size}/${totalCount} diminum`,
           state: 'upcoming',
         });
       });
@@ -90,7 +105,22 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
     const schedules = medication.medication_schedules || [];
     schedules.forEach((schedule) => {
       const timeSlots = parseTimeSlots(schedule.time_slots);
-      const takenCount = logs.filter((log) => log.schedule_id === schedule.id && log.status === 'taken').length;
+      const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+      
+      const takenTodaySlots = new Set(
+        logs
+          .filter((log) => {
+            const logDate = log.taken_at ? new Date(log.taken_at).toLocaleDateString('en-CA') : null;
+            return (
+              log.schedule_id === schedule.id && 
+              log.status === 'taken' && 
+              logDate === todayStr &&
+              log.time_slot
+            );
+          })
+          .map((log) => log.time_slot)
+      );
+
       const totalCount = Math.max(timeSlots.length, 1);
 
       if (timeSlots.length === 0) {
@@ -100,7 +130,7 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
           patient: patientName,
           name: medication.name,
           desc: formatInstruction(medication),
-          progress: `${takenCount}/${totalCount} diminum`,
+          progress: `${takenTodaySlots.size}/${totalCount} diminum`,
         });
         return;
       }
@@ -112,7 +142,7 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
           patient: patientName,
           name: medication.name,
           desc: formatInstruction(medication),
-          progress: `${takenCount}/${totalCount} diminum`,
+          progress: `${takenTodaySlots.size}/${totalCount} diminum`,
         });
       });
     });

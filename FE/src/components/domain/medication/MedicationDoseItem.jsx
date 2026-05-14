@@ -20,7 +20,7 @@ const MedicationDoseItem = ({ time, status = 'pending', medId, scheduleId, onLog
           className="med-dose-action-btn"
           type="button"
           aria-label={`Tandai ${time} sudah diminum`}
-          onClick={() => onLog(medId, scheduleId, 'taken')}
+          onClick={() => onLog(medId, scheduleId, 'taken', time)}
         >
           Tandai Diminum
         </button>

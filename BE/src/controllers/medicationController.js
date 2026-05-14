@@ -185,7 +185,7 @@ const deleteMedication = async (req, res) => {
 const markTaken = async (req, res) => {
     try {
         const { id } = req.params; // medication_id
-        const { schedule_id, status } = req.body;
+        const { schedule_id, status, time_slot } = req.body;
         const supabase = getSupabaseClient(req);
 
         if (!status) {
@@ -203,11 +203,33 @@ const markTaken = async (req, res) => {
         const { error: relationError } = await resolveTargetPatientId(req, medication.user_id);
         if (relationError) return res.status(403).json({ error: relationError });
 
+        // Prevent duplicate logs for the same medication, schedule, and time_slot on the same day
+        if (time_slot) {
+            const todayStart = new Date();
+            todayStart.setHours(0, 0, 0, 0);
+            const todayEnd = new Date();
+            todayEnd.setHours(23, 59, 59, 999);
+
+            const { data: existingLogs, error: checkError } = await supabase
+                .from('medication_logs')
+                .select('id')
+                .eq('medication_id', medication.id)
+                .eq('time_slot', time_slot)
+                .gte('taken_at', todayStart.toISOString())
+                .lte('taken_at', todayEnd.toISOString());
+
+            if (checkError) throw checkError;
+            if (existingLogs && existingLogs.length > 0) {
+                return res.status(409).json({ error: 'Jadwal ini sudah dicatat hari ini.' });
+            }
+        }
+
         const { data, error } = await supabase
             .from('medication_logs')
             .insert([{ 
                 medication_id: medication.id, 
                 schedule_id: schedule_id || null, 
+                time_slot: time_slot || null,
                 status, 
                 taken_at: new Date().toISOString() 
             }])

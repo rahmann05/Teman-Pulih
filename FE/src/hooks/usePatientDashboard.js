@@ -63,11 +63,15 @@ export const usePatientDashboard = () => {
   }, [loadDashboard]);
 
   const markAsTakenAction = async (compositeId, medicationId, scheduleId) => {
+    // Extract time_slot from compositeId (medicationId-scheduleId-timeSlot)
+    const timeSlot = compositeId.split('-')[2];
+
     startTransition(async () => {
       addOptimisticLog(compositeId);
       try {
         await api.post(`/medications/${medicationId}/taken`, {
           schedule_id: scheduleId,
+          time_slot: timeSlot,
           status: 'taken'
         });
         await loadDashboard(); // REFRESH ACTUAL STATE

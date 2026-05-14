@@ -65,9 +65,14 @@ export const useMedications = (patientId) => {
     await fetchAll();
   }, [fetchAll]);
 
-  const logDose = useCallback(async (medId, scheduleId, status) => {
-    await markTakenApi(medId, { schedule_id: scheduleId, status });
-    await fetchAll();
+  const logDose = useCallback(async (medId, scheduleId, status, timeSlot) => {
+    try {
+      await markTakenApi(medId, { schedule_id: scheduleId, status, time_slot: timeSlot });
+      await fetchAll();
+    } catch (err) {
+      console.error('Failed to log dose:', err);
+      alert(err.response?.data?.error || 'Gagal mencatat obat. Silakan coba lagi.');
+    }
   }, [fetchAll]);
 
   // --- Derived filtered list ---

@@ -36,9 +36,18 @@ const getDaysRemaining = (schedules = []) => {
  */
 const MedicationCard = ({ med, logs = [], onClick }) => {
   const totalSlots = getTotalSlots(med.medication_schedules);
-  const takenCount = logs.filter(
-    (l) => l.medication_id === med.id && l.status === 'taken'
-  ).length;
+  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
+  const takenToday = logs.filter((l) => {
+    const logDate = l.taken_at ? new Date(l.taken_at).toLocaleDateString('en-CA') : null;
+    return (
+      l.medication_id === med.id &&
+      l.status === 'taken' &&
+      logDate === todayStr &&
+      l.time_slot // Ensure time_slot is not null
+    );
+  });
+  // Use a Set to ensure we count unique time slots
+  const takenCount = new Set(takenToday.map((l) => l.time_slot)).size;
   const daysLeft = getDaysRemaining(med.medication_schedules);
 
   const isActiveToday = med.medication_schedules?.some((s) => {

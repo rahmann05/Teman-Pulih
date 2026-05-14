@@ -4,8 +4,12 @@ import MedicationDoseItem from './MedicationDoseItem';
  * Determine status of a time slot based on today's logs.
  */
 const resolveStatus = (time, medId, logs) => {
+  const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD local
   const log = logs.find(
-    (l) => l.medication_id === medId && l.time_slot === time
+    (l) => {
+      const logDate = l.taken_at ? new Date(l.taken_at).toLocaleDateString('en-CA') : null;
+      return l.medication_id === medId && l.time_slot === time && logDate === todayStr;
+    }
   );
   return log?.status || 'pending';
 };

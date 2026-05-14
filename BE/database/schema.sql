@@ -103,6 +103,7 @@ CREATE TABLE medication_logs (
     id SERIAL PRIMARY KEY,
     medication_id INTEGER NOT NULL REFERENCES medications(id) ON DELETE CASCADE,
     schedule_id INTEGER REFERENCES medication_schedules(id) ON DELETE SET NULL,
+    time_slot VARCHAR(20), -- e.g., "08:00"
     taken_at TIMESTAMPTZ,
     status VARCHAR(50) DEFAULT 'taken' CHECK (status IN ('taken', 'missed', 'skipped')),
     created_at TIMESTAMPTZ DEFAULT NOW()

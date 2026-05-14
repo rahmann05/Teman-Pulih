@@ -37,7 +37,7 @@ export const deleteMedication = (id) =>
 /**
  * Log a dose status (taken / missed / skipped).
  * @param {string} id - Medication ID.
- * @param {object} body - { schedule_id?, status: 'taken'|'missed'|'skipped' }
+ * @param {object} body - { schedule_id?, time_slot?, status: 'taken'|'missed'|'skipped' }
  */
 export const markTaken = (id, body) =>
   api.post(`/medications/${id}/taken`, body);
