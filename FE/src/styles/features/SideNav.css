@@ -20,6 +20,7 @@
     z-index: 50;
     padding: var(--space-6) 0;
     transition: width var(--duration-normal) var(--ease);
+    overflow-x: hidden;
   }
 
   .sidenav-top, .sidenav-bottom {
@@ -63,7 +64,7 @@
     flex-direction: column;
     gap: var(--space-2);
     width: 100%;
-    padding: 0 var(--space-3);
+    padding: 0;
   }
 
   .sidenav-item, .sidenav-action-btn {
@@ -107,38 +108,9 @@
   }
 }
 
-/* ── Desktop (Expanded Sidebar) ─────────────── */
+/* ── Desktop (Hiding Sidebar in favor of TopNav) ─────────────── */
 @media (min-width: 1024px) {
   .sidenav-desktop {
-    width: 260px;
-    padding: var(--space-6) var(--space-4);
-  }
-
-  .sidenav-top, .sidenav-bottom {
-    align-items: stretch;
-  }
-
-  .sidenav-brand {
-    justify-content: flex-start;
-    gap: var(--space-3);
-    padding: 0 var(--space-2);
-  }
-
-  .logo-text {
-    display: block;
-  }
-
-  .sidenav-menu {
-    padding: 0;
-  }
-
-  .sidenav-item, .sidenav-action-btn {
-    justify-content: flex-start;
-    padding: 0 var(--space-4);
-    gap: var(--space-3);
-  }
-
-  .sidenav-label {
-    display: block;
+    display: none;
   }
 }

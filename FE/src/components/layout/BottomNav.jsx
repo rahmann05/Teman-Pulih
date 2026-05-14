@@ -2,12 +2,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuUsers } from 'react-icons/lu';
 
 const NAV_ITEMS = [
-  { id: 'home',  label: 'Home',  icon: LuHouse,          path: '/dashboard' },
-  { id: 'scan',  label: 'Scan',  icon: LuScanLine,      path: '/scan' },
-  { id: 'obat',  label: 'Obat',  icon: LuPill,          path: '/medications' },
-  { id: 'chat',  label: 'Chat',  icon: LuMessageCircle, path: '/chatbot' },
+  { id: 'home',   label: 'Home',   icon: LuHouse,          path: '/dashboard' },
+  { id: 'obat',   label: 'Obat',   icon: LuPill,           path: '/medications' },
+  { id: 'scan',   label: 'Scan',   icon: LuScanLine,       path: '/scan' },
+  { id: 'chat',   label: 'Chat',   icon: LuMessageCircle,  path: '/chatbot' },
   { id: 'family', label: 'Family', icon: LuUsers,          path: '/family-sync' },
-  { id: 'profil', label: 'Profil', icon: LuUser,          path: '/profile' },
+  { id: 'profil', label: 'Profil', icon: LuUser,           path: '/profile' },
 ];
 
 const BottomNav = ({ caregiverMode = false }) => {
@@ -29,12 +29,12 @@ const BottomNav = ({ caregiverMode = false }) => {
           <Link
             key={id}
             to={path === '/dashboard' ? homePath : path}
-            className={`bottom-nav-item${isScan ? ' bottom-nav-scan' : ''}${active && !isScan ? ' active' : ''}`}
+            className={`bottom-nav-item${(id === 'scan' || id === 'chat') ? ' bottom-nav-highlight' : ''}${active && !(id === 'scan' || id === 'chat') ? ' active' : ''}`}
             aria-label={label}
             aria-current={active ? 'page' : undefined}
           >
-            {isScan ? (
-              <span className="scan-fab" aria-hidden="true">
+            {(id === 'scan' || id === 'chat') ? (
+              <span className={`highlight-fab ${id}`} aria-hidden="true">
                 <Icon size={22} />
               </span>
             ) : (

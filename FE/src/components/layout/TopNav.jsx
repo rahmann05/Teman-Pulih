@@ -1,13 +1,15 @@
+/* src/components/layout/TopNav.jsx */
 import { Link, useLocation } from 'react-router-dom';
-import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight, LuUsers } from 'react-icons/lu';
+import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight, LuUsers, LuBell } from 'react-icons/lu';
 import { useAuth } from '../../hooks/useAuth';
+import '../../styles/features/TopNav.css';
 
 const NAV_ITEMS = [
-  { id: 'home',  label: 'Home',  icon: LuHouse,          path: '/dashboard' },
-  { id: 'scan',  label: 'Scan',  icon: LuScanLine,      path: '/scan' },
-  { id: 'obat',  label: 'Obat',  icon: LuPill,          path: '/medications' },
-  { id: 'chat',  label: 'Chat',  icon: LuMessageCircle, path: '/chatbot' },
-  { id: 'family',  label: 'Family Sync',  icon: LuUsers, path: '/family-sync' },
+  { id: 'home',   label: 'Beranda',     icon: LuHouse,          path: '/dashboard' },
+  { id: 'obat',   label: 'Jadwal Obat', icon: LuPill,           path: '/medications' },
+  { id: 'scan',   label: 'Scan Obat',   icon: LuScanLine,       path: '/scan' },
+  { id: 'chat',   label: 'Konsultasi',  icon: LuMessageCircle,  path: '/chatbot' },
+  { id: 'family', label: 'Family Sync', icon: LuUsers,          path: '/family-sync' },
 ];
 
 const TopNav = ({ caregiverMode = false }) => {
@@ -26,53 +28,66 @@ const TopNav = ({ caregiverMode = false }) => {
     switchRole(otherRole);
   };
 
+  const initials = user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : 'TP';
+
   return (
-    <nav className="top-nav-desktop" aria-label="Desktop Navigation">
-      <div className="top-nav-left">
-        <Link to={homePath} className="top-nav-brand">
-          <div className="logo-mark">
-            <LuHeartPulse size={20} />
+    <header className="topnav-desktop" aria-label="Desktop Top Navigation">
+      <div className="topnav-container">
+        <div className="topnav-left">
+          <Link to={homePath} className="topnav-brand">
+            <div className="logo-mark">
+              <LuHeartPulse size={24} />
+            </div>
+            <span className="logo-text">Teman Pulih</span>
+          </Link>
+        </div>
+
+        <nav className="topnav-menu">
+          {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
+            const active = isActive(path === '/dashboard' ? homePath : path);
+            return (
+              <Link
+                key={id}
+                to={path === '/dashboard' ? homePath : path}
+                className={`topnav-item${active ? ' active' : ''}`}
+              >
+                <Icon size={18} />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="topnav-right">
+          <div className="topnav-actions">
+            {user?.allowed_roles?.length > 1 && (
+              <button onClick={handleRoleSwitch} className="topnav-action-btn" title="Tukar Mode">
+                <LuArrowLeftRight size={18} />
+                <span>Tukar Mode</span>
+              </button>
+            )}
+            <button className="topnav-action-btn" title="Notifikasi">
+              <LuBell size={18} />
+            </button>
           </div>
-          <span className="logo-text">Teman Pulih</span>
-        </Link>
-      </div>
 
-      <div className="top-nav-center">
-        {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
-          const active = isActive(path === '/dashboard' ? homePath : path);
+          <div className="topnav-divider" />
 
-          return (
-            <Link
-              key={id}
-              to={path === '/dashboard' ? homePath : path}
-              className={`top-nav-item${active ? ' active' : ''}`}
-              aria-label={label}
-              aria-current={active ? 'page' : undefined}
-            >
-              <Icon size={18} className="top-nav-icon" />
-              <span>{label}</span>
+          <div className="topnav-user">
+            <div className="user-info">
+              <span className="user-greeting">Halo,</span>
+              <span className="user-name">{user?.name || 'Pasien'}</span>
+            </div>
+            <Link to="/profile" className="user-avatar-btn" title="Profil Saya">
+              <div className="topnav-avatar">{initials}</div>
             </Link>
-          );
-        })}
+            <button onClick={logout} className="logout-icon-btn" title="Keluar">
+              <LuLogOut size={18} />
+            </button>
+          </div>
+        </div>
       </div>
-
-      <div className="top-nav-right">
-        {user?.allowed_roles?.length > 1 && (
-          <button onClick={handleRoleSwitch} className="btn-ghost role-switch-btn" title="Tukar Role">
-            <LuArrowLeftRight size={18} />
-          </button>
-        )}
-
-        <Link to="/profile" className={`top-nav-item${isActive('/profile') ? ' active' : ''}`}>
-          <LuUser size={18} className="top-nav-icon" />
-          <span>Profil</span>
-        </Link>
-
-        <button onClick={logout} className="btn-ghost logout-btn" title="Keluar">
-          <LuLogOut size={18} />
-        </button>
-      </div>
-    </nav>
+    </header>
   );
 };
 

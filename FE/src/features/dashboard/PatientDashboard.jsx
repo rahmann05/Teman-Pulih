@@ -57,9 +57,9 @@ const PatientDashboard = () => {
           </div>
           <div className="dashboard-aside">
             <MedicationTimeline schedule={dashboardData.timeline} />
-            <HealthTipsCarousel />
           </div>
         </div>
+        <HealthTipsCarousel />
       </div>
     </DashboardLayout>
   );

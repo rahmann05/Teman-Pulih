@@ -1,5 +1,5 @@
 import { LuPill } from 'react-icons/lu';
-import heroImg from '../../../assets/images/hero-recovery.png';
+import heroImg from '../../../assets/images/dashboard-hero-patient.png';
 import HeroCard from '../../ui/HeroCard';
 
 const NextMedicationHero = ({

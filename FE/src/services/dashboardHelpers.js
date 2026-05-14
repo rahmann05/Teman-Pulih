@@ -6,17 +6,36 @@ export const getInitials = (name = '') => {
   return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 };
 
+export const cleanTime = (time) => {
+  if (!time) return '';
+  // Remove brackets and quotes that might come from stringified JSON/DB exports
+  return String(time).replace(/[\[\]"]/g, '').trim();
+};
+
 export const parseTimeSlots = (timeSlots) => {
   if (!timeSlots) return [];
-  if (Array.isArray(timeSlots)) return timeSlots;
-  return String(timeSlots)
-    .split(',')
-    .map((slot) => slot.trim())
-    .filter(Boolean);
+  
+  let slots = [];
+  if (Array.isArray(timeSlots)) {
+    slots = timeSlots;
+  } else {
+    // Check if it's a stringified JSON array
+    if (typeof timeSlots === 'string' && timeSlots.trim().startsWith('[') && timeSlots.trim().endsWith(']')) {
+      try {
+        slots = JSON.parse(timeSlots);
+      } catch (e) {
+        slots = timeSlots.split(',').map(s => s.trim());
+      }
+    } else {
+      slots = String(timeSlots).split(',').map((slot) => slot.trim());
+    }
+  }
+
+  return slots.map(cleanTime).filter(Boolean);
 };
 
 export const toMinutes = (time) => {
-  const [hours = '0', minutes = '0'] = String(time).split(':');
+  const [hours = '0', minutes = '0'] = String(cleanTime(time)).split(':');
   return Number(hours) * 60 + Number(minutes);
 };
 

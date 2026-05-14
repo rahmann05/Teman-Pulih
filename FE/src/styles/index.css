@@ -136,40 +136,51 @@ ul, ol { list-style: none; }
 /* Scroll reveal */
 .reveal {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transform: translateY(16px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
 }
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
-.reveal.d1 { transition-delay: 0.08s; }
-.reveal.d2 { transition-delay: 0.16s; }
-.reveal.d3 { transition-delay: 0.24s; }
-.reveal.d4 { transition-delay: 0.32s; }
+.reveal.d1 { transition-delay: 0.04s; }
+.reveal.d2 { transition-delay: 0.08s; }
+.reveal.d3 { transition-delay: 0.12s; }
+.reveal.d4 { transition-delay: 0.16s; }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
 }
 
 /* ============================================
-   Desktop & Tablet Layout overrides (Sidebar)
+   Layout Responsive Flow
    ============================================ */
 .app-main-wrapper {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-}
-.app-main {
-  flex: 1;
-  width: 100%;
+  min-height: 100dvh;
 }
 
-@media (min-width: 768px) {
+/* Tablet: Use Sidebar (Row) */
+@media (min-width: 768px) and (max-width: 1023px) {
   .app-main-wrapper {
     flex-direction: row;
   }
-  
+}
+
+/* Desktop: Use TopNav (Column) */
+@media (min-width: 1024px) {
+  .app-main-wrapper {
+    flex-direction: column;
+  }
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (min-width: 768px) {
   .bottom-nav { 
     display: none !important; 
   }

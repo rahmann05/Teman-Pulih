@@ -1,0 +1,203 @@
+/* src/styles/features/TopNav.css */
+
+.topnav-desktop {
+  display: none;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.8);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  border-bottom: 1px solid var(--border-light);
+  z-index: 1000;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.04);
+}
+
+.topnav-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 var(--space-8);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topnav-left {
+  flex: 1;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.topnav-menu {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.topnav-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+}
+
+.topnav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: var(--text) !important;
+  flex-shrink: 0;
+}
+
+.topnav-brand .logo-mark {
+  width: 44px;
+  height: 44px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(196, 101, 58, 0.35);
+  flex-shrink: 0;
+}
+
+.topnav-brand .logo-text {
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--text) !important;
+  display: block;
+  white-space: nowrap;
+}
+
+.topnav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px 18px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s var(--ease-out-expo);
+  border: 1px solid transparent;
+}
+
+.topnav-item:hover {
+  color: var(--accent);
+  background: var(--bg-muted);
+}
+
+.topnav-item.active {
+  color: var(--accent);
+  background: var(--accent-light);
+  border-color: rgba(196, 101, 58, 0.1);
+}
+
+.topnav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.topnav-action-btn {
+  background: var(--bg-muted);
+  border: none;
+  color: var(--text-secondary);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.topnav-action-btn:hover {
+  background: var(--border-light);
+  color: var(--text);
+  transform: translateY(-1px);
+}
+
+.topnav-divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-light);
+  margin: 0 var(--space-2);
+}
+
+.topnav-user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.user-greeting {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--font-heading);
+}
+
+.topnav-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.25);
+  transition: transform 0.2s;
+}
+
+.user-avatar-btn:hover .topnav-avatar {
+  transform: scale(1.05);
+}
+
+.logout-icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.logout-icon-btn:hover {
+  color: #ef4444;
+}
+
+@media (min-width: 1024px) {
+  .topnav-desktop {
+    display: block;
+  }
+}
