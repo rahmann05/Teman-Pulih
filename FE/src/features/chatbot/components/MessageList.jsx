@@ -26,7 +26,7 @@ export const MessageList = () => {
         ))
       )}
 
-      {isSending && <ChatTyping />}
+      {isSending && !messages.some(m => m.isStreaming) && <ChatTyping />}
       <div ref={messagesEndRef} />
     </main>
   );

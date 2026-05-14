@@ -5,12 +5,23 @@ export const ChatBubble = ({ message }) => {
   return (
     <div className={`chat-bubble-wrapper chat-bubble-wrapper--${message.sender}`}>
       <div className={`chat-bubble-avatar chat-bubble-avatar--${message.sender}`}>
-        {message.sender === 'ai' ? <LuHeartPulse /> : ''}
+        {message.sender === 'ai' ? (
+          <img src="/assets/asep.png" alt="Asep" className="chat-avatar-image" />
+        ) : (
+          ''
+        )}
       </div>
       <div>
         <div className={`chat-bubble chat-bubble--${message.sender}`}>
           {message.sender === 'ai' ? (
-            <FormattedText text={message.message} />
+            <>
+              {message.message ? (
+                <FormattedText text={message.message} />
+              ) : message.isStreaming ? (
+                <span className="chat-thinking">Sedang berpikir</span>
+              ) : null}
+              {message.isStreaming && <span className="chat-bubble-cursor" />}
+            </>
           ) : (
             message.message
           )}

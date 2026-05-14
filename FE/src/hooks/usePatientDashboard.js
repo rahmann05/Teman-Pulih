@@ -45,6 +45,7 @@ export const usePatientDashboard = () => {
         initials: getInitials(profile?.name || user?.name || 'Teman Pulih'),
         nextMedication: timeline[0] || null,
         timeline,
+        is_emr_completed: profile?.is_emr_completed ?? true // Default true if undefined to prevent blocking
       });
     } catch (error) {
       setDashboardData({
@@ -54,6 +55,7 @@ export const usePatientDashboard = () => {
         initials: getInitials(user?.name || 'Teman Pulih'),
         nextMedication: null,
         timeline: [],
+        is_emr_completed: true // Prevent showing modal on error
       });
     }
   }, [user?.id, user?.name]); // Use ID for stability and name for linter completeness

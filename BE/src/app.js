@@ -1,5 +1,10 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+
+// Fix Chroma/Transformers cache permission error
+process.env.XENOVA_CACHE_DIR = path.join(process.cwd(), '.cache');
+process.env.TRANSFORMERS_CACHE = path.join(process.cwd(), '.cache');
 
 const authRoutes = require('./routes/authRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
@@ -7,6 +12,7 @@ const medicationRoutes = require('./routes/medicationRoutes');
 const ocrRoutes = require('./routes/ocrRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const relationRoutes = require('./routes/relationRoutes');
+const emrRoutes = require('./routes/emrRoutes');
 const profileController = require('./controllers/profileController');
 const { requireAuth } = require('./middleware/authMiddleware');
 
@@ -34,6 +40,7 @@ app.use('/api/chatbot', chatbotRoutes);           // Gateway -> Python ML Backen
 app.use('/api/ocr', ocrRoutes);                   // Gateway -> ML Backend & Supabase Storage
 app.use('/api/profile', profileRoutes);           // Gateway -> Supabase DB (Profile records)
 app.use('/api/relations', relationRoutes);        // Gateway -> Caregiver request & approval
+app.use('/api/emr', emrRoutes);                   // Gateway -> Document Parsing
 
 // Khusus Family Routes (supaya strukturnya rapi sesuai dokumentasi)
 app.post('/api/family/invite', requireAuth, profileController.inviteFamily);

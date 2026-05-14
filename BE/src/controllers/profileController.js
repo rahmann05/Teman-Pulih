@@ -33,7 +33,15 @@ const getProfile = async (req, res) => {
             return res.status(404).json({ error: 'User tidak ditemukan' });
         }
 
-        const profileQuery = 'SELECT id, user_id, phone, address, birth_date, gender FROM profiles WHERE user_id = $1';
+        const profileQuery = `
+            SELECT id, user_id, phone, address, birth_date, gender,
+                   blood_type, height, weight, allergies, chronic_conditions,
+                   emergency_contact_name, emergency_contact_phone,
+                   smoking_habit, alcohol_habit, is_emr_completed,
+                   past_illnesses, last_illness, surgeries_history,
+                   routine_medications, blood_pressure_range
+            FROM profiles WHERE user_id = $1
+        `;
         const { rows: profileRows } = await db.query(profileQuery, [userId]);
         const profile = profileRows[0];
         
@@ -47,7 +55,23 @@ const getProfile = async (req, res) => {
             phone: profile?.phone || null,
             address: profile?.address || null,
             birth_date: profile?.birth_date || null,
-            gender: profile?.gender || null
+            gender: profile?.gender || null,
+            // EMR Fields
+            blood_type: profile?.blood_type || null,
+            height: profile?.height || null,
+            weight: profile?.weight || null,
+            allergies: profile?.allergies || null,
+            chronic_conditions: profile?.chronic_conditions || null,
+            past_illnesses: profile?.past_illnesses || null,
+            last_illness: profile?.last_illness || null,
+            surgeries_history: profile?.surgeries_history || null,
+            routine_medications: profile?.routine_medications || null,
+            blood_pressure_range: profile?.blood_pressure_range || null,
+            emergency_contact_name: profile?.emergency_contact_name || null,
+            emergency_contact_phone: profile?.emergency_contact_phone || null,
+            smoking_habit: profile?.smoking_habit || false,
+            alcohol_habit: profile?.alcohol_habit || false,
+            is_emr_completed: profile?.is_emr_completed || false
         };
 
         res.status(200).json({ profile: formattedProfile });

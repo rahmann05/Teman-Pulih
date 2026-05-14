@@ -5,6 +5,7 @@ import MedicationTimeline from '../../components/domain/medication/MedicationTim
 import HealthTipsCarousel from '../../components/domain/dashboard/HealthTipsCarousel';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DashboardHeader from '../../components/domain/dashboard/DashboardHeader';
+import EMROnboardingModal from '../../components/layout/EMROnboardingModal';
 import { usePatientDashboard } from '../../hooks/usePatientDashboard';
 import '../../styles/features/Dashboard.css';
 
@@ -61,6 +62,11 @@ const PatientDashboard = () => {
         </div>
         <HealthTipsCarousel />
       </div>
+
+      <EMROnboardingModal 
+        isOpen={!dashboardData.is_emr_completed} 
+        onSuccess={() => window.location.reload()} 
+      />
     </DashboardLayout>
   );
 };

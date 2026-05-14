@@ -7,8 +7,10 @@ import ProfileHeader from '../../components/domain/profile/ProfileHeader';
 import ProfileInfoSection from '../../components/domain/profile/ProfileInfoSection';
 import ProfileLogoutButton from '../../components/domain/profile/ProfileLogoutButton';
 import ProfileSettingsSection from '../../components/domain/profile/ProfileSettingsSection';
+import EMROnboardingModal from '../../components/layout/EMROnboardingModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useProfile } from '../../hooks/useProfile';
+import { FiClipboard } from 'react-icons/fi';
 import { getInitials } from '../../services/dashboardHelpers';
 import '../../styles/features/Profile.css';
 
@@ -44,6 +46,7 @@ const ProfilePage = () => {
     saveProfile,
   } = useProfile();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [isEMRModalOpen, setIsEMRModalOpen] = useState(false);
 
   const role = profile?.role || user?.role || 'patient';
   const caregiverMode = role === 'caregiver';
@@ -157,6 +160,26 @@ const ProfilePage = () => {
           isSaving={isSaving}
         />
 
+        {/* EMR Section Button */}
+        <div className="profile-section" style={{ marginTop: '1rem', background: 'var(--bg-card)', padding: 'var(--space-5)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-card)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <span className="profile-section-title-icon" style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center' }}>
+              <FiClipboard color="var(--accent)" />
+            </span>
+            <h3 className="profile-section-title" style={{ marginBottom: 0 }}>Rekam Medis Elektronik</h3>
+          </div>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+            Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
+          </p>
+          <button 
+             className="btn btn-secondary" 
+             style={{ width: '100%', background: 'var(--accent-light)', color: 'var(--accent)', border: 'none', padding: '0.75rem', borderRadius: 'var(--radius-full)', fontWeight: '700', cursor: 'pointer' }}
+             onClick={() => setIsEMRModalOpen(true)}
+          >
+             Buka Rekam Medis
+          </button>
+        </div>
+
         <ProfileFamilySection
           members={familyCards}
           emptyMessage="Belum ada keluarga terhubung."
@@ -169,6 +192,16 @@ const ProfilePage = () => {
 
         <ProfileLogoutButton onLogout={handleLogout} />
       </div>
+
+      <EMROnboardingModal 
+        isOpen={isEMRModalOpen} 
+        onClose={() => setIsEMRModalOpen(false)}
+        onSuccess={() => {
+          setIsEMRModalOpen(false);
+          window.location.reload(); // Reload untuk mendapatkan data profil terbaru
+        }}
+        initialData={profile}
+      />
     </DashboardLayout>
   );
 };

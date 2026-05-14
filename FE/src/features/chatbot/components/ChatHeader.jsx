@@ -8,11 +8,11 @@ export const ChatHeader = () => {
     <header className="chat-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
         <div className="chat-header-avatar">
-          <LuHeartPulse />
+          <img src="/assets/asep.png" alt="Asep" className="chat-avatar-image" style={{ borderRadius: 'var(--radius-md)' }} />
         </div>
-        <div className="chat-header-info">
-          <h1 className="chat-header-name">Teman Pulih AI</h1>
-          <span className="chat-header-status online">Online</span>
+        <div className="chat-header-title">
+          <h1 className="chat-header-name">Asep (Asisten Pulih)</h1>
+          <span className="chat-header-status">Selalu ada buat kamu</span>
         </div>
       </div>
       {messages.length > 0 && (

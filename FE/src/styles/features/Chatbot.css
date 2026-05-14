@@ -19,8 +19,8 @@
 }
 
 .chat-header-avatar {
-  width: 40px; height: 40px;
-  border-radius: var(--radius-md);
+  width: 64px; height: 64px;
+  border-radius: var(--radius-lg);
   background: var(--accent);
   display: flex; align-items: center; justify-content: center;
   color: var(--text-inverse);
@@ -71,7 +71,7 @@
 
 .chat-bubble-wrapper {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-3);
   max-width: 85%;
   animation: bubbleIn 250ms var(--ease-out-expo);
 }
@@ -86,8 +86,8 @@
 }
 
 .chat-bubble-avatar {
-  width: 28px; height: 28px;
-  border-radius: var(--radius-sm);
+  width: 52px; height: 52px;
+  border-radius: var(--radius-md);
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   font-size: 14px;
@@ -97,6 +97,13 @@
 .chat-bubble-avatar--ai {
   background: var(--accent-light);
   color: var(--accent);
+}
+
+.chat-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }
 
 .chat-bubble-avatar--user {
@@ -182,6 +189,45 @@
 
 .chat-typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .chat-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+.chat-bubble-cursor {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: var(--accent);
+  border-radius: 50%;
+  margin-left: 8px;
+  animation: cursorPulse 1s infinite ease-in-out;
+  vertical-align: middle;
+}
+
+@keyframes cursorPulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.chat-thinking {
+  font-style: italic;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.chat-thinking::after {
+  content: '...';
+  display: inline-block;
+  width: 12px;
+  text-align: left;
+  animation: thinkingDots 1.5s steps(4, end) infinite;
+}
+
+@keyframes thinkingDots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
 
 .chat-quick-replies {
   flex-shrink: 0;
@@ -336,7 +382,8 @@
 
 @media (max-width: 520px) {
   .chat-header { padding: var(--space-3) var(--space-4); }
-  .chat-header-avatar { width: 36px; height: 36px; font-size: 18px; }
+  .chat-header-avatar { width: 56px; height: 56px; font-size: 18px; }
+  .chat-bubble-avatar { width: 40px; height: 40px; }
   .chat-header-name { font-size: 14px; }
   .chat-bubble { font-size: 13px; padding: var(--space-2) var(--space-3); }
   .chat-bubble-wrapper { max-width: 90%; }

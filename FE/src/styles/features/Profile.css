@@ -526,3 +526,180 @@
     transition: none;
   }
 }
+
+/* ============================================================
+   EMR Onboarding Modal
+   ============================================================ */
+
+.emr-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: var(--space-4);
+}
+
+.emr-modal-content {
+  background: var(--bg);
+  border-radius: var(--radius-2xl);
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+}
+
+.emr-modal-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+}
+
+.emr-modal-header h2 {
+  font-family: var(--font-heading);
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: var(--space-2);
+}
+
+.emr-modal-header p {
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+.emr-form {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.emr-form-grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.emr-form-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.emr-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.emr-form .form-row {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.emr-form .form-row > * {
+  flex: 1;
+}
+
+.emr-form label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.emr-form input[type="text"],
+.emr-form input[type="number"],
+.emr-form input[type="tel"],
+.emr-form select,
+.emr-form textarea {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text);
+  background: var(--bg-card);
+  transition: all var(--duration-fast);
+}
+
+.emr-form input:focus,
+.emr-form select:focus,
+.emr-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.emr-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.emr-form .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  padding: var(--space-3);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast);
+}
+
+.emr-form .checkbox-label:hover {
+  border-color: var(--accent-light);
+  background: var(--bg-muted);
+}
+
+.emr-form input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.emr-form-actions {
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
+}
+
+@media (min-width: 768px) {
+  .emr-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .emr-modal-overlay {
+    padding: 0;
+  }
+  .emr-modal-content {
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+  .emr-modal-header {
+    border-radius: 0;
+  }
+  .emr-form .form-row {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+}
