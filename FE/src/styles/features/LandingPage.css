@@ -96,12 +96,17 @@
 @keyframes scrollBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 
 /* ─── SERVICE CHIPS ───────────────────────────────────────── */
-.chips-section { padding: 32px 20px 0; background: var(--bg); }
+.chips-section {
+  position: relative; z-index: 100; padding: 16px 20px; background: transparent;
+  display: flex; justify-content: center; transition: all 0.3s var(--ease);
+}
+
 .chips-scroll {
-  display: flex; gap: 8px; overflow-x: auto;
-  scrollbar-width: none; padding-bottom: 4px;
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+  width: 100%; max-width: var(--container-max); justify-content: flex-start;
 }
 .chips-scroll::-webkit-scrollbar { display: none; }
+
 .chip {
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-heading); font-size: 13px; font-weight: 600;
@@ -112,6 +117,84 @@
 .chip:hover { border-color: var(--accent); color: var(--accent); }
 .chip.active { background: var(--text); color: #fff; border-color: var(--text); }
 .chip svg { width: 14px; height: 14px; }
+
+
+
+/* Desktop Overrides for "Connected Pill" style */
+@media (min-width: 1024px) {
+  .chips-section {
+    position: sticky;
+    top: 0;
+    background: transparent;
+    padding: 40px 0;
+    z-index: 200;
+  }
+
+  .chips-scroll {
+    filter: url(#goo); 
+    background: transparent !important;
+    padding: 60px; /* Increased padding for wide stretches */
+    width: auto;
+    max-width: none;
+    display: inline-flex;
+    gap: 0 !important;
+    justify-content: center;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible;
+  }
+
+  .chip {
+    background: #fff !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+    padding: 14px 28px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    border-radius: 12px !important; /* Rounded Rectangle per reference */
+    transition: all 0.6s var(--ease) !important;
+    position: relative !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+    margin: 0 -4px !important; /* Minimal overlap to allow for visible bridge on hover */
+    cursor: pointer;
+  }
+
+  /* No static separator needed for Gooey look */
+  .chip::before { display: none !important; }
+
+  .chip:hover {
+    color: var(--text) !important;
+    margin-inline: 25px !important; /* Greater displacement to pull the liquid neck */
+    z-index: 10 !important;
+  }
+
+  .chip.active {
+    color: var(--text) !important;
+    background: #fff !important;
+  }
+
+  /* Active indicator dot */
+  .chip.active::after {
+    content: '';
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--text);
+    border-radius: 50%;
+  }
+
+  .chip svg {
+    display: none !important; /* Hide icons on desktop for cleaner editorial look */
+  }
+}
+
+
 
 /* ─── FEATURES: Mobile (image overlay cards) ──────────────── */
 .features-editorial { padding: var(--section-pad-mobile) 20px; background: var(--bg); }
