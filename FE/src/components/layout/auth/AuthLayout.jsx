@@ -1,5 +1,5 @@
 // src/components/layout/auth/AuthLayout.jsx
-import { LuHeartPulse, LuArrowLeft, LuShieldCheck, LuBell, LuCircleCheck } from 'react-icons/lu';
+import { LuHeartPulse, LuArrowLeft, LuShieldCheck, LuCircleCheck } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
 import '../../../styles/features/Auth.css';
 import heroImg from '../../../assets/images/hero-recovery.png';
@@ -10,19 +10,7 @@ const AuthLayout = ({ children }) => {
       <div className="auth-bg-overlay"></div>
 
       <div className="auth-content-layout">
-        {/* Left Side: Form Panel */}
-        <div className="auth-form-panel">
-          <Link to="/" className="auth-back-link">
-            <LuArrowLeft size={18} />
-            <span>Kembali ke Beranda</span>
-          </Link>
-
-          <main className="auth-card reveal visible">
-            {children}
-          </main>
-        </div>
-
-        {/* Right Side: Branding & Trust Elements (Hidden on Mobile) */}
+        {/* Left Side: Branding & Trust Elements (Hidden on Mobile) */}
         <div className="auth-branding-panel">
           <div className="auth-branding-header">
             <Link to="/" className="auth-brand-logo">
@@ -50,18 +38,19 @@ const AuthLayout = ({ children }) => {
                 <span>Terpercaya</span>
               </div>
             </div>
-
-            {/* Floating Widget Mockup */}
-            <div className="floating-widget reveal d2 visible">
-              <div className="widget-icon">
-                <LuBell size={20} />
-              </div>
-              <div className="widget-text">
-                <strong>Pengingat Obat Aktif</strong>
-                <span>Jadwal berikutnya: 12:00 WIB</span>
-              </div>
-            </div>
           </div>
+        </div>
+
+        {/* Right Side: Form Panel */}
+        <div className="auth-form-panel">
+          <Link to="/" className="auth-back-link">
+            <LuArrowLeft size={18} />
+            <span>Kembali ke Beranda</span>
+          </Link>
+
+          <main className="auth-card reveal visible">
+            {children}
+          </main>
         </div>
       </div>
     </div>

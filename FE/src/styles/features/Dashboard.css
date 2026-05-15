@@ -555,7 +555,7 @@
 }
 
 /* ── Responsive ──────────────────────────────────────────── */
-@media (min-width: 900px) {
+@media (min-width: 1024px) {
   .dashboard-container {
     padding-bottom: var(--space-10);
   }
@@ -871,5 +871,54 @@
 
   .calendar-column {
     padding: var(--space-5) var(--space-4);
+  }
+
+  /* Timeline Flattening */
+  .timeline-card {
+    box-shadow: none;
+    background: transparent;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .timeline-card.completed {
+    background: var(--sage-light);
+  }
+  
+  /* Quick Actions Flattening */
+  .action-card {
+    box-shadow: var(--shadow-md);
+  }
+  .action-card:hover {
+    transform: none;
+    box-shadow: var(--shadow-md);
+  }
+
+  /* Calendar Flattening */
+  .weekly-calendar-section {
+    box-shadow: none;
+  }
+  .calendar-column.today {
+    box-shadow: none;
+  }
+  .calendar-med-item {
+    box-shadow: none;
+  }
+
+  /* Tips Carousel Flattening */
+  .tip-card {
+    box-shadow: none;
+  }
+  .tip-card.is-active {
+    transform: none;
+    box-shadow: none;
+    z-index: 1;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .timeline-card {
+    box-shadow: var(--shadow-sm);
+  }
+  .action-card {
+    box-shadow: var(--shadow-sm);
   }
 }

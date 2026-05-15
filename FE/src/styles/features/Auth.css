@@ -168,6 +168,8 @@
   width: 100%;
   justify-content: center;
   margin-top: var(--space-4);
+  border-radius: 9999px;
+  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
 }
 
 .auth-back-link {
@@ -219,7 +221,7 @@
     background: var(--bg-card);
     padding: var(--space-10) var(--space-8);
     border-radius: var(--radius-2xl);
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--shadow-lg);
     width: 100%;
     margin: 0;
   }
@@ -258,7 +260,7 @@
 
   .auth-content-layout {
     display: grid;
-    grid-template-columns: 1fr 1.5fr; /* Right side dominant */
+    grid-template-columns: 1fr 1.2fr; /* Right side dominant */
     width: 100%;
     min-height: 100vh;
     position: relative;
@@ -287,7 +289,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(196, 101, 58, 0.18) 0%, rgba(26, 26, 46, 0.9) 100%);
+    background: linear-gradient(135deg, rgba(196, 101, 58, 0.15) 0%, rgba(26, 26, 46, 0.85) 100%);
     z-index: 1;
   }
 
@@ -395,56 +397,7 @@
     color: var(--accent-light);
   }
 
-  /* Floating Widget */
-  .floating-widget {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    /* Align internal content if needed */
-    gap: var(--space-4);
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    padding: var(--space-4) var(--space-5);
-    border-radius: var(--radius-xl);
-    color: #fff;
-    max-width: 340px;
-    margin-top: var(--space-4);
-    margin-left: auto;
-    /* Push to right in flex container */
-    text-align: left;
-    /* Keep content readable */
-  }
-
-  .widget-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--accent-light);
-    color: var(--accent-dark);
-    border-radius: var(--radius-full);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .widget-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .widget-text strong {
-    font-size: var(--text-sm);
-    font-weight: 700;
-  }
-
-  .widget-text span {
-    font-size: var(--text-xs);
-    color: rgba(255, 255, 255, 0.7);
-  }
-
-  /* Right Side: Form */
+  /* Trust Badges */
   .auth-form-panel {
     display: flex;
     flex-direction: column;
@@ -469,5 +422,11 @@
   .auth-form-header h1 {
     font-size: 32px;
     margin-bottom: 8px;
+  }
+
+  .auth-btn-primary {
+    border-radius: 8px;
+    box-shadow: none;
+    padding: 16px 40px;
   }
 }
