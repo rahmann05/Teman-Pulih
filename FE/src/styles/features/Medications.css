@@ -73,6 +73,45 @@
 }
 .med-filter-chips::-webkit-scrollbar { display: none; }
 
+/* ── Overview Banner ────────────────────────────────────── */
+.med-overview-banner {
+  margin: 0 var(--space-5);
+  padding: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+  background: var(--bg-muted);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-2xl);
+}
+
+.med-overview-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.72);
+  text-align: center;
+}
+
+.med-overview-value {
+  font-family: var(--font-heading);
+  font-size: clamp(1.4rem, 1rem + 1vw, 2rem);
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.med-overview-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  line-height: 1.25;
+}
+
 .med-chip {
   flex-shrink: 0;
   padding: var(--space-2) var(--space-4);
@@ -908,6 +947,21 @@
   .med-detail-actions{ padding: 0 var(--space-4); }
   .med-skeleton      { padding: 0 var(--space-4); }
   .med-patient-selector { width: calc(100% - 2 * var(--space-4)); margin: 0 var(--space-4); }
+  .med-overview-banner {
+    margin: 0 var(--space-4);
+    grid-template-columns: 1fr;
+    padding: var(--space-3);
+  }
+
+  .med-overview-stat {
+    align-items: flex-start;
+    text-align: left;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .med-overview-value {
+    font-size: 1.75rem;
+  }
 }
 
 /* ── Tablet (768px – 1023px) ─────────────────────────────── */
@@ -922,6 +976,17 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--space-3);
+  }
+  .med-overview-banner {
+    margin: 0 var(--space-5);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+  .med-overview-stat {
+    padding: var(--space-3) var(--space-2);
+  }
+  .med-overview-label {
+    font-size: 11px;
   }
   .med-detail-info { grid-template-columns: 1fr 1fr; }
   .med-fab { bottom: var(--space-8); }
@@ -1013,6 +1078,8 @@
   }
   .med-overview-stat {
     text-align: center;
+    align-items: center;
+    padding: var(--space-4);
   }
   .med-overview-value {
     font-size: var(--text-3xl);

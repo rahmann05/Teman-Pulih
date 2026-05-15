@@ -171,12 +171,21 @@ const ProfilePage = () => {
           <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
             Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
           </p>
-          <button 
-             className="btn btn-secondary" 
-             style={{ width: '100%', background: 'var(--accent-light)', color: 'var(--accent)', border: 'none', padding: '0.75rem', borderRadius: 'var(--radius-full)', fontWeight: '700', cursor: 'pointer' }}
-             onClick={() => setIsEMRModalOpen(true)}
+          <button
+            className="btn btn-secondary"
+            style={{
+              width: '100%',
+              background: 'var(--accent-light)',
+              color: 'var(--accent)',
+              border: 'none',
+              padding: '0.75rem',
+              borderRadius: 'var(--radius-full)',
+              fontWeight: '700',
+              cursor: 'pointer',
+            }}
+            onClick={() => setIsEMRModalOpen(true)}
           >
-             Buka Rekam Medis
+            Buka Rekam Medis
           </button>
         </div>
 
@@ -193,8 +202,8 @@ const ProfilePage = () => {
         <ProfileLogoutButton onLogout={handleLogout} />
       </div>
 
-      <EMROnboardingModal 
-        isOpen={isEMRModalOpen} 
+      <EMROnboardingModal
+        isOpen={isEMRModalOpen}
         onClose={() => setIsEMRModalOpen(false)}
         onSuccess={() => {
           setIsEMRModalOpen(false);

@@ -1,6 +1,5 @@
 import { LuPill } from 'react-icons/lu';
 import heroImg from '../../../assets/images/dashboard-hero-patient.png';
-import HeroCard from '../../ui/HeroCard';
 
 const NextMedicationHero = ({
   time,
@@ -12,28 +11,36 @@ const NextMedicationHero = ({
   onMarkTaken
 }) => {
   return (
-    <HeroCard backgroundImage={heroImg} testId="next-med-hero">
-      <div className="hero-card-top">
-        <span className="hero-label">
-          <LuPill className="hero-icon" aria-hidden="true" />
-          Pengingat Berikutnya
-        </span>
-        <span className="hero-time-badge">{time}</span>
+    <div className="dashboard-hero-wide" data-testid="next-med-hero">
+      <div className="hero-wide-container">
+        <img src={heroImg} alt="Patient" className="hero-wide-bg" />
+        <div className="hero-wide-overlay">
+          <div className="hero-content-top">
+            <div className="hero-badge-pill">
+              <LuPill />
+              <span>PENGINGAT OBAT AKTIF</span>
+            </div>
+          </div>
+          
+          <div className="hero-content-bottom">
+            <h2 className="hero-main-title">{medName}</h2>
+            <p className="hero-main-subtitle">Jadwal berikutnya: {time} • {instruction}</p>
+            
+            {id && (
+              <div className="hero-actions-overlay">
+                <button
+                  className="btn-glass-pill"
+                  type="button"
+                  onClick={() => onMarkTaken && onMarkTaken(id, medicationId, scheduleId)}
+                >
+                  Sudah Diminum →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="hero-card-middle">
-        <h2 className="med-name">{medName}</h2>
-        <p className="med-instruction">{instruction}</p>
-      </div>
-      {id && (
-        <button
-          className="glass-btn"
-          type="button"
-          onClick={() => onMarkTaken && onMarkTaken(id, medicationId, scheduleId)}
-        >
-          Sudah Diminum
-        </button>
-      )}
-    </HeroCard>
+    </div>
   );
 };
 

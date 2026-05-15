@@ -3,6 +3,7 @@ import NextMedicationHero from '../../components/domain/dashboard/NextMedication
 import QuickActionGrid from '../../components/domain/dashboard/QuickActionGrid';
 import MedicationTimeline from '../../components/domain/medication/MedicationTimeline';
 import HealthTipsCarousel from '../../components/domain/dashboard/HealthTipsCarousel';
+import WeeklyMedicationCalendar from '../../components/domain/dashboard/WeeklyMedicationCalendar';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import DashboardHeader from '../../components/domain/dashboard/DashboardHeader';
 import EMROnboardingModal from '../../components/layout/EMROnboardingModal';
@@ -43,23 +44,26 @@ const PatientDashboard = () => {
     <DashboardLayout>
       <div className="dashboard-container" data-testid="patient-dashboard">
         <DashboardHeader userName={dashboardData.patientName} initials={dashboardData.initials} />
-        <div className="dashboard-grid">
+        
+        <NextMedicationHero
+          id={dashboardData.nextMedication?.id}
+          medicationId={dashboardData.nextMedication?.medicationId}
+          scheduleId={dashboardData.nextMedication?.scheduleId}
+          time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada jadwal'}
+          medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
+          instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
+          onMarkTaken={dashboardData.markAsTakenAction}
+        />
+
+        <QuickActionGrid />
+
+        <div className="dashboard-grid dashboard-grid--single">
           <div className="dashboard-main">
-            <NextMedicationHero
-              id={dashboardData.nextMedication?.id}
-              medicationId={dashboardData.nextMedication?.medicationId}
-              scheduleId={dashboardData.nextMedication?.scheduleId}
-              time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada jadwal'}
-              medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
-              instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
-              onMarkTaken={dashboardData.markAsTakenAction}
-            />
-            <QuickActionGrid />
-          </div>
-          <div className="dashboard-aside">
             <MedicationTimeline schedule={dashboardData.timeline} />
+            <WeeklyMedicationCalendar />
           </div>
         </div>
+
         <HealthTipsCarousel />
       </div>
 
