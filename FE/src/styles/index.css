@@ -51,6 +51,13 @@
   --text-3xl: 1.875rem;  /* 30px */
   --text-4xl: 2.25rem;   /* 36px */
   --text-5xl: 3rem;      /* 48px */
+  --text-6xl: 3.75rem;   /* 60px */
+  --text-7xl: 4.5rem;    /* 72px */
+
+  /* Display scale — for hero editorial typography */
+  --text-display-sm: clamp(48px, 8vw, 80px);    /* Tablet hero */
+  --text-display: clamp(80px, 12vw, 180px);      /* Desktop hero */
+  --text-display-lg: clamp(100px, 14vw, 220px);  /* Ultra-wide hero */
 
   /* Spacing */
   --space-1: 0.25rem;   /* 4px */

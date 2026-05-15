@@ -161,3 +161,65 @@
     font-size: 17px;
   }
 }
+
+/* ── Pill-shaped nav links (desktop landing only) ── */
+.nav-links {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nav-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    padding: 10px 24px;
+    border-radius: var(--radius-full);
+    border: 1.5px solid var(--border);
+    background: transparent;
+    transition: all var(--duration-normal) var(--ease);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .nav-pill:hover {
+    background: var(--bg-muted);
+    border-color: var(--text-muted);
+    color: var(--text);
+  }
+
+  .nav-pill:active {
+    transform: scale(0.97);
+  }
+
+  /* When nav-links is present, push actions to right */
+  .nav {
+    display: flex;
+    align-items: center;
+  }
+
+  .nav .logo {
+    flex-shrink: 0;
+  }
+
+  .nav .nav-links {
+    margin-left: auto;
+    margin-right: 16px;
+  }
+
+  .nav .nav-actions {
+    flex-shrink: 0;
+  }
+}
