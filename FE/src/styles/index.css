@@ -1,34 +1,49 @@
 /* ============================================
-   TEMAN PULIH — Design System
-   Warm, professional, trust-based palette
-   Inspired by Denta + Health Monitor references
+   TEMAN PULIH — Design System v5
+   Tri-Layout Architecture: Desktop (Floema) · Tablet (Hybrid) · Mobile (App-Native)
    ============================================ */
 
 :root {
-  /* Warm Neutrals */
+  /* ── Warm Neutrals ── */
   --bg: #FAF8F5;
   --bg-card: #FFFFFF;
   --bg-muted: #F3F0EC;
   --bg-dark: #1A1A2E;
+  --bg-warm: #F5EDE6;
 
-  /* Text */
+  /* ── Text ── */
   --text: #1A1A2E;
   --text-secondary: #6C6C80;
   --text-muted: #A3A3B5;
   --text-inverse: #FFFFFF;
 
-  /* Accent — Warm Terracotta (from Health Monitor orange) */
+  /* ── Primary Accent — Warm Terracotta ── */
   --accent: #C4653A;
   --accent-light: #F4DDD3;
   --accent-dark: #9E4E2A;
+  --accent-hover: #B35830;
 
-  /* Secondary — Deep Sage */
+  /* ── Secondary — Deep Sage ── */
   --sage: #5B7B6A;
   --sage-light: #E4EDE8;
+  --sage-dark: #3D5C4D;
 
-  /* Border */
+  /* ── Tertiary — Dusty Copper ── */
+  --copper: #B08968;
+  --copper-light: #F0E0D0;
+
+  /* ── Functional ── */
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --warning: #d97706;
+  --warning-light: #fef3c7;
+  --error: #dc2626;
+  --error-light: #fee2e2;
+
+  /* ── Borders ── */
   --border: #E8E5E0;
   --border-light: #F0EDEA;
+  --border-subtle: rgba(26, 26, 46, 0.08);
 
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(26, 26, 46, 0.04);
@@ -59,7 +74,7 @@
   --text-display: clamp(80px, 12vw, 180px);      /* Desktop hero */
   --text-display-lg: clamp(100px, 14vw, 220px);  /* Ultra-wide hero */
 
-  /* Spacing */
+  /* ── Spacing ── */
   --space-1: 0.25rem;   /* 4px */
   --space-2: 0.5rem;    /* 8px */
   --space-3: 0.75rem;   /* 12px */
@@ -68,6 +83,19 @@
   --space-6: 1.5rem;    /* 24px */
   --space-8: 2rem;      /* 32px */
   --space-10: 2.5rem;   /* 40px */
+  --space-12: 3rem;     /* 48px */
+  --space-16: 4rem;     /* 64px */
+  --space-20: 5rem;     /* 80px */
+
+  /* ── Section Spacing (Tri-Layout) ── */
+  --section-pad-desktop: 160px;
+  --section-pad-tablet: 80px;
+  --section-pad-mobile: 40px;
+
+  /* ── Content Constraints ── */
+  --container-max: 1440px;
+  --container-narrow: 800px;
+  --container-mobile: 430px;
 
   /* Radius */
   --radius-sm: 8px;

@@ -1,43 +1,35 @@
-import StatCard from '../../ui/landing/StatCard';
-
 const STATS_DATA = [
   {
     value: '30–50%',
     description: 'Pasien tidak patuh minum obat setelah rawat inap',
-    delayClass: 'd1'
   },
   {
     value: '1/3',
     description: 'Pasien salah memahami instruksi resep dokter',
-    delayClass: 'd2'
   },
   {
     value: '24/7',
     description: 'Akses chatbot medis kapan saja dibutuhkan',
-    delayClass: 'd3'
   },
   {
     value: '2 min',
     description: 'Waktu rata-rata scan dan terjemahkan resep obat',
-    delayClass: 'd4'
-  }
+  },
 ];
 
 const LandingStats = () => {
   return (
-    <section className="stats">
+    <section className="stats" id="facts">
       <div className="stats-header reveal">
-        <div className="stats-label">Kenapa Ini Penting</div>
-        <h2 className="stats-title">Fakta Pemulihan</h2>
+        <h2 className="section-huge-title">Fakta Pemulihan</h2>
+        <p className="section-subtitle">Mengapa kami membangun Teman Pulih</p>
       </div>
       <div className="stats-grid">
         {STATS_DATA.map((stat, index) => (
-          <StatCard 
-            key={index}
-            value={stat.value}
-            description={stat.description}
-            delayClass={stat.delayClass}
-          />
+          <div key={index} className={`stat stat--c${index + 1} reveal`}>
+            <div className="stat-value">{stat.value}</div>
+            <div className="stat-desc">{stat.description}</div>
+          </div>
         ))}
       </div>
     </section>

@@ -1,10 +1,9 @@
-import { HiOutlineArrowRight, HiOutlineEnvelope } from 'react-icons/hi2';
+import { HiOutlineArrowRight } from 'react-icons/hi2';
 import { Link } from 'react-router-dom';
 import Navbar from '../../layout/Navbar';
-import heroImg from '../../../assets/images/hero-recovery.png';
+import heroImg from '../../../assets/images/hero-medical.png';
 import hero3D from '../../../assets/images/hero-medical-3d.png';
 import heroShadow from '../../../assets/images/hero-shadow-overlay.png';
-import heroDoctor from '../../../assets/images/hero-doctor-consult.png';
 
 const LandingHero = () => {
   return (
@@ -49,16 +48,13 @@ const LandingHero = () => {
 
       {/* ── Desktop: Floema-style editorial hero ── */}
       <div className="hero-desktop">
-        {/* Giant editorial typography */}
+        {/* Giant display typography centered */}
         <div className="hero-display-text" aria-hidden="true">
           <span className="hero-display-line">Teman</span>
           <span className="hero-display-line">Pulih<span className="hero-display-dot">.</span></span>
         </div>
 
-        {/* Accessible h1 for screen readers */}
-        <h1 className="sr-only">Teman Pulih — Pendamping Pemulihan Pasca Berobat</h1>
-
-        {/* 3D Medical centerpiece overlapping text */}
+        {/* 3D Medical centerpiece - Centered and slightly lower */}
         <div className="hero-centerpiece">
           <img 
             src={hero3D} 
@@ -68,30 +64,15 @@ const LandingHero = () => {
           />
         </div>
 
-        {/* Bottom-left tagline */}
+        {/* Left side: Tagline and CTA */}
         <div className="hero-tagline">
           <p className="hero-tagline-text">
-            Pendamping pemulihan<br />pasca berobat
+            Rethinking recovery<br />beyond expectations
           </p>
+          <div className="hero-line-short"></div>
           <a href="#services" className="hero-scroll-cta">
             Mulai perjalanan pulih ↓
           </a>
-        </div>
-
-        {/* Bottom-right floating contact card */}
-        <div className="hero-float-card">
-          <div className="hero-float-card-img">
-            <img src={heroDoctor} alt="Konsultasi dokter" />
-          </div>
-          <div className="hero-float-card-body">
-            <p className="hero-float-card-text">
-              Pemulihan dimulai dari percakapan yang baik.
-            </p>
-            <Link to="/register" className="hero-float-card-btn">
-              <HiOutlineEnvelope size={16} />
-              <span>MULAI SEKARANG</span>
-            </Link>
-          </div>
         </div>
       </div>
     </section>
