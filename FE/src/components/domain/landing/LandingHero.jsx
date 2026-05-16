@@ -2,6 +2,8 @@ import { HiOutlineArrowRight } from 'react-icons/hi2';
 import { Link } from 'react-router-dom';
 import Navbar from '../../layout/Navbar';
 import heroImg from '../../../assets/images/hero-medical.png';
+import heroBG from '../../../assets/images/hero-medical-BG.png';
+import heroObj from '../../../assets/images/hero-medical-object.png';
 import hero3D from '../../../assets/images/hero-medical-3d.png';
 import heroShadow from '../../../assets/images/hero-shadow-overlay.png';
 
@@ -12,12 +14,20 @@ const LandingHero = () => {
 
       {/* ── Mobile: Original fullscreen image hero ── */}
       <div className="hero-mobile">
-        <img 
-          src={heroImg} 
-          className="hero-img" 
-          alt="Pendamping Pemulihan" 
-          loading="eager"
-        />
+        <div className="hero-visual-card">
+          <img 
+            src={heroBG} 
+            className="hero-visual-bg" 
+            alt="Pendamping Pemulihan" 
+            loading="eager"
+          />
+          <img 
+            src={heroObj} 
+            className="hero-visual-obj" 
+            alt="" 
+            aria-hidden="true"
+          />
+        </div>
         <div className="hero-overlay" />
         <div className="hero-content">
           <div className="hero-tag">
@@ -48,20 +58,22 @@ const LandingHero = () => {
 
       {/* ── Desktop: Floema-style editorial hero ── */}
       <div className="hero-desktop">
-        {/* Giant display typography centered */}
-        <div className="hero-display-text" aria-hidden="true">
-          <span className="hero-display-line">Teman</span>
-          <span className="hero-display-line">Pulih<span className="hero-display-dot">.</span></span>
-        </div>
+        <div className="hero-main-visual">
+          {/* Giant display typography centered */}
+          <div className="hero-display-text" aria-hidden="true">
+            <span className="hero-display-line">Teman</span>
+            <span className="hero-display-line">Pulih<span className="hero-display-dot">.</span></span>
+          </div>
 
-        {/* 3D Medical centerpiece - Centered and slightly lower */}
-        <div className="hero-centerpiece">
-          <img 
-            src={hero3D} 
-            alt="Pendamping medis profesional" 
-            className="hero-3d-img"
-            loading="eager"
-          />
+          {/* 3D Medical centerpiece - Centered and slightly lower */}
+          <div className="hero-centerpiece">
+            <img 
+              src={hero3D} 
+              alt="Pendamping medis profesional" 
+              className="hero-3d-img"
+              loading="eager"
+            />
+          </div>
         </div>
 
         {/* Left side: Tagline and CTA */}
