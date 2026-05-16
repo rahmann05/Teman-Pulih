@@ -32,19 +32,39 @@ const sendMessage = async (req, res) => {
             .from('chat_history')
             .insert([{ user_id: userId, message, sender: 'user' }]);
 
-        // Step 0: Fetch EMR Profile (Rekam Medis)
+        // Step 0: Fetch EMR Profile (Rekam Medis) & Konteks Privat
         let emrContext = "";
         let routineMedicationsForSearch = "";
+        let privateContext = "";
         try {
+            // ENKRIPSI/PRIVASI: Caregiver hanya bisa melihat data pasien yang terhubung
+            let targetPatientId = userId;
+            let patientProfileName = req.user.name || "Pasien";
+
+            if (req.user.role === 'caregiver') {
+                const { data: rel } = await supabase
+                    .from('family_relations')
+                    .select('patient_id, users!family_relations_patient_id_fkey(name)')
+                    .eq('caregiver_id', userId)
+                    .eq('status', 'accepted')
+                    .single();
+
+                if (rel) {
+                    targetPatientId = rel.patient_id;
+                    patientProfileName = rel.users?.name || 'Pasien Anda';
+                }
+            }
+
+            // Ambil profile EMR dari Pasien Terhubung
             const { data: userProfile } = await supabase
                 .from('profiles')
                 .select('*')
-                .eq('user_id', userId)
+                .eq('user_id', targetPatientId)
                 .single();
             
             if (userProfile) {
                 routineMedicationsForSearch = userProfile.routine_medications || "";
-                emrContext = `[REKAM MEDIS PASIEN]
+                emrContext = `[REKAM MEDIS PASIEN (${patientProfileName})]
 - Gol. Darah: ${userProfile.blood_type || '-'}
 - Tensi Normal: ${userProfile.blood_pressure_range || '-'}
 - Tinggi/Berat: ${userProfile.height || '-'}cm / ${userProfile.weight || '-'}kg
@@ -56,30 +76,46 @@ const sendMessage = async (req, res) => {
 - OBAT RUTIN: ${routineMedicationsForSearch || '-'}
 `;
             }
-        } catch (e) {
-            console.error("[RAG] Gagal mengambil EMR Profile:", e.message);
-        }
 
-        // Step 1: Keyword Extraction untuk pencarian RAG yang lebih akurat
-        let searchKeywords = message;
-        try {
-            const extractionModel = genAI.getGenerativeModel({ 
-                model: "gemini-flash-lite-latest", 
-                generationConfig: { maxOutputTokens: 30, temperature: 0.1 }
-            });
-            const extractionResult = await extractionModel.generateContent(
-                `Identifikasi semua gejala medis, nama penyakit, atau nama obat dalam pesan ini: "${message}". Balas HANYA dengan daftar kata kunci tersebut yang dipisahkan spasi (maksimal 5 kata).`
-            );
-            const extracted = extractionResult.response.text().trim();
-            if (extracted) {
-                searchKeywords = extracted;
+            // Ambil Data Obat Milik Pasien Secara Spesifik
+            const { data: patientMedications } = await supabase
+                .from('medications')
+                .select('name, dosage, instructions')
+                .eq('user_id', targetPatientId);
+
+            if (patientMedications && patientMedications.length > 0) {
+                privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---
+\n(Informasi ini terenkripsi dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
+                privateContext += patientMedications.map(m => `- ${m.name} (${m.dosage}): ${m.instructions}`).join("\n");
+                routineMedicationsForSearch += " " + patientMedications.map(m => m.name).join(" ");
             }
         } catch (e) {
-            console.warn("Keyword Extraction skipped (Quota/Error). Using raw message.");
+            console.error("[RAG] Gagal mengambil Private EMR Profile:", e.message);
         }
 
-        // Tambahkan obat rutin pasien ke dalam keyword pencarian agar Chroma mencari dokumen tentang obat tersebut (untuk cek kontraindikasi)
-        const finalRAGQuery = `${searchKeywords} ${routineMedicationsForSearch}`.trim();
+        // Step 1: Keyword Extraction (Hanya dilakukan jika pesan panjang agar keyword tidak terpotong)
+        let searchKeywords = message;
+        if (message.split(" ").length > 3) {
+            try {
+                const extractionModel = genAI.getGenerativeModel({ 
+                    model: "gemini-2.5-flash", 
+                    generationConfig: { maxOutputTokens: 30, temperature: 0.1 }
+                });
+                const extractionResult = await extractionModel.generateContent(
+                    `Ekstrak gejala utama atau nama penyakit dari pesan ini: "${message}". Balas HANYA dengan kata kunci. Jangan hilangkan kata penting (misal "asam lambung" jangan dipotong jadi "asam").`
+                );
+                const extracted = extractionResult.response.text().trim();
+                if (extracted && extracted.length > 2) {
+                    searchKeywords = extracted;
+                }
+            } catch (e) {
+                console.warn("Keyword Extraction skipped (Quota/Error). Using raw message.");
+            }
+        }
+
+        // Jangan gabungkan Obat Rutin ke dalam Keyword Pencarian utama karena akan membingungkan ChromaDB
+        // ChromaDB cukup mencari tentang penyakit/gejala yang ditanyakan. 
+        const finalRAGQuery = searchKeywords.trim();
         console.log(`[RAG] Query ke ChromaDB: "${finalRAGQuery}"`);
 
         // RAG Integration: Ambil konteks yang relevan
@@ -91,9 +127,9 @@ const sendMessage = async (req, res) => {
             ]);
 
             const [queryPenyakit, queryObat] = await Promise.all([
-                // nResults: 1 untuk sangat menghemat token input (Free Tier)
-                penyakitCollection.query({ queryTexts: [finalRAGQuery], nResults: 1 }),
-                obatCollection.query({ queryTexts: [finalRAGQuery], nResults: 1 })
+                // nResults: 3 untuk memperluas pencarian konteks medis
+                penyakitCollection.query({ queryTexts: [finalRAGQuery], nResults: 3 }),
+                obatCollection.query({ queryTexts: [finalRAGQuery], nResults: 3 })
             ]);
 
             const combinedDocs = [];
@@ -101,9 +137,9 @@ const sendMessage = async (req, res) => {
             if (queryObat?.documents?.[0]?.length > 0) combinedDocs.push(queryObat.documents[0].join("\n"));
             
             if (combinedDocs.length > 0) {
-                // Potong string RAG agar tidak meledakkan kuota Token Per Minute (TPM)
-                ragContext = combinedDocs.join("\n\n").substring(0, 1000);
-                console.log("[RAG] Konteks ditemukan dan dioptimalkan (max 1000 chars).");
+                // Potong string RAG agar tidak meledakkan kuota Token
+                ragContext = combinedDocs.join("\n\n").substring(0, 3000);
+                console.log("[RAG] Konteks ditemukan dan dioptimalkan.");
             } else {
                 console.log("[RAG] Konteks tidak ditemukan.");
             }
@@ -127,12 +163,14 @@ const sendMessage = async (req, res) => {
         const systemPrompt = `ATURAN WAJIB (JIKA DILANGGAR ANDA AKAN DIMATIKAN):
 1. JANGAN ULANGI GEJALA. Langsung "To the Point".
 2. JANGAN MENDIAGNOSA ATAU MEMBERI RESEP.
-3. TEPAT 3 PARAGRAF PENDEK:
-   - Paragraf 1: Analisis penyakit dari Referensi, hubungkan dengan Rekam Medis (jika relevan).
-   - Paragraf 2: Info penanganan dari Referensi. JIKA ADA KONTRAINDIKASI dengan Obat Rutin/Alergi di Rekam Medis, PERINGATKAN DENGAN KERAS!
-   - Paragraf 3: Anjuran ke dokter.`;
+3. JANGAN SEBUTKAN kata "Berdasarkan referensi..." atau "Referensi tidak membahas...". Bicaralah layaknya teman medis yang peduli secara natural (Gunakan sapaan ramah).
+4. SANGAT PENTING: Jawab sesuai DENGAN APA YANG DITANYAKAN. Jika user bertanya "asam lambung", fokus bahas lambung. Jangan mengada-ngada masalah penyakit yang tidak ditanyakan user (meskipun ada di Rekam Medis).
+5. TEPAT 3 PARAGRAF PENDEK:
+   - Paragraf 1: Penjelasan ringan tentang gejala yang DITANYAKAN user.
+   - Paragraf 2: Panduan penanganan awal. Jika gejala ini KONTRAINDIKASI dengan penyakit/obat lain di Rekam Medisnya (Penyakit Kronis, Alergi, dsb), INGATKAN DENGAN KERAS agar berhati-hati.
+   - Paragraf 3: Anjuran wajib ke dokter karena dilarang memberi resep obat.`;
         
-        const finalMessage = `${systemPrompt}\n\n${emrContext}\nREFERENSI MEDIS:\n${ragContext || 'Tidak ada referensi'}\n\nGEJALA USER:\n${message}`;
+        const finalMessage = `${systemPrompt}\n\n${emrContext}\n${privateContext}\nREFERENSI MEDIS:\n${ragContext || 'Tidak ada referensi'}\n\nGEJALA USER:\n${message}`;
 
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
@@ -140,7 +178,7 @@ const sendMessage = async (req, res) => {
 
         let result;
         // Gunakan model Flash Lite versi terbaru yang stabil agar tidak hang
-        let activeModelName = "gemini-flash-lite-latest";
+        let activeModelName = "gemini-2.5-flash";
         
         const tryModel = async (modelName) => {
             console.log(`[AI] Mencoba model: ${modelName}...`);
