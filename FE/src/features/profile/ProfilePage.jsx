@@ -160,29 +160,20 @@ const ProfilePage = () => {
           isSaving={isSaving}
         />
 
-        {/* EMR Section Button */}
-        <div className="profile-section" style={{ marginTop: '1rem', background: 'var(--bg-card)', padding: 'var(--space-5)', borderRadius: 'var(--radius-xl)', boxShadow: 'var(--shadow-card)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <span className="profile-section-title-icon" style={{ fontSize: '1.25rem', display: 'flex', alignItems: 'center' }}>
-              <FiClipboard color="var(--accent)" />
+        {/* EMR Section */}
+        <div className="profile-emr-section">
+          <div className="profile-emr-header">
+            <span className="profile-section-title-icon">
+              <FiClipboard />
             </span>
-            <h3 className="profile-section-title" style={{ marginBottom: 0 }}>Rekam Medis Elektronik</h3>
+            <h3 className="profile-section-title">Rekam Medis Elektronik</h3>
           </div>
-          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
+          <p className="profile-emr-text">
             Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
           </p>
           <button
-            className="btn btn-secondary"
-            style={{
-              width: '100%',
-              background: 'var(--accent-light)',
-              color: 'var(--accent)',
-              border: 'none',
-              padding: '0.75rem',
-              borderRadius: 'var(--radius-full)',
-              fontWeight: '700',
-              cursor: 'pointer',
-            }}
+            type="button"
+            className="profile-emr-btn"
             onClick={() => setIsEMRModalOpen(true)}
           >
             Buka Rekam Medis

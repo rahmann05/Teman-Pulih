@@ -319,11 +319,11 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  transition: transform var(--duration-fast) var(--spring);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .family-member-card:hover {
-  transform: translateY(-1px);
+  background: var(--bg-muted);
 }
 
 .family-member-avatar {
@@ -539,7 +539,10 @@
   }
 
   .family-invite-card {
-    padding: var(--space-6);
+    background: transparent;
+    box-shadow: none;
+    padding: var(--space-8) var(--space-6);
+    border: 1.5px solid var(--accent-light);
   }
 
   .family-invite-input {
@@ -549,9 +552,19 @@
 
   .family-member-list {
     grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  .family-member-card {
+    box-shadow: none;
+    border: 1px solid var(--border-light);
   }
 
   .family-request-card {
+    background: transparent;
+    box-shadow: none;
+    border: 1.5px solid var(--border-light);
+    border-left: 4px solid #d97706;
     padding: var(--space-5);
   }
 
@@ -561,7 +574,16 @@
   }
 
   .family-empty-state {
-    padding: var(--space-10) var(--space-8);
+    background: transparent;
+    box-shadow: none;
+    border: 1.5px solid var(--border-light);
+    padding: var(--space-12) var(--space-8);
+  }
+
+  .family-empty-icon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: var(--space-2);
   }
 }
 
