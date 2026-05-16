@@ -67,8 +67,8 @@ const MedicationDetailPage = () => {
             <div className="skeleton-block" style={{ height: 28, width: 160, borderRadius: 8 }} />
           </header>
           <div className="med-skeleton" style={{ padding: '0 var(--space-5)' }}>
-            <div className="skeleton-block" style={{ height: 160, borderRadius: 24 }} />
-            <div className="skeleton-block" style={{ height: 200, borderRadius: 24 }} />
+            <div className="skeleton-block" style={{ height: 160, borderRadius: 'var(--radius-xl)' }} />
+            <div className="skeleton-block" style={{ height: 200, borderRadius: 'var(--radius-xl)' }} />
           </div>
         </div>
       </DashboardLayout>

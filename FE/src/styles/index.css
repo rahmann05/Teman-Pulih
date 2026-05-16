@@ -5,107 +5,104 @@
 
 :root {
   /* ── Warm Neutrals ── */
-  --bg: #FAF8F5;
-  --bg-card: #FFFFFF;
-  --bg-muted: #F3F0EC;
-  --bg-dark: #1A1A2E;
-  --bg-warm: #F5EDE6;
+  --bg:           #FAF8F5;     /* Main warm cream */
+  --bg-card:      #FFFFFF;     /* Card/elevated surfaces */
+  --bg-muted:     #F3F0EC;     /* Alternate sections, inset areas */
+  --bg-dark:      #1A1A2E;     /* Dark sections: footer, testimonials, hero desktop */
+  --bg-warm:      #F5EDE6;     /* Warm tinted panels (mobile hero bg) */
 
   /* ── Text ── */
-  --text: #1A1A2E;
-  --text-secondary: #6C6C80;
-  --text-muted: #A3A3B5;
-  --text-inverse: #FFFFFF;
+  --text:           #0E0E1A;     /* Deeper black for maximum legibility */
+  --text-secondary: #424254;     /* Darker grey (was #6C6C80) for better contrast */
+  --text-muted:     #757585;     /* Darker muted text (was #A3A3B5) */
+  --text-inverse:  #FFFFFF;
 
   /* ── Primary Accent — Warm Terracotta ── */
-  --accent: #C4653A;
-  --accent-light: #F4DDD3;
-  --accent-dark: #9E4E2A;
-  --accent-hover: #B35830;
+  --accent:        #C4653A;
+  --accent-light:  #F4DDD3;
+  --accent-dark:   #9E4E2A;
+  --accent-hover:  #B35830;
 
   /* ── Secondary — Deep Sage ── */
-  --sage: #5B7B6A;
-  --sage-light: #E4EDE8;
-  --sage-dark: #3D5C4D;
+  --sage:          #5B7B6A;
+  --sage-light:    #E4EDE8;
+  --sage-dark:     #3D5C4D;
 
   /* ── Tertiary — Dusty Copper ── */
-  --copper: #B08968;
-  --copper-light: #F0E0D0;
+  --copper:        #B08968;
+  --copper-light:  #F0E0D0;
 
   /* ── Functional ── */
-  --success: #16a34a;
+  --success:       #16a34a;
   --success-light: #dcfce7;
-  --warning: #d97706;
+  --warning:       #d97706;
   --warning-light: #fef3c7;
-  --error: #dc2626;
-  --error-light: #fee2e2;
+  --error:         #dc2626;
+  --error-light:   #fee2e2;
 
   /* ── Borders ── */
-  --border: #E8E5E0;
-  --border-light: #F0EDEA;
+  --border:        #DFDBD5;     /* Slightly darker for structural clarity */
+  --border-light:  #E8E5E1;     /* More visible light border */
   --border-subtle: rgba(26, 26, 46, 0.08);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(26, 26, 46, 0.04);
-  --shadow-md: 0 4px 16px rgba(26, 26, 46, 0.06);
-  --shadow-lg: 0 12px 40px rgba(26, 26, 46, 0.08);
+  /* ── Shadows (MOBILE-ONLY for structural cards) ── */
+  --shadow-sm:   0 1px 2px rgba(26, 26, 46, 0.04);
   --shadow-card: 0 2px 8px rgba(26, 26, 46, 0.04), 0 0 1px rgba(26, 26, 46, 0.06);
+  --shadow-md:   0 4px 16px rgba(26, 26, 46, 0.06);
+  --shadow-lg:   0 12px 40px rgba(26, 26, 46, 0.08);
 
-  /* Typography */
+  /* ── Typography ── */
   --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', monospace;
 
-  /* Typography Scale */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.875rem;   /* 14px */
-  --text-base: 1rem;     /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
-  --text-5xl: 3rem;      /* 48px */
-  --text-6xl: 3.75rem;   /* 60px */
-  --text-7xl: 4.5rem;    /* 72px */
+  /* ── Display Scale (Desktop Hero) ── */
+  --text-display:    clamp(80px, 12vw, 180px);   /* Giant editorial */
+  --text-display-sm: clamp(48px, 8vw, 80px);     /* Section titles desktop */
 
-  /* Display scale — for hero editorial typography */
-  --text-display-sm: clamp(48px, 8vw, 80px);    /* Tablet hero */
-  --text-display: clamp(80px, 12vw, 180px);      /* Desktop hero */
-  --text-display-lg: clamp(100px, 14vw, 220px);  /* Ultra-wide hero */
+  /* ── Standard Scale ── */
+  --text-5xl: 3rem;      /* 48px — mobile hero */
+  --text-4xl: 2.25rem;   /* 36px — large data numbers */
+  --text-3xl: 1.875rem;  /* 30px — page titles */
+  --text-2xl: 1.5rem;    /* 24px — section titles */
+  --text-xl:  1.25rem;   /* 20px — card titles */
+  --text-lg:  1.125rem;  /* 18px — emphasis */
+  --text-base: 1rem;     /* 16px — body */
+  --text-sm:  0.875rem;  /* 14px — secondary */
+  --text-xs:  0.75rem;   /* 12px — captions */
 
   /* ── Spacing ── */
-  --space-1: 0.25rem;   /* 4px */
-  --space-2: 0.5rem;    /* 8px */
-  --space-3: 0.75rem;   /* 12px */
-  --space-4: 1rem;      /* 16px */
-  --space-5: 1.25rem;   /* 20px */
-  --space-6: 1.5rem;    /* 24px */
-  --space-8: 2rem;      /* 32px */
-  --space-10: 2.5rem;   /* 40px */
-  --space-12: 3rem;     /* 48px */
-  --space-16: 4rem;     /* 64px */
-  --space-20: 5rem;     /* 80px */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
 
   /* ── Section Spacing (Tri-Layout) ── */
   --section-pad-desktop: 160px;
-  --section-pad-tablet: 80px;
-  --section-pad-mobile: 40px;
+  --section-pad-tablet:  80px;
+  --section-pad-mobile:  40px;
 
   /* ── Content Constraints ── */
-  --container-max: 1440px;
+  --container-max:    1440px;
   --container-narrow: 800px;
   --container-mobile: 430px;
 
-  /* Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
-  --radius-2xl: 32px;
+  /* ── Radius ── */
+  --radius-sm:   8px;
+  --radius-md:   12px;
+  --radius-lg:   16px;
+  --radius-xl:   24px;
+  --radius-2xl:  32px;
   --radius-full: 9999px;
 
-  /* Animation & Easing */
+  /* ── Animation & Easing ── */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
@@ -174,7 +171,7 @@ ul, ol { list-style: none; }
   font-family: var(--font-heading);
   font-size: 15px; font-weight: 700;
   color: #fff; background: var(--accent);
-  padding: 14px 28px; border-radius: var(--radius-full);
+  padding: 14px 32px; border-radius: var(--radius-full);
   box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
   transition: all var(--duration-normal) var(--spring);
   min-height: 48px;
@@ -190,29 +187,55 @@ ul, ol { list-style: none; }
   transform: translateY(0) scale(0.98);
 }
 
+@media (min-width: 1024px) {
+  .btn-primary {
+    border-radius: 8px;
+    padding: 16px 40px;
+    box-shadow: none; /* Flat for desktop */
+  }
+  .btn-primary:hover {
+    transform: none;
+    background: var(--accent-hover);
+    box-shadow: none;
+  }
+}
+
 .btn-outline {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   font-family: var(--font-heading);
   font-size: 15px; font-weight: 700;
-  color: rgba(255,255,255,0.85);
-  padding: 14px 28px; border-radius: var(--radius-full);
-  border: 1.5px solid rgba(255,255,255,0.3);
-  background: transparent;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  color: var(--text);
+  padding: 14px 32px; border-radius: var(--radius-full);
+  border: 1.5px solid var(--border);
+  background: var(--bg-card);
   transition: all var(--duration-normal) var(--ease);
   min-height: 48px;
   cursor: pointer;
 }
 .btn-outline:hover {
-  background: rgba(255,255,255,0.1);
-  color: #fff;
-  border-color: rgba(255,255,255,0.5);
+  background: var(--bg-muted);
+  border-color: var(--text-muted);
 }
 .btn-outline:active {
   transform: scale(0.98);
 }
 
+@media (min-width: 1024px) {
+  .btn-outline {
+    border-radius: 8px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+  }
+  .btn-outline:hover {
+    background: var(--bg-muted);
+    transform: none;
+  }
+}
+
+/* Structural lines for desktop */
+.section-divider {
+  border-top: 1px solid var(--border-subtle);
+}
 
 /* Scroll reveal */
 .reveal {
@@ -224,10 +247,6 @@ ul, ol { list-style: none; }
   opacity: 1;
   transform: translateY(0);
 }
-.reveal.d1 { transition-delay: 0.04s; }
-.reveal.d2 { transition-delay: 0.08s; }
-.reveal.d3 { transition-delay: 0.12s; }
-.reveal.d4 { transition-delay: 0.16s; }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal { opacity: 1; transform: none; transition: none; }
@@ -272,4 +291,5 @@ ul, ol { list-style: none; }
     padding: clamp(16px, 3vw, 24px) clamp(20px, 4vw, 32px);
   }
 }
+
 

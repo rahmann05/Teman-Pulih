@@ -15,6 +15,10 @@ const relationRoutes = require('./routes/relationRoutes');
 const emrRoutes = require('./routes/emrRoutes');
 const profileController = require('./controllers/profileController');
 const { requireAuth } = require('./middleware/authMiddleware');
+const { initCleanupTasks } = require('./tasks/cleanup');
+
+// Initialize background tasks
+initCleanupTasks();
 
 const app = express();
 

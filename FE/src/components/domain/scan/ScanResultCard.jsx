@@ -12,7 +12,14 @@ const ScanResultCard = ({ extractedText, imageUrl }) => {
       {/* Scanned image thumbnail */}
       {imageUrl && (
         <div className="scan-result-image">
-          <img src={imageUrl} alt="Resep yang discan" loading="lazy" />
+          <img 
+            src={imageUrl} 
+            alt="Resep yang discan" 
+            loading="lazy" 
+            onError={(e) => {
+              e.target.src = 'https://placehold.co/600x400/F3F0EC/C4653A?text=Image+Unavailable';
+            }}
+          />
         </div>
       )}
 

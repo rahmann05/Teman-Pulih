@@ -39,6 +39,9 @@ const ScanHistory = ({ history = [], loading = false }) => {
               src={scan.image_url}
               alt="Resep"
               loading="lazy"
+              onError={(e) => {
+                e.target.src = 'https://placehold.co/600x400/F3F0EC/C4653A?text=Image+Unavailable';
+              }}
             />
             <span className="scan-history-card-date">
               {formatDate(scan.created_at)}

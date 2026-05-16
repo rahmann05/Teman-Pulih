@@ -99,7 +99,7 @@ const MedicationListPage = () => {
         {loading ? (
           <div className="med-skeleton">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="skeleton-block" style={{ height: 110, borderRadius: 24 }} />
+              <div key={n} className="skeleton-block" style={{ height: 120, borderRadius: 'var(--radius-xl)' }} />
             ))}
           </div>
         ) : error ? (

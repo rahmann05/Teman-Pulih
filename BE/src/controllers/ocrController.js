@@ -1,5 +1,7 @@
 const axios = require('axios');
 const FormData = require('form-data');
+const sharp = require('sharp');
+const { supabase: serviceSupabase } = require('../config/db');
 
 // URL dari Backend Machine Learning (misal Python FastAPI/Flask)
 const ML_BACKEND_URL = process.env.ML_API_URL || 'http://localhost:8000';
@@ -13,48 +15,56 @@ const getSupabaseClient = (req) => {
 
 const scanPrescription = async (req, res) => {
     try {
-        const userId = req.user.id; // Authentication Middleware Gateway
-        const supabase = getSupabaseClient(req);
+        const userId = req.user.id;
+        const userSupabase = getSupabaseClient(req);
         
-        // Multer file interception di router memastikan file ada di req.file
         if (!req.file) {
             return res.status(400).json({ error: 'Tidak ada file gambar yang diunggah' });
         }
 
-        // 1. GATEWAY -> MACHINE LEARNING BACKEND: 
-        // Mengirimkan buffer gambar OCR ini ke AI Python Port 8000 secara rahasia
+        // 0. COMPRESSION: Kompres gambar agar di bawah 500KB (sesuai limit bucket)
+        // Kita resize ke lebar maksimal 1200px (cukup untuk OCR) dan kualitas 80%
+        const compressedBuffer = await sharp(req.file.buffer)
+            .resize(1200, null, { withoutEnlargement: true })
+            .jpeg({ quality: 80 })
+            .toBuffer();
+
+        // 1. GATEWAY -> MACHINE LEARNING BACKEND
         const formData = new FormData();
-        formData.append('file', req.file.buffer, req.file.originalname);
+        formData.append('file', compressedBuffer, req.file.originalname);
         
         let extractedText = "Mock OCR Text: Amoxicillin 500mg (ML Endpoint Belum Siap)";
         
         try {
-            // Tembak Microservice ML: POST /api/predict_ocr
             const mlResponse = await axios.post(`${ML_BACKEND_URL}/api/predict_ocr`, formData, {
                 headers: formData.getHeaders(),
-                timeout: 10000 // Beri timeout 10 detik agar tak hanging
+                timeout: 15000 
             });
             extractedText = mlResponse.data.text || extractedText;
         } catch (mlErr) {
             console.warn("Backend ML Unreachable. Menggunakan Mock OCR. Error:", mlErr.message);
         }
 
-        // 2. GATEWAY -> SUPABASE STORAGE: Menitipkan Gambar
-        // Asumsi nama bucket 'prescriptions' sudah ada di project Supabase
-        const uniqueFileName = `${Date.now()}_${req.file.originalname}`;
-        const { error: uploadError, data: uploadData } = await supabase
+        // 2. GATEWAY -> SUPABASE STORAGE
+        const uniqueFileName = `${Date.now()}_scan.jpg`;
+        const { error: uploadError, data: uploadData } = await serviceSupabase
             .storage
-            .from('prescriptions') // Anda harus membuat bucket ini public terlebih dahulu di Dashboard
-            .upload(uniqueFileName, req.file.buffer, { contentType: req.file.mimetype });
+            .from('prescriptions')
+            .upload(uniqueFileName, compressedBuffer, { 
+                contentType: 'image/jpeg',
+                upsert: true
+            });
             
-        let imageUrl = `https://mock-image.com/${uniqueFileName}`;
+        let imageUrl = `https://placehold.co/600x400/F3F0EC/C4653A?text=Scan+Prescription`; 
         if (!uploadError && uploadData) {
-            const { data: publicUrlData } = supabase.storage.from('prescriptions').getPublicUrl(uniqueFileName);
+            const { data: publicUrlData } = serviceSupabase.storage.from('prescriptions').getPublicUrl(uniqueFileName);
             imageUrl = publicUrlData.publicUrl;
+        } else if (uploadError) {
+            console.error("Supabase Storage Upload Error:", uploadError.message);
         }
 
-        // 3. GATEWAY -> SUPABASE DATABASE: Mencatat History Scan OCR & Text Hasil
-        const { data: savedScan, error: dbError } = await supabase
+        // 3. GATEWAY -> SUPABASE DATABASE
+        const { data: savedScan, error: dbError } = await userSupabase
             .from('ocr_history')
             .insert([{ 
                 user_id: userId, 

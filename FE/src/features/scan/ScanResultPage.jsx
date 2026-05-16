@@ -59,9 +59,9 @@ const ScanResultPage = () => {
             <h1 className="scan-header-title">Hasil Scan</h1>
           </header>
           <div className="scan-skeleton">
-            <div className="skeleton-block" style={{ height: 200 }} />
-            <div className="skeleton-block" style={{ height: 160 }} />
-            <div className="skeleton-block" style={{ height: 48 }} />
+            <div className="skeleton-block" style={{ height: 280, borderRadius: 'var(--radius-xl)' }} />
+            <div className="skeleton-block" style={{ height: 180, borderRadius: 'var(--radius-2xl)' }} />
+            <div className="skeleton-block" style={{ height: 56, borderRadius: 'var(--radius-md)' }} />
           </div>
         </div>
       </DashboardLayout>

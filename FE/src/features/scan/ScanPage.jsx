@@ -4,6 +4,7 @@ import { LuCrop, LuArrowLeft } from 'react-icons/lu';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import ScanPreview from '../../components/domain/scan/ScanPreview';
 import ScanActions from '../../components/domain/scan/ScanActions';
+import ScanHistory from '../../components/domain/scan/ScanHistory';
 import { useOcrScan } from '../../hooks/useOcrScan';
 import '../../styles/features/Scan.css';
 
@@ -107,6 +108,14 @@ const ScanPage = () => {
           <div className="scan-error" role="alert">
             {error}
           </div>
+        )}
+
+        {/* History */}
+        {!imagePreview && (
+          <ScanHistory
+            history={history}
+            loading={historyLoading}
+          />
         )}
       </div>
     </DashboardLayout>
