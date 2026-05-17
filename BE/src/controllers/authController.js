@@ -146,9 +146,16 @@ const login = async (req, res) => {
 
         res.status(200).json({
             message: 'Berhasil login',
-            user: userData,
-            session: data.session,
-            access_token: data.session.access_token
+            user: {
+                id: userData.id,
+                auth_id: data.user.id,
+                email: data.user.email,
+                name: userData.name,
+                role: activeRole
+            },
+            allowed_roles: allowedRoles,
+            token: data.session.access_token,
+            refresh_token: data.session.refresh_token
         });
     } catch (error) {
         res.status(400).json({ error: error.message });

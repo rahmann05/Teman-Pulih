@@ -55,20 +55,6 @@ const getMockData = (days) => {
 const WeeklyMedicationCalendar = () => {
   const days = useMemo(() => getLast7Days(), []);
   const medicationHistory = useMemo(() => getMockData(days), [days]);
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  useEffect(() => {
-    const tabletQuery = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
-
-    const syncTabletState = () => {
-      setIsExpanded(!tabletQuery.matches);
-    };
-
-    syncTabletState();
-    tabletQuery.addEventListener('change', syncTabletState);
-
-    return () => tabletQuery.removeEventListener('change', syncTabletState);
-  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -81,41 +67,11 @@ const WeeklyMedicationCalendar = () => {
   };
 
   return (
-    <div className={`weekly-calendar-section ${isExpanded ? 'is-expanded' : 'is-collapsed'}`} data-testid="weekly-calendar">
+    <div className="weekly-calendar-section is-expanded" data-testid="weekly-calendar">
       <div className="section-header weekly-calendar-header">
         <h3 className="section-title">Riwayat 7 Hari Terakhir</h3>
-        <button
-          type="button"
-          className="weekly-calendar-toggle"
-          onClick={() => setIsExpanded((current) => !current)}
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? 'Minimize kalender' : 'Extend kalender'}
-        >
-          {isExpanded ? 'Minimize' : 'Extend'}
-        </button>
       </div>
 
-      {!isExpanded && (
-        <div className="weekly-calendar-collapsed">
-          <div className="weekly-calendar-summary">
-            <span className="weekly-calendar-summary-label">Kalender diperkecil</span>
-            <span className="weekly-calendar-summary-value">Tap Extend untuk melihat 7 hari lengkap</span>
-          </div>
-          <div className="weekly-calendar-mini-strip" aria-hidden="true">
-            {days.slice(-4).map((day) => {
-              const isToday = new Date().toISOString().split('T')[0] === day.fullDate;
-
-              return (
-                <span key={day.fullDate} className={`weekly-calendar-mini-day ${isToday ? 'today' : ''}`}>
-                  {day.dayName}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {isExpanded && (
       <div className="weekly-calendar-grid">
         {days.map((day) => {
           const meds = medicationHistory[day.fullDate] || [];
@@ -146,7 +102,6 @@ const WeeklyMedicationCalendar = () => {
           );
         })}
       </div>
-      )}
     </div>
   );
 };

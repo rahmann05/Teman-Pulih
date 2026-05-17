@@ -1,6 +1,7 @@
 /* ============================================================
-   CAREGIVER DASHBOARD — Pulih Design Language
-   Matches PatientDashboard system with caregiver-specific overrides
+   CAREGIVER DASHBOARD — Floema × Teman Pulih Editorial (Rich Bento Edition)
+   Mobile: Clean & Airy
+   Desktop: Full Bleed Layout with Rich Shadows & Big Radius
    ============================================================ */
 
 /* ── Container ────────────────────────────────────────────── */
@@ -8,81 +9,84 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  background: var(--bg);
+  background: #FAF8F5; /* Floema cream */
   min-height: 100dvh;
-  padding-bottom: 80px;
+  padding-bottom: 96px; /* space for bottom nav on mobile */
+  width: 100%;
 }
 
-/* ── Header ───────────────────────────────────────────────── */
+/* ── Header (Mobile/Tablet Only) ──────────────────────────── */
 .cg-dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-5) var(--space-5) var(--space-4);
-  background: var(--bg);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background: #FAF8F5;
 }
 
 .cg-header-user-info {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .cg-avatar-circle {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--sage), #3d5c4d);
+  background: var(--sage);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: var(--text-base);
-  color: var(--text-inverse);
+  font-size: 20px;
+  color: #fff;
   font-family: var(--font-heading);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(91, 123, 106, 0.35);
+  box-shadow: 0 8px 24px rgba(138, 154, 91, 0.3);
 }
 
 .cg-greeting-text {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
 }
 
 .cg-greeting-sub {
-  font-size: var(--text-xs);
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-secondary);
-  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .cg-greeting-name {
-  font-size: var(--text-lg);
-  font-weight: 800;
+  font-size: 28px;
+  font-weight: 900;
   color: var(--text);
   font-family: var(--font-heading);
-  line-height: 1.15;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 }
 
-.cg-bell-icon {
-  width: 22px;
-  height: 22px;
-  color: var(--text-secondary);
-  flex-shrink: 0;
-}
-
-/* ── Triage Hero Card ─────────────────────────────────────── */
+/* ── Triage Hero Card (Rich Bento) ────────────────────────── */
 .triage-card {
-  margin: 0 var(--space-5) var(--space-5);
-  border-radius: var(--radius-2xl);
+  margin: 0 var(--space-5) var(--space-6);
+  border-radius: 32px;
   overflow: hidden;
   position: relative;
-  min-height: 200px;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  box-shadow: var(--shadow-lg);
-  transition: box-shadow var(--duration-normal) var(--ease-out-expo);
+  background: #3d5c4d; /* Fallback */
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.08); /* Deep shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.triage-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 34px 60px rgba(0, 0, 0, 0.12);
 }
 
 .triage-card-bg {
@@ -99,31 +103,20 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  transition: background var(--duration-normal) var(--ease-out-expo);
 }
 
 .triage-card.safe .triage-card-overlay {
-  background: linear-gradient(
-    to bottom,
-    rgba(91, 123, 106, 0.25) 0%,
-    rgba(91, 123, 106, 0.6) 40%,
-    rgba(30, 50, 40, 0.92) 100%
-  );
+  background: linear-gradient(to bottom, rgba(61,92,77,0.2) 0%, rgba(30,50,40,0.85) 100%);
 }
 
 .triage-card.alert .triage-card-overlay {
-  background: linear-gradient(
-    to bottom,
-    rgba(158, 78, 42, 0.2) 0%,
-    rgba(158, 78, 42, 0.55) 40%,
-    rgba(80, 30, 10, 0.92) 100%
-  );
+  background: linear-gradient(to bottom, rgba(158,78,42,0.2) 0%, rgba(80,30,10,0.9) 100%);
 }
 
 .triage-card-body {
   position: relative;
   z-index: 2;
-  padding: var(--space-5);
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -132,167 +125,156 @@
 .triage-card-top {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.75);
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.85);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.triage-icon {
-  width: 16px;
-  height: 16px;
+  letter-spacing: 0.1em;
 }
 
 .triage-message {
-  font-size: var(--text-xl);
-  font-weight: 800;
+  font-size: clamp(32px, 8vw, 56px);
+  font-weight: 900;
   font-family: var(--font-heading);
-  color: var(--text-inverse);
-  line-height: 1.25;
-  letter-spacing: -0.02em;
+  color: #fff;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
 .glass-btn {
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.15);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-full);
-  padding: var(--space-3) var(--space-6);
-  color: var(--text-inverse);
-  font-weight: 700;
-  font-size: var(--text-base);
-  text-align: center;
+  align-self: flex-start;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 999px;
+  padding: 16px 32px;
+  font-weight: 800;
+  font-size: 15px;
   cursor: pointer;
-  transition: background var(--duration-fast) var(--ease-out-expo),
-              transform var(--duration-fast) var(--ease-out-expo);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 12px;
 }
 
-.glass-btn:hover  { background: rgba(255, 255, 255, 0.25); }
-.glass-btn:active { transform: scale(0.985); }
+.glass-btn:hover { transform: scale(1.03); }
+.glass-btn:active { transform: scale(0.97); }
 
-/* ── Shared Section Header ────────────────────────────────── */
-.section-header {
+/* ── Section Titles ───────────────────────────────────────── */
+.section-header, .roster-header {
+  padding: 0 var(--space-5);
+  margin-bottom: var(--space-4);
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: var(--space-4);
+  align-items: center;
 }
 
-.section-title,
-.roster-title,
-.upcoming-title {
-  font-size: var(--text-xl);
+.section-title, .roster-title, .upcoming-title {
+  font-size: clamp(24px, 4vw, 32px);
   font-weight: 800;
   font-family: var(--font-heading);
   color: var(--text);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  padding: 0 var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
-.section-link {
-  font-size: var(--text-sm);
-  color: var(--accent);
-  font-weight: 600;
-  text-decoration: none;
+.upcoming-title {
+  padding: 0;
 }
 
 /* ── Roster Section ───────────────────────────────────────── */
 .roster-section {
-  padding: 0 var(--space-5);
   margin-bottom: var(--space-6);
 }
 
-.roster-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-4);
-}
-
 .add-patient-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
-  border: 2px dashed var(--border);
+  border: 1px dashed rgba(0,0,0,0.15);
   background: none;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color var(--duration-fast), color var(--duration-fast);
+  transition: border-color 0.2s, color 0.2s;
 }
 
 .add-patient-btn:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+  border-color: var(--text);
+  color: var(--text);
 }
 
 .roster-carousel {
   display: flex;
   overflow-x: auto;
-  gap: var(--space-3);
-  padding-bottom: var(--space-2);
+  gap: var(--space-4);
+  padding: 0 var(--space-5) var(--space-4);
   scrollbar-width: none;
 }
 
 .roster-carousel::-webkit-scrollbar { display: none; }
 
 .patient-card {
-  min-width: 130px;
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-4) var(--space-3);
-  box-shadow: var(--shadow-card);
+  min-width: 140px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.02);
+  border-radius: 24px;
+  padding: var(--space-5) var(--space-4);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-shrink: 0;
-  border-top: 4px solid transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
+
+.patient-card::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+}
+
+.patient-card.status-safe::after  { background: var(--sage); }
+.patient-card.status-alert::after { background: var(--accent); }
 
 .patient-card:hover {
-  border-color: var(--accent-light);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
 }
 
-.patient-card.status-safe  { border-top-color: var(--sage); }
-.patient-card.status-alert { border-top-color: var(--accent); }
-
 .patient-avatar {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-full);
-  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: var(--text-base);
-  color: var(--text);
+  font-size: 20px;
   font-family: var(--font-heading);
 }
 
-.patient-card.status-safe  .patient-avatar { background: var(--sage-light); color: var(--sage); }
+.patient-card.status-safe  .patient-avatar { background: var(--sage-light); color: var(--sage-dark); }
 .patient-card.status-alert .patient-avatar { background: var(--accent-light); color: var(--accent-dark); }
 
 .patient-name {
-  font-weight: 700;
-  font-size: var(--text-sm);
+  font-weight: 800;
+  font-size: 16px;
   color: var(--text);
   text-align: center;
-  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
 }
 
 .patient-adherence {
-  font-size: var(--text-xs);
+  font-size: 13px;
   color: var(--text-secondary);
   text-align: center;
-  line-height: 1.4;
 }
 
 /* ── Upcoming Timeline ────────────────────────────────────── */
@@ -301,271 +283,150 @@
   margin-bottom: var(--space-6);
 }
 
-.upcoming-title {
-  margin-bottom: var(--space-4);
-}
-
 .upcoming-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 0;
   position: relative;
 }
 
 .upcoming-list::before {
   content: '';
   position: absolute;
-  left: 40px;
+  left: 48px;
   top: 16px;
   bottom: 16px;
   width: 2px;
-  background: linear-gradient(to bottom, var(--sage-light), transparent);
+  background: linear-gradient(to bottom, var(--sage), rgba(0,0,0,0.02));
   z-index: 0;
-  border-radius: 1px;
 }
 
 .upcoming-item {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-4);
   position: relative;
   z-index: 1;
-  align-items: flex-start;
+  padding-bottom: var(--space-5);
 }
 
 .upcoming-time {
-  width: 40px;
-  font-size: var(--text-xs);
-  font-weight: 700;
+  width: 44px;
+  font-size: 13px;
+  font-weight: 800;
   color: var(--text-secondary);
-  padding-top: var(--space-3);
+  padding-top: 16px;
   text-align: right;
   flex-shrink: 0;
-  line-height: 1.2;
 }
 
 .upcoming-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: var(--radius-full);
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
   background: var(--sage);
-  margin-top: calc(var(--space-3) + 3px);
+  margin-top: 18px;
   flex-shrink: 0;
   position: relative;
   z-index: 2;
-  box-shadow: 0 0 0 3px var(--sage-light);
+  box-shadow: 0 0 0 6px #FFFFFF;
 }
 
 .upcoming-card {
   flex: 1;
-  background: var(--bg-card);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-card);
+  background: #FFFFFF;
+  padding: var(--space-5);
+  border-radius: 24px;
+  border: 1px solid rgba(0,0,0,0.03);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  border-left: 3px solid var(--sage);
+  gap: 8px;
 }
 
 .upcoming-patient-tag {
   align-self: flex-start;
   background: var(--sage-light);
-  color: var(--sage);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  padding: 2px var(--space-2);
-  border-radius: var(--radius-full);
-  margin-bottom: var(--space-1);
+  color: var(--sage-dark);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
 .upcoming-med-name {
-  font-weight: 700;
-  font-size: var(--text-base);
+  font-weight: 800;
+  font-size: 18px;
   color: var(--text);
-  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
 }
 
 .upcoming-med-desc {
-  font-size: var(--text-xs);
+  font-size: 14px;
   color: var(--text-secondary);
   line-height: 1.5;
 }
 
-/* ── Empty State ─────────────────────────────────────────── */
-.empty-state-text {
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  text-align: center;
-  padding: var(--space-6) 0;
-}
-
-/* ── Reduced Motion ───────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .triage-card, .patient-card, .glass-btn { transition: none; }
-}
-
-/* ── Mobile Optimizations (Max 480px) ─────────────────────── */
-@media (max-width: 480px) {
-  .cg-dashboard-header {
-    padding: var(--space-4) var(--space-4) var(--space-2);
-  }
-
-  .cg-avatar-circle {
-    width: 40px;
-    height: 40px;
-  }
-
-  .cg-greeting-name {
-    font-size: var(--text-md);
-  }
-
-  .triage-card {
-    margin: 0 var(--space-4) var(--space-4);
-    min-height: 180px;
-  }
-
-  .triage-card-body {
-    padding: var(--space-4);
-    gap: var(--space-3);
-  }
-
-  .triage-message {
-    font-size: var(--text-lg);
-  }
-
-  .glass-btn {
-    padding: var(--space-2) var(--space-4);
-    font-size: var(--text-sm);
-  }
-
-  .roster-section,
-  .upcoming-section {
-    padding: 0 var(--space-4);
-    margin-bottom: var(--space-5);
-  }
-
-  .roster-title,
-  .upcoming-title {
-    font-size: var(--text-lg);
-  }
-
-  .patient-card {
-    min-width: 110px;
-    padding: var(--space-3) var(--space-2);
-  }
-
-  .patient-avatar {
-    width: 36px;
-    height: 36px;
-    font-size: var(--text-sm);
-  }
-
-  .patient-name {
-    font-size: var(--text-xs);
-  }
-
-  .upcoming-list::before {
-    left: 32px;
-  }
-
-  .upcoming-time {
-    width: 32px;
-    font-size: 10px;
-  }
-
-  .upcoming-card {
-    padding: var(--space-2) var(--space-3);
-  }
-
-  .upcoming-med-name {
-    font-size: var(--text-sm);
-  }
-}
-
-/* ============================================
-   Desktop Overrides
-   ============================================ */
-/* ============================================
-   Desktop Overrides
-   ============================================ */
-@media (min-width: 1024px) {
+/* ── Desktop & Tablet Full Bleed ──────────────────────────── */
+@media (min-width: 768px) {
   .cg-dashboard-container {
-    padding-bottom: var(--space-10);
-    max-width: 1200px;
-    margin: 0 auto;
+    padding-bottom: 0;
   }
 
   .cg-dashboard-header {
-    display: none; /* TopNav handles identity on desktop */
+    display: none;
   }
 
   .cg-dashboard-grid {
     display: grid;
-    grid-template-columns: 1.6fr 1fr;
+    grid-template-columns: 1fr 1fr;
     gap: var(--space-8);
-    align-items: start;
-    padding-top: var(--space-6);
+    padding: var(--space-8) max(4vw, var(--space-8));
+    width: 100%;
   }
 
+  .roster-header, .roster-carousel, .upcoming-section {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .roster-title, .upcoming-title, .section-title {
+    padding: 0;
+  }
+  
   .triage-card {
-    margin: 0 0 var(--space-8);
-    min-height: 240px;
-    box-shadow: var(--shadow-lg); /* Keep shadow for hero photo */
+    margin: 0;
+    min-height: 320px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .cg-dashboard-grid {
+    grid-template-columns: 1.2fr 1.1fr; /* Split layout */
+    gap: 40px;
+    padding: 40px max(5vw, 40px);
+  }
+
+  .dashboard-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .dashboard-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
   }
 
   .triage-message {
-    font-size: var(--text-3xl);
-    max-width: 500px;
-  }
-
-  .roster-section {
-    padding: 0;
-  }
-
-  .roster-title {
-    font-size: var(--text-2xl);
-    font-weight: 900;
+    font-size: 64px;
   }
 
   .roster-carousel {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    overflow: visible;
-    padding: 0;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: var(--space-4);
-  }
-
-  .patient-card {
-    min-width: unset;
-    background: transparent;
-    box-shadow: none;
-    border: 1.5px solid var(--border-light);
-    border-top: 4px solid transparent;
-    padding: var(--space-6) var(--space-3);
-  }
-
-  .patient-card.status-safe  { border-top-color: var(--sage); }
-  .patient-card.status-alert { border-top-color: var(--accent); }
-
-  .upcoming-section {
-    padding: 0;
-  }
-
-  .upcoming-title {
-    font-size: var(--text-2xl);
-    font-weight: 900;
-  }
-
-  .upcoming-card {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    border-bottom: 1.5px solid var(--border-light);
-    padding: var(--space-4) 0 var(--space-4) var(--space-4);
-  }
-
-  .upcoming-list::before {
-    left: 40px;
-    background: linear-gradient(to bottom, var(--sage), var(--border-light));
   }
 }

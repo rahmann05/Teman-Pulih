@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import '../../styles/features/LandingPage.css';
 import LandingHero from '../../components/domain/landing/LandingHero';
-import LandingServiceChips from '../../components/domain/landing/LandingServiceChips';
 import LandingFeatureGrid from '../../components/domain/landing/LandingFeatureGrid';
 import LandingStats from '../../components/domain/landing/LandingStats';
 import LandingSteps from '../../components/domain/landing/LandingSteps';
@@ -26,7 +25,6 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <LandingHero />
-      <LandingServiceChips />
       <LandingFeatureGrid />
       <LandingStats />
       <LandingSteps />

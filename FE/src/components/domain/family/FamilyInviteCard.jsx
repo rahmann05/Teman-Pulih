@@ -16,8 +16,10 @@ const FamilyInviteCard = ({
 }) => (
   <section className="family-invite-card">
     <div className="family-invite-title">
-      <LuUserPlus size={18} className="family-invite-title-icon" />
-      <span>{title}</span>
+      <div className="family-invite-icon-wrapper">
+        <LuUserPlus size={22} className="family-invite-title-icon" />
+      </div>
+      <span className="family-invite-title-text">{title}</span>
     </div>
     <p className="family-invite-desc">{description}</p>
 

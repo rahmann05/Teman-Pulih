@@ -2,10 +2,8 @@
 import NextMedicationHero from '../../components/domain/dashboard/NextMedicationHero';
 import QuickActionGrid from '../../components/domain/dashboard/QuickActionGrid';
 import MedicationTimeline from '../../components/domain/medication/MedicationTimeline';
-import HealthTipsCarousel from '../../components/domain/dashboard/HealthTipsCarousel';
 import WeeklyMedicationCalendar from '../../components/domain/dashboard/WeeklyMedicationCalendar';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import DashboardHeader from '../../components/domain/dashboard/DashboardHeader';
 import EMROnboardingModal from '../../components/layout/EMROnboardingModal';
 import { usePatientDashboard } from '../../hooks/usePatientDashboard';
 import '../../styles/features/Dashboard.css';
@@ -43,28 +41,50 @@ const PatientDashboard = () => {
   return (
     <DashboardLayout>
       <div className="dashboard-container" data-testid="patient-dashboard">
-        <DashboardHeader userName={dashboardData.patientName} initials={dashboardData.initials} />
         
-        <NextMedicationHero
-          id={dashboardData.nextMedication?.id}
-          medicationId={dashboardData.nextMedication?.medicationId}
-          scheduleId={dashboardData.nextMedication?.scheduleId}
-          time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada jadwal'}
-          medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
-          instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
-          onMarkTaken={dashboardData.markAsTakenAction}
-        />
-
-        <QuickActionGrid />
-
-        <div className="dashboard-grid dashboard-grid--single">
-          <div className="dashboard-main">
-            <MedicationTimeline schedule={dashboardData.timeline} />
-            <WeeklyMedicationCalendar />
+        {/* Mobile/Tablet Greeting (Hidden on Desktop, handled by TopNav) */}
+        <div className="dashboard-header">
+          <div className="header-user-info">
+            <div className="avatar-circle">{dashboardData.initials}</div>
+            <div className="greeting-text">
+              <span className="greeting-sub">Selamat pagi,</span>
+              <span className="greeting-name">{dashboardData.patientName}</span>
+            </div>
           </div>
         </div>
 
-        <HealthTipsCarousel />
+        {/* Dashboard Content Grid */}
+        <div className="patient-dashboard-grid">
+          
+          {/* Split-Bento Hero Section (Spans full width of the grid on desktop) */}
+          <div className="dashboard-hero-wrapper">
+            <NextMedicationHero
+              id={dashboardData.nextMedication?.id}
+              medicationId={dashboardData.nextMedication?.medicationId}
+              scheduleId={dashboardData.nextMedication?.scheduleId}
+              time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada'}
+              medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
+              instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
+              onMarkTaken={dashboardData.markAsTakenAction}
+            />
+          </div>
+
+          {/* Column 1: Quick Actions */}
+          <div className="dashboard-col-left">
+            <QuickActionGrid />
+          </div>
+
+          {/* Column 2: Timeline */}
+          <div className="dashboard-col-right">
+            <MedicationTimeline schedule={dashboardData.timeline} />
+          </div>
+
+          {/* Full Width Calendar Section (At the very end) */}
+          <div className="dashboard-calendar-wrapper">
+            <WeeklyMedicationCalendar />
+          </div>
+
+        </div>
       </div>
 
       <EMROnboardingModal 

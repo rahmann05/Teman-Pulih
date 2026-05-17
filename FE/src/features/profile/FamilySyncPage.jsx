@@ -53,38 +53,44 @@ const FamilySyncContent = () => {
 
   return (
     <FamilySyncLayout caregiverMode={caregiverMode}>
-      <FamilyHeader title="Sinkronisasi Keluarga" onBack={handleBack} />
+      <div className="family-dashboard-grid">
+        <FamilyHeader title="Sinkronisasi Keluarga" onBack={handleBack} />
 
-      {error && <div className="family-error">{error}</div>}
+        {error && <div className="family-error">{error}</div>}
 
-      <FamilyInviteCard
-        title={inviteCopy.title}
-        description={inviteCopy.description}
-        placeholder={inviteCopy.placeholder}
-        value={inviteValue}
-        onChange={handleInviteChange}
-        onSend={handleInviteSubmit}
-        isSending={isSending}
-        error={inviteError}
-        status={inviteStatus}
-        buttonLabel={inviteCopy.buttonLabel}
-      />
+        <div className="family-col-left">
+          <FamilyInviteCard
+            title={inviteCopy.title}
+            description={inviteCopy.description}
+            placeholder={inviteCopy.placeholder}
+            value={inviteValue}
+            onChange={handleInviteChange}
+            onSend={handleInviteSubmit}
+            isSending={isSending}
+            error={inviteError}
+            status={inviteStatus}
+            buttonLabel={inviteCopy.buttonLabel}
+          />
+        </div>
 
-      {!caregiverMode && (
-        <FamilyPendingSection
-          title={sectionTitles.pending}
-          requests={pendingCards}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          processingRequestId={processingRequestId}
-        />
-      )}
+        <div className="family-col-right">
+          {!caregiverMode && (
+            <FamilyPendingSection
+              title={sectionTitles.pending}
+              requests={pendingCards}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              processingRequestId={processingRequestId}
+            />
+          )}
 
-      <FamilyMemberList
-        title={sectionTitles.members}
-        members={memberCards}
-        emptyMessage={emptyStateMessage}
-      />
+          <FamilyMemberList
+            title={sectionTitles.members}
+            members={memberCards}
+            emptyMessage={emptyStateMessage}
+          />
+        </div>
+      </div>
     </FamilySyncLayout>
   );
 };

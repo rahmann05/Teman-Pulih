@@ -113,7 +113,7 @@
   .logo-text {
     font-size: 26px;
     font-weight: 800;
-    color: var(--text);
+    color: var(--text) !important;
   }
 
   .btn-ghost {
@@ -136,6 +136,10 @@
 
 /* ── Desktop ──────────────────────────────────── */
 @media (min-width: 1024px) {
+  .mobile-tablet-only {
+    display: none !important;
+  }
+
   .nav {
     position: absolute;
     top: 0;
@@ -159,7 +163,7 @@
   .logo-text {
     font-size: 34px;
     font-weight: 800;
-    color: var(--text);
+    color: var(--text) !important;
   }
 
   .btn-ghost, .btn-solid {

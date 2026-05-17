@@ -3,7 +3,6 @@ import TriageHeroCard from '../../components/domain/dashboard/TriageHeroCard';
 import PatientRoster from '../../components/domain/dashboard/PatientRoster';
 import UpcomingTimeline from '../../components/domain/dashboard/UpcomingTimeline';
 import DashboardLayout from '../../components/layout/DashboardLayout';
-import CaregiverDashboardHeader from '../../components/domain/dashboard/CaregiverDashboardHeader';
 import { useCaregiverDashboard } from '../../hooks/useCaregiverDashboard';
 import '../../styles/features/CaregiverDashboard.css';
 
@@ -40,21 +39,35 @@ const CaregiverDashboard = () => {
   return (
     <DashboardLayout caregiverMode>
       <div className="cg-dashboard-container" data-testid="caregiver-dashboard">
-        <CaregiverDashboardHeader
-          userName={dashboardData.caregiverName}
-          initials={dashboardData.initials}
-        />
+        
+        {/* Mobile Header */}
+        <div className="cg-dashboard-header">
+          <div className="cg-header-user-info">
+            <div className="cg-avatar-circle">{dashboardData.initials}</div>
+            <div className="cg-greeting-text">
+              <span className="cg-greeting-sub">Caregiver</span>
+              <span className="cg-greeting-name">{dashboardData.caregiverName}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 2-Column Split Desktop Grid */}
         <div className="cg-dashboard-grid">
-          <div className="cg-dashboard-main">
+          
+          {/* Left Column: Triage & Roster */}
+          <div className="dashboard-col-left">
             <TriageHeroCard
               status={dashboardData.triageStatus}
               message={dashboardData.triageMessage}
             />
             <PatientRoster patients={dashboardData.roster} />
           </div>
-          <div className="cg-dashboard-aside">
+
+          {/* Right Column: Upcoming Timeline */}
+          <div className="dashboard-col-right">
             <UpcomingTimeline schedule={dashboardData.timeline} />
           </div>
+          
         </div>
       </div>
     </DashboardLayout>

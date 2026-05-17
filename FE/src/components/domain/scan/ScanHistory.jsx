@@ -7,7 +7,7 @@ const ScanHistory = ({ history = [], loading = false }) => {
   if (loading) {
     return (
       <section className="scan-history-section">
-        <h3 className="section-title">Riwayat Scan</h3>
+        <h3 className="scan-section-title">Riwayat Scan</h3>
         <div className="scan-history-scroll">
           {[1, 2, 3].map((i) => (
             <div key={i} className="scan-history-card skeleton-block" />
@@ -17,8 +17,6 @@ const ScanHistory = ({ history = [], loading = false }) => {
     );
   }
 
-  if (history.length === 0) return null;
-
   const formatDate = (dateStr) => {
     const d = new Date(dateStr);
     return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
@@ -26,29 +24,35 @@ const ScanHistory = ({ history = [], loading = false }) => {
 
   return (
     <section className="scan-history-section">
-      <h3 className="section-title">Riwayat Scan</h3>
-      <div className="scan-history-scroll">
-        {history.map((scan) => (
-          <Link
-            key={scan.id}
-            to={`/scan/result/${scan.id}`}
-            className="scan-history-card"
-            aria-label={`Hasil scan ${formatDate(scan.created_at)}`}
-          >
-            <img
-              src={scan.image_url}
-              alt="Resep"
-              loading="lazy"
-              onError={(e) => {
-                e.target.src = 'https://placehold.co/600x400/F3F0EC/C4653A?text=Image+Unavailable';
-              }}
-            />
-            <span className="scan-history-card-date">
-              {formatDate(scan.created_at)}
-            </span>
-          </Link>
-        ))}
-      </div>
+      <h3 className="scan-section-title">Riwayat Scan</h3>
+      {history.length === 0 ? (
+        <div className="scan-history-empty">
+          <p className="scan-history-empty-text">Belum ada riwayat pemindaian resep obat.</p>
+        </div>
+      ) : (
+        <div className="scan-history-scroll">
+          {history.map((scan) => (
+            <Link
+              key={scan.id}
+              to={`/scan/result/${scan.id}`}
+              className="scan-history-card"
+              aria-label={`Hasil scan ${formatDate(scan.created_at)}`}
+            >
+              <img
+                src={scan.image_url}
+                alt="Resep"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.src = 'https://placehold.co/600x400/F3F0EC/C4653A?text=Image+Unavailable';
+                }}
+              />
+              <span className="scan-history-card-date">
+                {formatDate(scan.created_at)}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </section>
   );
 };

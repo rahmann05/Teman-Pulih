@@ -1,4 +1,7 @@
-/* src/styles/features/Medications.css */
+/* ============================================================
+   MEDICATIONS — Floema Editorial Redesign
+   Aligned with Dashboard + Landing + Pelajari aesthetics.
+   ============================================================ */
 
 /* ── Container ───────────────────────────────────────────── */
 .med-list-container,
@@ -6,38 +9,97 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  background: var(--bg);
+  background: #FAF8F5;
   min-height: 100dvh;
-  padding-bottom: 80px;
+  padding-bottom: 96px;
 }
 
-/* ── Header ──────────────────────────────────────────────── */
+/* ── Header — Editorial ──────────────────────────────────── */
 .med-list-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: var(--space-5);
+  align-items: flex-end;
+  padding: clamp(20px, 4vh, 40px) var(--space-5) var(--space-4);
+  gap: var(--space-4);
+}
+.med-list-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.med-list-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin: 0;
 }
 .med-list-title {
   font-family: var(--font-heading);
-  font-size: var(--text-xl);
+  font-size: clamp(28px, 5vw, 48px);
   font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1;
+  margin: 0;
+}
+.med-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
 }
 .med-search-btn {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-secondary);
   background: transparent;
-  border: none;
+  border: 1px solid var(--border);
   cursor: pointer;
-  transition: background var(--duration-fast);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.med-search-btn:hover { background: var(--bg-muted); }
+.med-search-btn:hover {
+  background: var(--bg-muted);
+  border-color: var(--text-muted);
+  color: var(--text);
+}
+.med-add-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 var(--space-4);
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  box-shadow: 0 4px 14px rgba(196, 101, 58, 0.2);
+}
+.med-add-btn:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.3);
+}
+.med-add-btn:active {
+  transform: scale(0.97);
+}
+@media (max-width: 480px) {
+  .med-add-btn span { display: none; }
+  .med-add-btn { width: 40px; padding: 0; justify-content: center; }
+}
 
 /* ── Patient Selector (Caregiver) ────────────────────────── */
 .med-patient-selector {
@@ -73,16 +135,16 @@
 }
 .med-filter-chips::-webkit-scrollbar { display: none; }
 
-/* ── Overview Banner ────────────────────────────────────── */
+/* ── Overview Banner — Airy horizontal strip ────────────── */
 .med-overview-banner {
   margin: 0 var(--space-5);
-  padding: var(--space-4);
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-3);
-  background: var(--bg-muted);
+  padding: var(--space-5) var(--space-6);
+  display: flex;
+  align-items: center;
+  background: var(--bg-card);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-2xl);
+  box-shadow: 0 2px 12px rgba(26, 26, 46, 0.04);
 }
 
 .med-overview-stat {
@@ -90,51 +152,71 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
+  flex: 1;
   min-width: 0;
-  padding: var(--space-3);
-  border-radius: var(--radius-xl);
-  background: rgba(255, 255, 255, 0.72);
   text-align: center;
+}
+
+.med-overview-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border-light);
+  flex-shrink: 0;
 }
 
 .med-overview-value {
   font-family: var(--font-heading);
-  font-size: clamp(1.4rem, 1rem + 1vw, 2rem);
+  font-size: clamp(1.5rem, 2vw + 0.5rem, 2.2rem);
   font-weight: 800;
-  color: var(--accent);
+  color: var(--text);
   line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.med-compliance-value {
+  color: var(--accent);
 }
 
 .med-overview-label {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
   line-height: 1.25;
 }
 
+/* ── Filter Chips — Pelajari-style pills ────────────────── */
 .med-chip {
   flex-shrink: 0;
-  padding: var(--space-2) var(--space-4);
+  padding: 8px 18px;
   border-radius: var(--radius-full);
   font-family: var(--font-heading);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  border: 1.5px solid var(--border);
-  background: var(--bg-card);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all var(--duration-fast);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 38px;
   display: flex;
   align-items: center;
 }
 .med-chip.active {
-  background: var(--bg-dark);
-  color: var(--text-inverse);
-  border-color: var(--bg-dark);
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.2);
 }
-.med-chip:hover:not(.active) { border-color: var(--text-muted); }
+.med-chip:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-light);
+}
 
 /* ── Card List ───────────────────────────────────────────── */
 .med-card-list {
@@ -144,25 +226,44 @@
   padding: 0 var(--space-5);
 }
 
+/* ── Medication Card — Dashboard Bento Aligned ──────────── */
 .med-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
+  background: #FFFFFF;
+  border-radius: 24px;
   padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(0, 0, 0, 0.02);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   cursor: pointer;
-  transition: transform var(--duration-fast) var(--spring),
-              box-shadow var(--duration-fast);
-  border-left: 4px solid transparent;
-  border: none;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  /* Separate transitions — no "all" to avoid stutter */
+  transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   text-align: left;
+  position: relative;
+  /* NO overflow:hidden — removes the left-bar clipping hover bug */
 }
-.med-card:hover  { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+/* Active-today: use box-shadow inset instead of ::before pseudo-element */
+.med-card.active-today {
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    0 12px 30px rgba(0, 0, 0, 0.03);
+  background: linear-gradient(to right, rgba(244, 221, 211, 0.1) 0%, #fff 60%);
+}
+.med-card:hover {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+  border-color: rgba(196, 101, 58, 0.15);
+  transform: translateY(-2px);
+}
+.med-card.active-today:hover {
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    0 20px 40px rgba(0, 0, 0, 0.06);
+}
 .med-card:active { transform: scale(0.985); }
-.med-card.active-today { border-left: 4px solid var(--accent); }
 
 .med-card-header {
   display: flex;
@@ -170,39 +271,47 @@
   gap: var(--space-3);
 }
 .med-card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--accent-light);
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: var(--bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--accent);
+  color: var(--text);
   flex-shrink: 0;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+.med-card:hover .med-card-icon {
+  background: var(--accent);
+  color: #fff;
 }
 .med-card-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 .med-card-name {
   font-family: var(--font-heading);
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 .med-card-dosage {
   font-size: 13px;
   color: var(--text-secondary);
 }
-.med-card-chevron { color: var(--text-muted); }
-
-/* Card Highlight for Next Dose (Example class .next-dose) */
-.med-card.next-dose {
-  border-left: 4px solid var(--accent);
-  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(244, 221, 211, 0.15) 100%);
+.med-card-chevron {
+  color: var(--text-muted);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
 }
+.med-card:hover .med-card-chevron {
+  transform: translateX(3px);
+  color: var(--accent);
+}
+
 
 /* ── Progress Bar ────────────────────────────────────────── */
 .med-progress-container {
@@ -243,67 +352,75 @@
   gap: var(--space-4);
 }
 
-/* History Section */
+/* ── History Section — Clean Editorial ─────────────────── */
 .med-history-section {
-  margin-top: var(--space-8);
+  padding: 0 var(--space-5);
   padding-bottom: var(--space-10);
-  padding-left: var(--space-5);
-  padding-right: var(--space-5);
 }
 
 .med-section-title {
   font-family: var(--font-heading);
-  font-size: var(--text-lg);
-  font-weight: 700;
+  font-size: clamp(18px, 3vw, 26px);
+  font-weight: 800;
   color: var(--text);
-  margin-bottom: var(--space-4);
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-light);
 }
 
 .med-history-list {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 1px;
+  background: var(--border-light);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-light);
 }
 
 .med-history-item {
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-  transition: transform var(--duration-fast);
+  transition: background 0.25s ease;
 }
 
 .med-history-item:hover {
-  transform: translateX(4px);
-  border-color: var(--accent-light);
+  background: var(--bg-muted);
 }
 
 .med-history-status {
-  padding: var(--space-1) var(--space-3);
+  padding: 5px 12px;
   border-radius: var(--radius-full);
+  font-family: var(--font-heading);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  min-width: 80px;
+  letter-spacing: 0.06em;
+  min-width: 72px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .med-history-status.taken {
-  background: #dcfce7;
+  background: rgba(22, 163, 74, 0.08);
   color: #16a34a;
+  border: 1px solid rgba(22, 163, 74, 0.15);
 }
 
 .med-history-status.missed {
-  background: #fee2e2;
+  background: rgba(220, 38, 38, 0.08);
   color: #dc2626;
+  border: 1px solid rgba(220, 38, 38, 0.15);
 }
 
 .med-history-status.skipped {
-  background: var(--bg-muted);
+  background: rgba(0, 0, 0, 0.04);
   color: var(--text-muted);
+  border: 1px solid var(--border-light);
 }
 
 .med-history-info {
@@ -408,6 +525,59 @@
   color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;
+}
+
+/* ── Detail Grid (Mobile Base) ─────────────────────────────── */
+.med-detail-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: 0 var(--space-5);
+}
+
+.med-detail-info {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+}
+
+.med-detail-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.med-detail-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px dashed rgba(196, 101, 58, 0.15);
+}
+
+.med-detail-field:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.med-detail-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.med-detail-value {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
 }
 
 /* ── Detail Actions ──────────────────────────────────────── */
@@ -977,21 +1147,18 @@
   .med-card-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-3);
+    gap: var(--space-4);
   }
+  /* Banner stays the flex horizontal strip, remove old grid overrides */
   .med-overview-banner {
     margin: 0 var(--space-5);
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
   }
   .med-overview-stat {
-    padding: var(--space-3) var(--space-2);
+    padding: var(--space-2) var(--space-3);
   }
-  .med-overview-label {
-    font-size: 11px;
-  }
+  .med-overview-label { font-size: 11px; }
   .med-detail-info { grid-template-columns: 1fr 1fr; }
-  .med-fab { bottom: var(--space-8); }
 
   /* Modal: centered dialog on tablet+ */
   .med-modal-overlay { 
@@ -1013,12 +1180,17 @@
 
 /* ── Desktop (≥ 1024px) ────────────────────────────────── */
 @media (min-width: 1024px) {
+  /* Remove app-main padding so medications controls its own layout */
+  .app-main:has(.med-list-container),
+  .app-main:has(.med-detail-container) {
+    padding: 0;
+  }
+
   .med-list-container,
   .med-detail-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: var(--space-10) 0;
-    padding-bottom: 120px;
+    max-width: none;
+    margin: 0;
+    padding: var(--space-8) max(5vw, 60px) 120px;
   }
 
   .med-list-header {
@@ -1026,94 +1198,108 @@
   }
   
   .med-list-title {
-    font-size: var(--text-3xl);
+    font-size: clamp(32px, 4vw, 52px);
     font-weight: 900;
   }
 
+  /* Keep bento card look on desktop — use a grid */
   .med-card-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: var(--space-6);
     padding: 0;
   }
 
+  /* Cards on desktop: same bento style, slightly larger radius */
   .med-card {
-    padding: var(--space-6) 0;
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-    border: none;
-    border-bottom: 1.5px solid var(--border);
-    transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                padding 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 28px;
+    padding: var(--space-6);
+    /* Remove any overrides from old flat style */
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.02);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+    border-bottom: unset;
+    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .med-card:hover {
-    transform: none;
-    box-shadow: none;
-    background: var(--bg-muted);
-    padding-left: var(--space-5);
-    padding-right: var(--space-5);
-    margin-left: calc(-1 * var(--space-5));
-    margin-right: calc(-1 * var(--space-5));
-    border-radius: var(--radius-lg);
-    border-bottom-color: transparent;
+    transform: translateY(-3px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+    border-color: rgba(196, 101, 58, 0.15);
+    /* Reset any old expand-left hover tricks */
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 28px;
+    background: #FFFFFF;
   }
 
   .med-card.active-today {
-    border-left: 4px solid var(--accent);
-    padding-left: var(--space-5);
+    box-shadow:
+      inset 4px 0 0 var(--accent),
+      0 12px 30px rgba(0, 0, 0, 0.03);
+    border-left: unset;
+    padding-left: var(--space-6);
+    background: linear-gradient(to right, rgba(244, 221, 211, 0.1) 0%, #fff 60%);
   }
 
+  .med-card.active-today:hover {
+    box-shadow:
+      inset 4px 0 0 var(--accent),
+      0 20px 40px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Overview banner: editorial horizontal strip */
   .med-overview-banner {
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: var(--space-8) 0;
-    margin: 0 0 var(--space-10);
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    border-bottom: 1px solid var(--border-light);
-    border-top: 1px solid var(--border-light);
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 28px;
+    padding: var(--space-6) var(--space-8);
+    margin: 0 0 var(--space-6);
+    display: flex;
+    align-items: center;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
   }
 
   .med-overview-stat {
     background: transparent;
     border-radius: 0;
     padding: var(--space-2) var(--space-4);
-    border-right: 1px solid var(--border-light);
-    align-items: flex-start;
-    text-align: left;
+    align-items: center;
+    text-align: center;
   }
 
-  .med-overview-stat:last-child {
-    border-right: none;
+  .med-overview-divider {
+    height: 40px;
+    background: var(--border-light);
   }
 
   .med-overview-value {
-    font-size: clamp(2rem, 1.5rem + 1.5vw, 2.8rem);
-    letter-spacing: -0.02em;
+    font-size: clamp(1.8rem, 2vw + 0.5rem, 2.5rem);
+    letter-spacing: -0.03em;
   }
 
   .med-overview-label {
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--text-secondary);
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
   }
 
   .med-filter-chips {
     padding: 0;
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-6);
     flex-wrap: wrap;
     overflow: visible;
   }
 
   .med-chip {
     font-size: var(--text-sm);
-    padding: var(--space-3) var(--space-5);
+    padding: var(--space-2) var(--space-5);
     min-height: 40px;
   }
 
@@ -1129,10 +1315,10 @@
   .med-detail-info {
     margin: 0;
     padding: var(--space-8);
-    box-shadow: none;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-2xl);
-    background: var(--bg-card);
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    border-radius: 32px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
   }
 
   .med-detail-right {
@@ -1146,10 +1332,11 @@
   }
 
   .med-dose-item {
-    box-shadow: none;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-xl);
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    border-radius: 20px;
     padding: var(--space-4) var(--space-5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
   }
 
   .med-detail-actions {
@@ -1158,32 +1345,28 @@
   }
 
   .med-history-section {
-    padding: var(--space-12) 0;
+    padding: var(--space-8) 0;
   }
 
   .med-history-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-5);
+    gap: var(--space-3);
+    background: none;
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .med-history-item {
+    border-radius: 20px;
+    border: 1px solid var(--border-light);
+    background: #FFFFFF;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.02);
   }
 
   .med-modal {
     max-width: 600px;
-  }
-
-  .med-fab {
-    bottom: var(--space-10);
-    right: var(--space-10);
-    width: 64px;
-    height: 64px;
-    box-shadow: 0 8px 24px rgba(196, 101, 58, 0.25);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .med-fab:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(196, 101, 58, 0.4);
-    background: var(--accent-dark);
   }
 }
 

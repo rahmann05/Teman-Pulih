@@ -8,7 +8,7 @@ const SocialLoginButton = ({ provider = 'Google', onClick }) => {
       type="button"
       className="social-login"
       onClick={onClick}
-      whileHover={{ scale: 1.02, backgroundColor: 'var(--bg-muted)' }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.95 }}
     >
       {provider === 'Google' && <FcGoogle size={20} />}
