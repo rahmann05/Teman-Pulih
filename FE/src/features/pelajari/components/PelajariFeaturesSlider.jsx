@@ -52,7 +52,7 @@ const FeatureBlock = ({ feature, index, setActiveIndex }) => {
   });
 
   // Image layer (deepest) moves down
-  const imgY = useTransform(scrollYProgress, [0, 1], ['-15%', '15%']);
+  const imgY = useTransform(scrollYProgress, [0, 1], ['-25%', '25%']);
   
   // Content layer (highest) moves up
   const contentY = useTransform(scrollYProgress, [0, 1], ['15%', '-15%']);

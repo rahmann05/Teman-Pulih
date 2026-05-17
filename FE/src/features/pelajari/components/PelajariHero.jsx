@@ -8,7 +8,7 @@ const PelajariHero = () => {
 
   // Parallax effects
   const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-30%']);
-  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
+  const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '-30%']);
   
   return (
     <section ref={ref} className="p-hero-sustainability" data-theme="light">
