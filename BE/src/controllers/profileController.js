@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const redis = require('../config/redis.js');
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
@@ -23,7 +24,17 @@ const getSupabaseClient = (req) => {
 const getProfile = async (req, res) => {
     try {
         const userId = req.user.id;
-        
+
+        // REDIS CACHE: Cek cache profil untuk user ini
+        const cacheKey = `profile_data:${userId}`;
+        if (redis.status === 'ready') {
+            const cachedData = await redis.get(cacheKey);
+            if (cachedData) {
+                console.log(`[REDIS] Profil ditarik dari Cache - User ID: ${userId}`);
+                return res.status(200).json(JSON.parse(cachedData));
+            }
+        }
+
         // Menggunakan DB Pool untuk bypass RLS
         const userQuery = 'SELECT id, name, email FROM users WHERE id = $1';
         const { rows: userRows } = await db.query(userQuery, [userId]);
@@ -47,34 +58,18 @@ const getProfile = async (req, res) => {
         
         // Formating ulang response agar rapi
         const formattedProfile = {
-            id: profile?.id || null,
-            user_id: user.id,
+            id: user.id,
             name: user.name,
             email: user.email,
-            role: req.user.role,
-            phone: profile?.phone || null,
-            address: profile?.address || null,
-            birth_date: profile?.birth_date || null,
-            gender: profile?.gender || null,
-            // EMR Fields
-            blood_type: profile?.blood_type || null,
-            height: profile?.height || null,
-            weight: profile?.weight || null,
-            allergies: profile?.allergies || null,
-            chronic_conditions: profile?.chronic_conditions || null,
-            past_illnesses: profile?.past_illnesses || null,
-            last_illness: profile?.last_illness || null,
-            surgeries_history: profile?.surgeries_history || null,
-            routine_medications: profile?.routine_medications || null,
-            blood_pressure_range: profile?.blood_pressure_range || null,
-            emergency_contact_name: profile?.emergency_contact_name || null,
-            emergency_contact_phone: profile?.emergency_contact_phone || null,
-            smoking_habit: profile?.smoking_habit || false,
-            alcohol_habit: profile?.alcohol_habit || false,
-            is_emr_completed: profile?.is_emr_completed || false
+            profile: profile || null
         };
 
-        res.status(200).json({ profile: formattedProfile });
+        // SIMPAN KE REDIS: Set kedaluwarsa 4 jam
+        if (redis.status === 'ready') {
+            await redis.set(cacheKey, JSON.stringify(formattedProfile), 'EX', 14400);
+        }
+
+        res.status(200).json(formattedProfile);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -103,9 +98,16 @@ const updateProfile = async (req, res) => {
             .single();
 
         if (error) throw error;
-        
+
+        // HAPUS CACHE PROFIL KARENA ADA PERUBAHAN
+        if (redis.status === 'ready') {
+            await redis.del(`profile_data:${userId}`);
+            await redis.del(`emr_profile:patient_${userId}`);
+            await redis.del(`emr_profile:caregiver_${userId}`);
+        }
+
         // 2. GATEWAY -> FE
-        res.status(200).json({ profile: data });
+        res.status(200).json({ message: 'Profile updated successfully', data });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -169,6 +171,12 @@ const inviteFamily = async (req, res) => {
 
         if (inviteError) throw inviteError;
 
+        // HAPUS CACHE RELASI
+        if (redis.status === 'ready') {
+            await redis.del(`family_relations:${userId}`);
+            await redis.del(`family_relations:${invitedUser.id}`);
+        }
+
         // 3. GATEWAY -> FE
         res.status(200).json({ message: "Undangan Keluarga berhasil dikirim.", status: "pending" });
     } catch (error) {
@@ -180,7 +188,17 @@ const getFamilyMembers = async (req, res) => {
     try {
         const userId = req.user.id;
         const supabase = getSupabaseClient(req);
-        
+
+        // REDIS CACHE: Cek cache relasi untuk user ini
+        const cacheKey = `family_relations:${userId}`;
+        if (redis.status === 'ready') {
+            const cachedData = await redis.get(cacheKey);
+            if (cachedData) {
+                console.log(`[REDIS] Daftar Relasi ditarik dari Cache - User ID: ${userId}`);
+                return res.status(200).json({ members: JSON.parse(cachedData) });
+            }
+        }
+
         // GATEWAY -> DB: Ambil daftar relasi yang mencakup user ini (Bisa sebagai Patient atau Caregiver)
         const { data, error } = await supabase
             .from('family_relations')
@@ -191,13 +209,4 @@ const getFamilyMembers = async (req, res) => {
             `)
             .or(`patient_id.eq.${userId},caregiver_id.eq.${userId}`);
 
-        if (error) throw error;
-        
-        // 2. GATEWAY -> FE
-        res.status(200).json({ members: data });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-};
-
-module.exports = { getProfile, updateProfile, inviteFamily, getFamilyMembers };
+        if
