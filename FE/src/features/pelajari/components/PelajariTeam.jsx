@@ -25,7 +25,7 @@ const PelajariTeam = () => (
         viewport={{ once: true, margin: '-100px' }}
         transition={{ duration: 1, ease: [0.16,1,0.3,1] }}
       >
-        Para arsitek di balik ekosistem TemanPulih.
+        Pengembang di balik TemanPulih.
       </motion.h2>
     </div>
 
