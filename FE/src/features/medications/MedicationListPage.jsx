@@ -14,6 +14,7 @@ import '../../styles/features/Medications.css';
 /**
  * MedicationListPage — /medications
  * Supports patient self-view and caregiver multi-patient view.
+ * Redesigned with Floema Editorial aesthetic to match Dashboard + Landing Page.
  */
 const MedicationListPage = () => {
   const navigate = useNavigate();
@@ -35,9 +36,8 @@ const MedicationListPage = () => {
     fetchAll,
   } = useMedications(isCaregiver ? selectedPatientId : undefined);
 
-  // Calculate real compliance from logs
   const calculateCompliance = () => {
-    if (!logs || logs.length === 0) return 0; // Reset to 0 if no data
+    if (!logs || logs.length === 0) return 0;
     const taken = logs.filter(l => l.status === 'taken').length;
     return Math.round((taken / logs.length) * 100);
   };
@@ -50,19 +50,33 @@ const MedicationListPage = () => {
     <DashboardLayout caregiverMode={isCaregiver}>
       <div className="med-list-container" data-testid="medication-list-page">
 
-        {/* Header */}
+        {/* ── Editorial Header ── */}
         <header className="med-list-header">
-          <h1 className="med-list-title">Jadwal Obat</h1>
-          <button
-            className="med-search-btn"
-            type="button"
-            aria-label="Cari obat"
-          >
-            <LuSearch size={20} />
-          </button>
+          <div className="med-list-header-left">
+            <p className="med-list-eyebrow">Kesehatan Anda</p>
+            <h1 className="med-list-title">Jadwal Obat</h1>
+          </div>
+          <div className="med-header-actions">
+            <button
+              className="med-search-btn"
+              type="button"
+              aria-label="Cari obat"
+            >
+              <LuSearch size={18} />
+            </button>
+            <button
+              className="med-add-btn"
+              type="button"
+              onClick={() => setShowAddModal(true)}
+              aria-label="Tambah obat baru"
+            >
+              <LuPlus size={16} />
+              <span>Tambah Obat</span>
+            </button>
+          </div>
         </header>
 
-        {/* Caregiver: Patient selector */}
+        {/* ── Caregiver: Patient selector ── */}
         {isCaregiver && (
           <MedicationPatientSelector
             patients={user?.linked_patients || []}
@@ -71,31 +85,33 @@ const MedicationListPage = () => {
           />
         )}
 
-        {/* Filter chips */}
+        {/* ── Bento Overview Banner ── */}
+        <div className="med-overview-banner">
+          <div className="med-overview-stat">
+            <div className="med-overview-value">{medications.length}</div>
+            <div className="med-overview-label">Total Obat</div>
+          </div>
+          <div className="med-overview-divider" />
+          <div className="med-overview-stat">
+            <div className="med-overview-value med-compliance-value">{calculateCompliance()}%</div>
+            <div className="med-overview-label">Kepatuhan</div>
+          </div>
+          <div className="med-overview-divider" />
+          <div className="med-overview-stat">
+            <div className="med-overview-value">
+              {medications.filter(m => m.medication_schedules?.length > 0).length}
+            </div>
+            <div className="med-overview-label">Berjadwal</div>
+          </div>
+        </div>
+
+        {/* ── Filter Chips ── */}
         <MedicationFilterChips
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
         />
 
-        {/* Desktop Overview Banner */}
-        <div className="med-overview-banner">
-          <div className="med-overview-stat">
-            <div className="med-overview-value">{medications.length}</div>
-            <div className="med-overview-label">Total Daftar Obat</div>
-          </div>
-          <div className="med-overview-stat">
-            <div className="med-overview-value">{calculateCompliance()}%</div>
-            <div className="med-overview-label">Kepatuhan Total</div>
-          </div>
-          <div className="med-overview-stat">
-            <div className="med-overview-value">
-              {medications.filter(m => m.medication_schedules?.length > 0).length}
-            </div>
-            <div className="med-overview-label">Memiliki Jadwal Rutin</div>
-          </div>
-        </div>
-
-        {/* Content */}
+        {/* ── Content ── */}
         {loading ? (
           <div className="med-skeleton">
             {[1, 2, 3].map((n) => (
@@ -119,7 +135,7 @@ const MedicationListPage = () => {
           </div>
         )}
 
-        {/* Log History Section */}
+        {/* ── Log History Section ── */}
         {!loading && logs.length > 0 && (
           <section className="med-history-section">
             <h2 className="med-section-title">Riwayat Aktivitas</h2>
@@ -146,16 +162,6 @@ const MedicationListPage = () => {
             </div>
           </section>
         )}
-
-        {/* FAB — Add Medication */}
-        <button
-          className="med-fab"
-          type="button"
-          onClick={() => setShowAddModal(true)}
-          aria-label="Tambah obat baru"
-        >
-          <LuPlus size={24} />
-        </button>
 
         <AddMedicationModal
           isOpen={showAddModal}

@@ -1,14 +1,15 @@
-import { LuBot } from 'react-icons/lu';
+import { LuHeartPulse } from 'react-icons/lu';
 
 export const ChatWelcome = () => {
   return (
     <div className="chat-welcome">
       <div className="chat-welcome-icon">
-        <LuBot />
+        <LuHeartPulse size={38} />
       </div>
-      <h2 className="chat-welcome-title">Halo! Saya Chatbot AI</h2>
+      <p className="chat-welcome-eyebrow">Asisten AI</p>
+      <h2 className="chat-welcome-title">Halo! Saya Asep,<br />Asisten Pulih Anda</h2>
       <p className="chat-welcome-desc">
-        Asisten medis digital Anda. Ada yang bisa saya bantu terkait pemulihan atau obat Anda hari ini?
+        Tanya apa saja seputar pemulihan, jadwal obat, atau kondisi kesehatan Anda. Saya selalu siap membantu.
       </p>
     </div>
   );
