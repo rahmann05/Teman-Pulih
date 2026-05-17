@@ -1,5 +1,5 @@
 import { LuTrash2 } from 'react-icons/lu';
-import { useChatbot } from '../../../hooks/useChatbot';
+import { useChatbot } from '@/features/chatbot/hooks/useChatbot';
 
 export const ChatHeader = () => {
   const { messages, clearHistory } = useChatbot();

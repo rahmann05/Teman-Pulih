@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import imgHero from '../../../assets/images/dashboard-hero-patient.png';
+import imgHero from '@/assets/images/dashboard-hero-patient.png';
 
 const PelajariHero = () => {
   const ref = useRef(null);

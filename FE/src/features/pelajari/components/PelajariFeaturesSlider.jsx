@@ -1,10 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 
-import imgOcr from '../../../assets/images/feature-ocr-scan-v2.png';
-import imgMed from '../../../assets/images/feature-med-schedule-v2.png';
-import imgChat from '../../../assets/images/feature-ai-chatbot-v2.png';
-import imgSync from '../../../assets/images/feature-family-sync.png';
+import imgOcr from '@/assets/images/feature-ocr-scan-v2.png';
+import imgMed from '@/assets/images/feature-med-schedule-v2.png';
+import imgChat from '@/assets/images/feature-ai-chatbot-v2.png';
+import imgSync from '@/assets/images/feature-family-sync.png';
 
 const features = [
   {

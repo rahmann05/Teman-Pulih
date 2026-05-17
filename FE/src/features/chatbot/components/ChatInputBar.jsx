@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { LuSend } from 'react-icons/lu';
-import { useChatbot } from '../../../hooks/useChatbot';
+import { useChatbot } from '@/features/chatbot/hooks/useChatbot';
 
 export const ChatInputBar = () => {
   const { isSending, send } = useChatbot();

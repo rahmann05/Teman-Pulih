@@ -1,4 +1,4 @@
-import { useChatbot } from '../../../hooks/useChatbot';
+import { useChatbot } from '@/features/chatbot/hooks/useChatbot';
 
 const QUICK_REPLIES = [
   "Apa efek samping obat ini?",

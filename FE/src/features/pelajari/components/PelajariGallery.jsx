@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
 
-import img1 from '../../../assets/images/hero-doctor-consult.png';
-import img2 from '../../../assets/images/feature-family-sync.png';
-import img3 from '../../../assets/images/hero-medical-3d.png';
+import img1 from '@/assets/images/hero-doctor-consult.png';
+import img2 from '@/assets/images/feature-family-sync.png';
+import img3 from '@/assets/images/hero-medical-3d.png';
 
 const PelajariGallery = () => (
   <section className="p-gallery-sus" data-theme="light">

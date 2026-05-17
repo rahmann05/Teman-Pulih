@@ -1,8 +1,8 @@
 import { useRef, useEffect } from 'react';
-import { useChatbot } from '../../../hooks/useChatbot';
-import { ChatWelcome } from '../../../components/domain/chatbot/ChatWelcome';
-import { ChatTyping } from '../../../components/domain/chatbot/ChatTyping';
-import { ChatBubble } from '../../../components/domain/chatbot/ChatBubble';
+import { useChatbot } from '@/features/chatbot/hooks/useChatbot';
+import { ChatWelcome } from '@/features/chatbot/components/ChatWelcome';
+import { ChatTyping } from '@/features/chatbot/components/ChatTyping';
+import { ChatBubble } from '@/features/chatbot/components/ChatBubble';
 
 export const MessageList = () => {
   const { messages, isLoading, isSending } = useChatbot();

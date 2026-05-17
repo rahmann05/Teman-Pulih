@@ -1,41 +1,10 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { chromaClient } = require('../config/chroma.js');
-const redis = require('../config/redis.js');
-
-// Inisialisasi Google Generative AI dengan API Key
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
-
-const getSupabaseClient = (req) => {
-    if (!req.supabase) throw new Error('Supabase client is not initialized.');
-    return req.supabase;
-};
-
-const sanitizeInput = (text) => text ? text.replace(/\s+/g, ' ').trim().substring(0, 700) : "";
-
-// Normalisasi Riwayat Percakapan (Pencegah Error 400 Alternating Role)
-const normalizeHistory = (pastChats) => {
-    const validHistory = [];
-    let expectedRole = 'user';
-
-    for (const chat of pastChats) {
-        const role = chat.sender === 'user' ? 'user' : 'model';
-        if (role === expectedRole && chat.message.trim()) {
-            validHistory.push({ role, parts: [{ text: chat.message }] });
-            expectedRole = role === 'user' ? 'model' : 'user';
-        }
-    }
-    if (validHistory.length > 0 && validHistory[validHistory.length - 1].role === 'user') {
-        validHistory.pop();
-    }
-    return validHistory;
-};
+const chatbotService = require('../services/chatbotService');
+const { getSupabaseClient } = require('../helpers/supabase');
 
 const sendMessage = async (req, res) => {
-    let fullReply = "";
+    let fullReply = '';
     const userId = req.user.id;
     const supabase = getSupabaseClient(req);
-
-    // 1. Setup Abort Controller untuk mencegah kebocoran resource jika user disconnect
     const abortController = new AbortController();
     const onClientDisconnect = () => {
         console.log(`[SYSTEM] Client (User ID: ${userId}) disconnected. Aborting API request...`);
@@ -46,21 +15,18 @@ const sendMessage = async (req, res) => {
     try {
         const rawMessage = req.body.message;
         if (!rawMessage) return res.status(400).json({ error: 'Message is required' });
-        const message = sanitizeInput(rawMessage);
-
+        const message = chatbotService.sanitizeInput(rawMessage);
         console.log(`\n[CHAT] Request dari user ID: ${userId} | Pesan: "${message}"`);
 
-        // Simpan pesan user (Fire and Forget)
         supabase.from('chat_history').insert([{ user_id: userId, message, sender: 'user' }]).then();
 
-        // EKSEKUSI PARALEL: Memangkas latensi drastis
         const [emrDataResult, historyResult, gatekeeperTopic] = await Promise.all([
             supabase.from('profiles').select('*').eq('user_id', userId).single(),
             supabase.from('chat_history').select('message, sender').eq('user_id', userId).order('created_at', { ascending: false }).limit(6),
             (async () => {
                 try {
-                    // Update model gatekeeper ke versi terbaru (2.5-flash-lite)
-                    const gatekeeperModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite", generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
+                    const { genAI } = chatbotService;
+                    const gatekeeperModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite', generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
                     const gatekeeperPrompt = `Klasifikasikan pesan di dalam tag <pesan>.
 Kategori:
 1. MEDIS: Penyakit, gejala, obat.
@@ -71,183 +37,62 @@ Kategori:
 Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
                     const gateResult = await gatekeeperModel.generateContent({ contents: [{ role: 'user', parts: [{ text: gatekeeperPrompt }] }], signal: abortController.signal });
                     const text = gateResult.response.text().trim().toUpperCase();
-                    if (text.includes("LUAR_MEDIS")) return "LUAR_MEDIS";
-                    if (text.includes("SAPAAN")) return "SAPAAN";
-                    return "MEDIS";
-                } catch (e) {
-                    return "MEDIS";
-                }
-            })()
+                    if (text.includes('LUAR_MEDIS')) return 'LUAR_MEDIS';
+                    if (text.includes('SAPAAN')) return 'SAPAAN';
+                    return 'MEDIS';
+                } catch (e) { return 'MEDIS'; }
+            })(),
         ]);
 
-        // JIKA BUKAN TOPIK MEDIS (Gatekeeper Bypass)
-        if (gatekeeperTopic === "LUAR_MEDIS" || gatekeeperTopic === "SAPAAN") {
-            let fastReply = "";
-            if (gatekeeperTopic === "LUAR_MEDIS") {
-                fastReply = "Maaf ya, kenalkan saya Asep, asisten kesehatan virtual dari TemanPulih. Asep cuma difokuskan untuk ngebahas soal medis, konsultasi penyakit, atau obat-obatan nih. Kalau ada keluhan kesehatan, boleh langsung cerita ke Asep, ya!";
-            } else {
-                fastReply = "Halo! Kenalkan, saya Asep, asisten kesehatan virtual dari TemanPulih. Ada keluhan kesehatan yang sedang dirasakan hari ini?";
-            }
-
-            console.log("[AI] Fast-reply sent (Bypass RAG).");
+        if (gatekeeperTopic === 'LUAR_MEDIS' || gatekeeperTopic === 'SAPAAN') {
+            const fastReply = gatekeeperTopic === 'LUAR_MEDIS'
+                ? 'Maaf ya, kenalkan saya Asep, asisten kesehatan virtual dari TemanPulih. Asep cuma difokuskan untuk ngebahas soal medis, konsultasi penyakit, atau obat-obatan nih. Kalau ada keluhan kesehatan, boleh langsung cerita ke Asep, ya!'
+                : 'Halo! Kenalkan, saya Asep, asisten kesehatan virtual dari TemanPulih. Ada keluhan kesehatan yang sedang dirasakan hari ini?';
+            console.log('[AI] Fast-reply sent (Bypass RAG).');
             res.setHeader('Content-Type', 'text/event-stream');
             res.setHeader('Cache-Control', 'no-cache');
             res.setHeader('Connection', 'keep-alive');
-
             res.write(`data: ${JSON.stringify({ text: fastReply })}\n\n`);
             res.write('data: [DONE]\n\n');
-
-            fullReply = fastReply; // Disimpan di blok finally
+            fullReply = fastReply;
             return;
         }
 
-        // Step 0: Fetch EMR Profile (Rekam Medis) & Konteks Privat
-        let emrContext = "";
-        let routineMedicationsForSearch = "";
-        let privateContext = "";
-        
+        let emrContext = '', routineMedicationsForSearch = '', privateContext = '';
         try {
-            // REDIS CACHE: Cek apakah profil dan obat untuk user ini sudah di-cache?
-            const cacheKey = req.user.role === 'caregiver' ? `emr_profile:caregiver_${userId}` : `emr_profile:patient_${userId}`;
-            const cachedData = redis.status === 'ready' ? await redis.get(cacheKey) : null;
-
-            if (cachedData) {
-                console.log(`[REDIS] EMR & Private Medications ditarik dari Cache (Super Cepat) - User ID: ${userId}`);
-                const parsed = JSON.parse(cachedData);
-                emrContext = parsed.emrContext;
-                routineMedicationsForSearch = parsed.routineMedicationsForSearch;
-                privateContext = parsed.privateContext;
-            } else {
-                // ENKRIPSI/PRIVASI: Caregiver hanya bisa melihat data pasien yang terhubung
-                let targetPatientId = userId;
-                let patientProfileName = req.user.name || "Pasien";
-
-                if (req.user.role === 'caregiver') {
-                    const { data: rel } = await supabase
-                        .from('family_relations')
-                        .select('patient_id, users!family_relations_patient_id_fkey(name)')
-                        .eq('caregiver_id', userId)
-                        .eq('status', 'accepted')
-                        .single();
-
-                    if (rel) {
-                        targetPatientId = rel.patient_id;
-                        patientProfileName = rel.users?.name || 'Pasien Anda';
-                    }
-                }
-
-                // Ambil profile EMR dari Pasien Terhubung
-                const { data: userProfile } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .eq('user_id', targetPatientId)
-                    .single();
-                
-                if (userProfile) {
-                    routineMedicationsForSearch = userProfile.routine_medications || "";
-                    emrContext = `[REKAM MEDIS PASIEN (${patientProfileName})]
-- Gol. Darah: ${userProfile.blood_type || '-'}
-- Tensi Normal: ${userProfile.blood_pressure_range || '-'}
-- Tinggi/Berat: ${userProfile.height || '-'}
-- Alergi: ${userProfile.allergies || '-'}
-- Penyakit Kronis: ${userProfile.chronic_conditions || '-'}
-- Penyakit Terdahulu: ${userProfile.past_illnesses || '-'}
-- Penyakit Terakhir: ${userProfile.last_illness || '-'}
-- Riwayat Operasi: ${userProfile.surgeries_history || '-'}
-- OBAT RUTIN: ${routineMedicationsForSearch || '-'}
-`;
-                }
-
-                // Ambil Data Obat Milik Pasien Secara Spesifik
-                const { data: patientMedications } = await supabase
-                    .from('medications')
-                    .select('name, dosage, instructions')
-                    .eq('user_id', targetPatientId);
-
-                if (patientMedications && patientMedications.length > 0) {
-                    privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---
-\n(Informasi ini terenkripsi dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
-                    privateContext += patientMedications.map(m => `- ${m.name} (${m.dosage}): ${m.instructions}`).join("\n");
-                    routineMedicationsForSearch += " " + patientMedications.map(m => m.name).join(" ");
-                }
-
-                // SIMPAN KE REDIS: Set kedaluwarsa 6 jam (21600 detik)
-                if (redis.status === 'ready') {
-                    await redis.set(cacheKey, JSON.stringify({
-                        emrContext,
-                        routineMedicationsForSearch,
-                        privateContext
-                    }), 'EX', 21600);
-                }
-            }
+            const emrData = await chatbotService.getEmrContext(supabase, req.user);
+            emrContext = emrData.emrContext;
+            routineMedicationsForSearch = emrData.routineMedicationsForSearch;
+            privateContext = emrData.privateContext;
         } catch (e) {
-            console.error("[RAG] Gagal mengambil Private EMR Profile:", e.message);
+            console.error('[RAG] Gagal mengambil Private EMR Profile:', e.message);
         }
 
-        // PARSING HASIL PARALEL
         let chatHistoryFormat = [];
         if (historyResult.data && historyResult.data.length > 0) {
-            chatHistoryFormat = normalizeHistory(historyResult.data.reverse());
+            chatHistoryFormat = chatbotService.normalizeHistory(historyResult.data.reverse());
         }
 
-        // FASE 2: QUERY EXPANSION
         let searchTerms = [message];
         try {
-            console.log("[RAG] Memperluas query...");
-            // Update model query expansion ke versi terbaru (2.5-flash-lite)
-            const expansionModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite", generationConfig: { temperature: 0.1 } });
+            const { genAI } = chatbotService;
+            const expansionModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite', generationConfig: { temperature: 0.1 } });
             const expandPrompt = `Ekstrak maksimal 3 kata kunci medis/gejala utama dari pesan ini: "${message}". Pisahkan dengan koma. (Contoh: dispepsia, mual). Jika tidak jelas, kosongkan.`;
-
             const expandResult = await expansionModel.generateContent({ contents: [{ role: 'user', parts: [{ text: expandPrompt }] }], signal: abortController.signal });
             const expandedKeywords = expandResult.response.text().split(',').map(s => s.trim()).filter(s => s);
             if (expandedKeywords.length > 0) {
                 searchTerms = [message, ...expandedKeywords];
-                console.log(`[RAG] Query Medis:`, searchTerms);
+                console.log('[RAG] Query Medis:', searchTerms);
             }
-        } catch (e) {
-            console.warn("[RAG] Query Expansion gagal, menggunakan input asli.");
-        }
+        } catch (e) { console.warn('[RAG] Query Expansion gagal, menggunakan input asli.'); }
 
-        // FASE 3: MULTI-FACETED RETRIEVAL (ChromaDB)
-        let ragContextFormatted = "";
+        let ragContextFormatted = '';
         try {
-            const [penyakitCol, obatCol] = await Promise.all([
-                chromaClient.getCollection({ name: process.env.CHROMA_DATABASE || 'RAG-TemanPulih' }),
-                chromaClient.getCollection({ name: process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat' })
-            ]);
+            ragContextFormatted = await chatbotService.buildRagContext(searchTerms, routineMedicationsForSearch);
+        } catch (e) { console.error('[RAG] Error ChromaDB Initialization:', e.message); }
 
-            const obatQueries = [...searchTerms];
-            if (routineMedications && routineMedications.length > 2) obatQueries.push(routineMedications);
-            if (allergies && allergies.length > 2) obatQueries.push(allergies);
-
-            // Menggunakan Promise.allSettled agar jika salah satu DB gagal, DB lain tetap menyuplai data referensi
-            const [hasilPenyakit, hasilObat] = await Promise.allSettled([
-                penyakitCol.query({ queryTexts: searchTerms, nResults: 2 }),
-                obatCol.query({ queryTexts: obatQueries, nResults: 3 })
-            ]);
-
-            const extractDocs = (promiseResult) => {
-                // Hanya ambil dokumen dari promise yang 'fulfilled' (berhasil)
-                if (promiseResult.status !== 'fulfilled' || !promiseResult.value || !promiseResult.value.documents) return [];
-                return [...new Set(promiseResult.value.documents.flat().filter(d => d))];
-            };
-
-            const docsPenyakit = extractDocs(hasilPenyakit).slice(0, 2);
-            const docsObat = extractDocs(hasilObat).slice(0, 3);
-
-            if (docsPenyakit.length > 0) ragContextFormatted += `=== REFERENSI KONDISI MEDIS ===\n${docsPenyakit.join("\n---\n")}\n\n`;
-            if (docsObat.length > 0) ragContextFormatted += `=== REFERENSI OBAT & INTERAKSI ===\n${docsObat.join("\n---\n")}\n\n`;
-
-            if (ragContextFormatted) {
-                console.log(`[RAG] Referensi paralel berhasil: ${docsPenyakit.length} Penyakit, ${docsObat.length} Obat.`);
-            }
-        } catch (e) {
-            console.error("[RAG] Error ChromaDB Initialization:", e.message);
-        }
-
-        // FASE 4: LLM GENERATION & STREAMING
         const modelConfig = { temperature: 0.2, maxOutputTokens: 2048 };
-        const safetySettings = [{ category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }];
+        const safetySettings = [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }];
 
         let systemPrompt = `Kamu adalah "Asep", asisten kesehatan AI dari TemanPulih. Nada bicaramu ramah, empatik, santai tapi profesional. Gunakan bahasa Indonesia.
 
@@ -264,7 +109,7 @@ STRUKTUR JAWABAN:
 - Kapan harus ke dokter.`;
 
         if (!ragContextFormatted) {
-            systemPrompt += `\n\n[SISTEM DARURAT]: TIDAK ADA referensi. DILARANG menyarankan nama obat medis (kimia). Berikan saran perawatan mandiri non-obat saja dan arahkan ke dokter.`;
+            systemPrompt += '\n\n[SISTEM DARURAT]: TIDAK ADA referensi. DILARANG menyarankan nama obat medis (kimia). Berikan saran perawatan mandiri non-obat saja dan arahkan ke dokter.';
         }
 
         const finalMessage = `${systemPrompt}\n\n${emrContext}\n${ragContextFormatted || '[TIDAK ADA REFERENSI]'}\n\nKELUHAN PASIEN:\n"${message}"`;
@@ -273,17 +118,15 @@ STRUKTUR JAWABAN:
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
-        // Update model AI Utama ke versi terbaru yang didukung (2.5-flash)
-        const activeModelName = "gemini-2.5-flash";
+        const { genAI } = chatbotService;
+        const activeModelName = 'gemini-2.5-flash';
         console.log(`[AI] Menghasilkan respons dengan model: ${activeModelName}...`);
-
         const model = genAI.getGenerativeModel({ model: activeModelName, safetySettings, generationConfig: modelConfig });
         const chatSession = model.startChat({ history: chatHistoryFormat });
         const result = await chatSession.sendMessageStream(finalMessage, { signal: abortController.signal });
 
-        // Mengembalikan Loop Streaming yang hilang
         for await (const chunk of result.stream) {
-            if (abortController.signal.aborted) break; // Berhenti jika user putus
+            if (abortController.signal.aborted) break;
             const chunkText = chunk.text();
             if (chunkText) {
                 fullReply += chunkText;
@@ -294,48 +137,45 @@ STRUKTUR JAWABAN:
         if (!abortController.signal.aborted) {
             res.write('data: [DONE]\n\n');
         }
-
     } catch (error) {
         if (error.name === 'AbortError' || error.message.includes('abort')) {
-            console.warn("\n[SYSTEM] Request dihentikan: koneksi client terputus.");
+            console.warn('\n[SYSTEM] Request dihentikan: koneksi client terputus.');
             return;
         }
-
-        console.error("\n[SYSTEM] Chatbot Error:", error.message);
+        console.error('\n[SYSTEM] Chatbot Error:', error.message);
         if (!res.writableEnded) {
-            const errorMsg = error.message === "RateLimit" ?
-                'Asep minta maaf, sistem lagi sibuk banget nih. Tunggu sebentar lalu coba lagi ya.' :
-                'Asep minta maaf, jaringan ke otak Asep lagi terputus. Coba tanya lagi nanti ya.';
+            const errorMsg = error.message === 'RateLimit'
+                ? 'Asep minta maaf, sistem lagi sibuk banget nih. Tunggu sebentar lalu coba lagi ya.'
+                : 'Asep minta maaf, jaringan ke otak Asep lagi terputus. Coba tanya lagi nanti ya.';
             res.write(`data: ${JSON.stringify({ error: errorMsg })}\n\ndata: [DONE]\n\n`);
         }
     } finally {
-        req.removeListener('close', onClientDisconnect); // Cleanup listener
-
+        req.removeListener('close', onClientDisconnect);
         if (fullReply && fullReply.trim().length > 0) {
             try {
                 await supabase.from('chat_history').insert([{ user_id: userId, message: fullReply.trim(), sender: 'ai' }]);
             } catch (dbError) {
-                console.error("[DB] Gagal menyimpan histori:", dbError.message);
+                console.error('[DB] Gagal menyimpan histori:', dbError.message);
             }
         }
         if (!res.writableEnded) res.end();
     }
 };
 
-const getHistory = async (req, res) => {
+const getHistory = async (req, res, next) => {
     try {
-        const { data, error } = await getSupabaseClient(req).from('chat_history').select('*').eq('user_id', req.user.id).order('created_at', { ascending: true });
-        if (error) throw error;
+        const supabase = getSupabaseClient(req);
+        const data = await chatbotService.getHistory(supabase, req.user.id);
         res.status(200).json(data);
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (err) { next(err); }
 };
 
-const clearHistory = async (req, res) => {
+const clearHistory = async (req, res, next) => {
     try {
-        const { error } = await getSupabaseClient(req).from('chat_history').delete().eq('user_id', req.user.id);
-        if (error) throw error;
+        const supabase = getSupabaseClient(req);
+        await chatbotService.clearHistory(supabase, req.user.id);
         res.status(200).json({ message: 'Riwayat chat berhasil dihapus' });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+    } catch (err) { next(err); }
 };
 
 module.exports = { sendMessage, getHistory, clearHistory };
