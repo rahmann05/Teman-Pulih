@@ -9,9 +9,9 @@ const AuthToggle = ({ role, setRole }) => {
         <button
           key={tab}
           type="button"
-          className={role === tab ? 'active-tab' : ''}
+          className={role === tab ? 'active' : ''}
           onClick={() => setRole(tab)}
-          style={{ position: 'relative', zIndex: 1 }}
+          style={{ position: 'relative', zIndex: 1, outline: 'none', border: 'none' }}
         >
           {role === tab && (
             <motion.div
@@ -19,15 +19,20 @@ const AuthToggle = ({ role, setRole }) => {
               style={{
                 position: 'absolute',
                 inset: 0,
-                backgroundColor: 'var(--bg-dark)',
-                borderRadius: 'var(--radius-full)',
+                backgroundColor: '#FFFFFF',
+                borderRadius: '99px',
                 zIndex: -1,
-                boxShadow: 'var(--shadow-sm)'
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
               }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             />
           )}
-          <span style={{ position: 'relative', zIndex: 2, color: role === tab ? 'var(--text-inverse)' : 'var(--text-secondary)' }}>
+          <span style={{ 
+            position: 'relative', 
+            zIndex: 2, 
+            color: role === tab ? 'var(--text)' : 'var(--text-secondary)',
+            transition: 'color 0.2s'
+          }}>
             {tab.charAt(0).toUpperCase() + tab.slice(1)}
           </span>
         </button>

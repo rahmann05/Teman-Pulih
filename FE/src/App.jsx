@@ -56,10 +56,10 @@ const AnimatedRoutes = () => {
     <AnimatePresence mode="wait">
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/pelajari" element={<PageTransition><PelajariPage /></PageTransition>} />
-          <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
-          <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
 
           {/* Route Khusus Patient */}

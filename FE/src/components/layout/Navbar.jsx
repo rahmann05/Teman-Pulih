@@ -5,11 +5,11 @@ import { useAuth } from '../../hooks/useAuth';
 
 const NAV_LINKS = [
   { label: 'Tentang', href: '#about' },
-  { label: 'Fitur', href: '#features' },
+  { label: 'Pelajari', href: '/pelajari', isRoute: true },
   { label: 'Cara Kerja', href: '#how-it-works' },
 ];
 
-const Navbar = () => {
+const Navbar = ({ onAuthClick }) => {
   const { user, logout, switchRole } = useAuth();
   const location = useLocation();
   const isLanding = location.pathname === '/';
@@ -41,14 +41,24 @@ const Navbar = () => {
       {isLanding && !user && (
         <div className="nav-links">
           {NAV_LINKS.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="nav-pill"
-              onClick={(e) => handleSmoothScroll(e, link.href)}
-            >
-              {link.label}
-            </a>
+            link.isRoute ? (
+              <Link
+                key={link.href}
+                to={link.href}
+                className="nav-pill"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.href}
+                href={link.href}
+                className="nav-pill"
+                onClick={(e) => handleSmoothScroll(e, link.href)}
+              >
+                {link.label}
+              </a>
+            )
           ))}
         </div>
       )}
@@ -72,8 +82,17 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/login" className="btn-ghost">Masuk</Link>
-            <Link to="/register" className="btn-solid">Daftar</Link>
+            {onAuthClick ? (
+              <>
+                <button onClick={() => onAuthClick('/login')} className="btn-ghost">Masuk</button>
+                <button onClick={() => onAuthClick('/register')} className="btn-solid">Daftar</button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn-ghost">Masuk</Link>
+                <Link to="/register" className="btn-solid">Daftar</Link>
+              </>
+            )}
           </>
         )}
       </div>

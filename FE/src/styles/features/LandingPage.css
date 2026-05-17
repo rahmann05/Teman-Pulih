@@ -12,12 +12,13 @@
 
 .hero-mobile {
   position: relative;
-  height: 92dvh;
-  min-height: 640px;
-  max-height: 900px;
+  height: 95dvh;
+  min-height: 720px;
+  max-height: 950px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1), max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero-desktop {
@@ -60,6 +61,38 @@
       rgba(26, 26, 46, 0.2) 40%,
       rgba(26, 26, 46, 0.7) 100%);
   z-index: 4;
+  transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Mobile Cinematic Zoom Exit Animation ── */
+.hero-mobile.hero-zoom-exit {
+  height: 100dvh;
+  max-height: 100dvh;
+}
+
+.hero-mobile.hero-zoom-exit .hero-visual-bg,
+.hero-mobile.hero-zoom-exit .hero-visual-obj {
+  /* Match Auth Page exactly, no artificial background scaling */
+  transform: none;
+}
+
+.hero-mobile.hero-zoom-exit .hero-content,
+.hero-mobile.hero-zoom-exit .hero-scroll,
+.hero.is-exiting .nav .nav-links,
+.hero.is-exiting .nav .nav-actions,
+.hero.is-exiting .hero-tagline {
+  transform: translateY(-40px);
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.hero-mobile.hero-zoom-exit .hero-overlay {
+  /* Darken slightly to match the auth page background on mobile */
+  background: linear-gradient(180deg,
+      rgba(26, 26, 46, 0.65) 0%, 
+      rgba(26, 26, 46, 0.35) 40%,
+      rgba(26, 26, 46, 0.85) 100%);
 }
 
 .hero-content {
@@ -112,6 +145,13 @@
 
 .hero-cta {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.hero-cta-secondary {
+  display: flex;
   align-items: center;
   gap: 12px;
 }
@@ -152,7 +192,7 @@
 
 .hero-main-visual {
   position: absolute;
-  top: 57%;
+  top: 62%; /* Pushed down slightly to give breathing space below the Navbar */
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 3;
@@ -161,6 +201,12 @@
   align-items: center;
   width: 100%;
   pointer-events: none;
+  transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero.is-exiting .hero-main-visual {
+  left: 31.63%; /* 58% of the left panel (1.2fr/2.2fr), shifting slightly right */
+  top: 52%;
 }
 
 .hero-display-text {
@@ -177,6 +223,11 @@
   line-height: 0.8;
   letter-spacing: -0.05em;
   color: var(--text);
+  transition: font-size 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hero.is-exiting .hero-display-line {
+  font-size: clamp(70px, 9vw, 150px);
 }
 
 .hero-display-dot {
@@ -186,14 +237,19 @@
 .hero-centerpiece {
   position: relative;
   z-index: 5;
-  margin-top: -10vw;
+  margin-top: -6vw;
+  transition: margin-top 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .hero-3d-img {
   width: clamp(350px, 36vw, 600px);
   height: auto;
   filter: drop-shadow(0 40px 100px rgba(26, 26, 46, 0.2));
-  transition: transform 1.2s var(--ease);
+  transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s var(--ease);
+}
+
+.hero.is-exiting .hero-3d-img {
+  width: clamp(250px, 25vw, 450px);
 }
 
 .hero:hover .hero-3d-img {
@@ -936,28 +992,44 @@
    ============================================================ */
 @media (min-width: 768px) {
 
-  /* Hero: Split grid */
+  /* Hero: Split Flex Layout */
   .hero-mobile {
     height: 100dvh;
     max-height: 1200px;
     max-width: 1440px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: row;
     align-items: center;
     padding: 60px clamp(24px, 4vw, 80px) 0;
     gap: clamp(20px, 4vw, 64px);
     background: var(--bg);
+    transition: padding 0.7s cubic-bezier(0.4, 0, 0.2, 1), gap 0.7s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hero-mobile.hero-zoom-exit {
+    padding: 0;
+    gap: 0;
+    max-width: 100vw;
   }
 
   .hero-visual-card {
     position: relative;
+    flex: 1;
     border-radius: var(--radius-lg);
     height: 75vh;
     width: 100%;
     overflow: hidden;
     background: var(--bg-muted);
     box-shadow: var(--shadow-lg);
+    transition: flex 0.7s cubic-bezier(0.4, 0, 0.2, 1), height 0.7s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hero-mobile.hero-zoom-exit .hero-visual-card {
+    flex: 100%; /* Force full width to consume space */
+    height: 100dvh; /* Expand vertically to fill screen */
+    border-radius: 0; /* Flatten corners */
+    transform: none; /* Reset any artificial scaling */
   }
 
   .hero-visual-bg,
@@ -986,10 +1058,19 @@
   }
 
   .hero-content {
+    flex: 1;
     padding: 0;
     max-width: clamp(350px, 40vw, 600px);
     color: var(--text);
     margin-top: 0;
+    transition: flex 0.7s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.7s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .hero-mobile.hero-zoom-exit .hero-content {
+    flex: 0;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
   }
 
   .hero-title {
