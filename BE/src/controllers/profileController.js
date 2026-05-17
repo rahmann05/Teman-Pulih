@@ -209,4 +209,18 @@ const getFamilyMembers = async (req, res) => {
             `)
             .or(`patient_id.eq.${userId},caregiver_id.eq.${userId}`);
 
-        if
+        if (error) throw error;
+        
+        // SIMPAN KE REDIS: Set kedaluwarsa 4 jam
+        if (redis.status === 'ready') {
+            await redis.set(cacheKey, JSON.stringify(data), 'EX', 14400);
+        }
+
+        // 2. GATEWAY -> FE
+        res.status(200).json({ members: data });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { getProfile, updateProfile, inviteFamily, getFamilyMembers };
