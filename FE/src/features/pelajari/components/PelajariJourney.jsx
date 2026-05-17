@@ -1,82 +1,65 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 const steps = [
   {
-    num: '01',
-    title: 'Sinkronisasi Data',
-    desc: 'Daftarkan profil medis dan sinkronkan jadwal resep Anda dalam hitungan detik. Sistem kami membaca pola pengobatan secara otomatis.',
+    id: '01',
+    title: 'Pindai Resep Tanpa Celah',
+    desc: 'Pemulihan Anda dimulai dengan menghilangkan friksi. Unggah atau potret resep Anda menggunakan teknologi Deep OCR, dan saksikan seluruh nama obat serta instruksi dosis ditarik secara otomatis dengan akurasi terkalibrasi tinggi.'
   },
   {
-    num: '02',
-    title: 'Peringatan Cerdas',
-    desc: 'Alarm berjenjang yang terasa seperti pengingat dari sahabat, bukan teguran mesin. Tidak ada dosis yang terlewat.',
+    id: '02',
+    title: 'Jadwal Pintar Bekerja',
+    desc: 'Bukan sekadar alarm. Mesin pengingat obat kami mengelola rutinitas Anda berdasarkan rekomendasi waktu medis terbaik, memastikan interval antar obat dipatuhi, meminimalisir risiko interaksi, dan membangun kepatuhan yang solid.'
   },
   {
-    num: '03',
-    title: 'Airy Family Sync',
-    desc: 'Hubungkan wali atau keluarga dari jarak jauh. Mereka dapat memantau perkembangan tanpa mengganggu kemandirian Anda.',
+    id: '03',
+    title: 'Eksplorasi Medis Berbasis AI',
+    desc: 'Apakah obat ini aman diminum dengan kopi? Chatbot Medis 24/7 kami hadir untuk menjawab setiap pertanyaan Anda secara instan, dirancang secara eksklusif berdasarkan data farmasi yang valid, aman, dan dapat diandalkan.'
   },
   {
-    num: '04',
-    title: 'Tinjauan Mingguan',
-    desc: 'Rangkuman kepatuhan Anda dalam metrik yang indah dan mudah dipahami — siap ditunjukkan langsung kepada dokter.',
-  },
+    id: '04',
+    title: 'Dukungan Lingkaran Dalam',
+    desc: 'Melalui fitur Airy Family Sync, perjalanan ini tak lagi sepi. Berikan akses pantau kepada keluarga atau wali Anda agar mereka dapat melihat kepatuhan dosis secara langsung, merajut harmoni dan kedamaian batin bagi semua pihak.'
+  }
 ];
 
-// Detect mobile once (SSR-safe)
-const isMobile = () => typeof window !== 'undefined' && window.innerWidth < 768;
-
-const DesktopJourney = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref });
-  const x = useTransform(scrollYProgress, [0, 1], ['0%', '-68%']);
-
+const PelajariJourney = () => {
   return (
-    <section ref={ref} className="p-journey-section" data-theme="light">
-      <div className="p-journey-sticky">
-        <div className="p-journey-header">
-          <h2>Peta Jalan<br />Pemulihan Anda.</h2>
-          <p>Langkah demi langkah menuju rutinitas klinis yang konsisten.</p>
-        </div>
+    <section className="p-journey-sus" data-theme="dark">
+      <div className="p-journey-sus-header">
+        <motion.h2
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-100px' }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          Konvergensi harmonis antara AI, kemudahan akses, dan dukungan keluarga dalam satu tapak jalan.
+        </motion.h2>
+      </div>
 
-        <motion.div className="p-journey-track" style={{ x }}>
-          {steps.map(s => (
-            <div key={s.num} className="p-journey-item">
-              <div className="p-journey-number">{s.num}</div>
-              <h3 className="p-journey-title">{s.title}</h3>
-              <p className="p-journey-desc">{s.desc}</p>
-            </div>
-          ))}
-        </motion.div>
+      <div className="p-journey-sus-grid">
+        {steps.map((step, i) => {
+          const isRight = i % 2 !== 0;
+          return (
+            <motion.div
+              key={step.id}
+              className={`p-journey-sus-block ${isRight ? 'block-right' : 'block-left'}`}
+              initial={{ opacity: 0, y: 100 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-10% 0px -10% 0px' }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="p-journey-sus-num">{step.id}</div>
+              <div className="p-journey-sus-content">
+                <h3>{step.title}</h3>
+                <p>{step.desc}</p>
+              </div>
+            </motion.div>
+          );
+        })}
       </div>
     </section>
   );
-};
-
-const MobileJourney = () => (
-  <section className="p-journey-section" data-theme="light">
-    <div className="p-journey-sticky">
-      <div className="p-journey-header">
-        <h2>Peta Jalan Pemulihan Anda.</h2>
-        <p>Langkah demi langkah menuju rutinitas klinis yang konsisten.</p>
-      </div>
-      <div className="p-journey-track">
-        {steps.map(s => (
-          <div key={s.num} className="p-journey-item">
-            <div className="p-journey-number">{s.num}</div>
-            <h3 className="p-journey-title">{s.title}</h3>
-            <p className="p-journey-desc">{s.desc}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
-);
-
-const PelajariJourney = () => {
-  if (isMobile()) return <MobileJourney />;
-  return <DesktopJourney />;
 };
 
 export default PelajariJourney;

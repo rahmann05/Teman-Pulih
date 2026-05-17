@@ -28,12 +28,6 @@ const testimonials = [
   },
 ];
 
-const footerLinks = {
-  Produk: ['Fitur', 'Cara Kerja', 'Harga', 'Testimoni'],
-  Dukungan: ['Pusat Bantuan', 'Kontak Kami', 'Komunitas', 'Status Layanan'],
-  Legal: ['Syarat & Ketentuan', 'Kebijakan Privasi', 'Aksesibilitas'],
-};
-
 const PelajariCTA = () => (
   <>
     {/* ── TESTIMONIALS ── */}
@@ -70,44 +64,64 @@ const PelajariCTA = () => (
       </div>
     </section>
 
-    {/* ── MEGA FOOTER ── */}
-    <footer className="p-mega-footer" data-theme="light">
-      <div className="p-footer-watermark" aria-hidden>TP</div>
-
-      <div className="p-footer-content">
-        {/* CTA Center */}
-        <div className="p-footer-cta">
+    {/* ── MEGA FOOTER (SUSTAINABILITY STYLE) ── */}
+    <footer className="p-footer-sus" data-theme="light">
+      <div className="p-footer-sus-content">
+        <div className="p-footer-sus-top">
           <motion.h2
             initial={{ opacity: 0, y: 32 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="p-footer-sus-heading"
           >
-            Mulai perjalanan kesehatan mental Anda secara terarah.
+            mulai perjalanan<br />
+            pemulihan anda.
           </motion.h2>
-          <Link to="/register" className="btn-primary">
-            Daftar TemanPulih Gratis
+          
+          <Link to="/register" className="p-footer-sus-arrow">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+              <path d="M5 12h14M12 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </Link>
         </div>
 
-        {/* Links Grid */}
-        <div className="p-footer-grid">
-          {Object.entries(footerLinks).map(([col, links]) => (
-            <div key={col}>
-              <p className="p-footer-col-title">{col}</p>
-              <nav className="p-footer-links">
-                {links.map(l => (
-                  <a key={l} href="#" className="p-footer-link">{l}</a>
-                ))}
-              </nav>
-            </div>
-          ))}
+        <div className="p-footer-sus-links-grid">
+          <div className="p-footer-sus-col">
+            <p className="p-footer-sus-title">Platform</p>
+            <nav>
+              <a href="#">Fitur</a>
+              <a href="#">Cara Kerja</a>
+              <a href="#">Harga</a>
+            </nav>
+          </div>
+          <div className="p-footer-sus-col">
+            <p className="p-footer-sus-title">Perusahaan</p>
+            <nav>
+              <a href="#">Tentang</a>
+              <a href="#">Karir</a>
+              <a href="#">Kontak</a>
+            </nav>
+          </div>
+          <div className="p-footer-sus-col">
+            <p className="p-footer-sus-title">Legal</p>
+            <nav>
+              <a href="#">Privasi</a>
+              <a href="#">Ketentuan</a>
+            </nav>
+          </div>
+          <div className="p-footer-sus-col">
+            <p className="p-footer-sus-title">Ikuti</p>
+            <nav>
+              <a href="#">Instagram</a>
+              <a href="#">LinkedIn</a>
+            </nav>
+          </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="p-footer-bottom">
-          <span>© 2024 TemanPulih. Semua hak dilindungi.</span>
-          <span>halo@temanpulih.id</span>
+        <div className="p-footer-sus-bottom">
+          <span>© 2024 TemanPulih</span>
+          <span>Aman & Terenkripsi</span>
         </div>
       </div>
     </footer>

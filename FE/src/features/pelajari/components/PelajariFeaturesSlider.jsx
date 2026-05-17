@@ -1,123 +1,90 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import { motion, useInView } from 'framer-motion';
 
-const medImg = 'https://placehold.co/800x1200/F4F1ED/3D5C4D?text=Medication+Feature';
-const syncImg = 'https://placehold.co/800x1200/F4F1ED/C4653A?text=Sync+Feature';
-const eduImg = 'https://placehold.co/800x1200/F4F1ED/C4653A?text=Education+Feature';
-const consoleImg = 'https://placehold.co/800x1200/F4F1ED/3D5C4D?text=Consult+Feature';
+import imgOcr from '../../../assets/images/feature-ocr-scan-v2.png';
+import imgMed from '../../../assets/images/feature-med-schedule-v2.png';
+import imgChat from '../../../assets/images/feature-ai-chatbot-v2.png';
+import imgSync from '../../../assets/images/feature-family-sync.png';
 
 const features = [
   {
-    id: '01', label: 'Medikasi',
-    title: 'Pengingat Minum Obat.',
-    img: medImg,
+    id: '01', label: 'Deep OCR',
+    title: 'Scan Resep Cerdas.',
+    img: imgOcr,
+    fact: 'Mengekstrak instruksi dokter dalam hitungan detik tanpa input manual.',
+    desc: 'Ucapkan selamat tinggal pada kerumitan memasukkan nama obat satu per satu. Dengan teknologi Deep OCR, cukup potret resep atau kemasan obat Anda, dan TemanPulih akan secara otomatis membaca, mengkategorikan, dan menjadwalkan dosis Anda dengan akurasi klinis.'
+  },
+  {
+    id: '02', label: 'Otomatis',
+    title: 'Pengingat Obat.',
+    img: imgMed,
     fact: '80% pasien TemanPulih berhasil menjaga kepatuhan dosis secara konsisten.',
+    desc: 'Pemulihan sangat bergantung pada kepatuhan. Algoritma kami memastikan tidak ada dosis yang terlewat dengan notifikasi berlapis. Dari obat harian hingga resep sementara, jadwal diatur secara pintar menyesuaikan ritme sirkadian dan jam biologis Anda.'
   },
   {
-    id: '02', label: 'Sinkronisasi',
+    id: '03', label: 'Asisten AI',
+    title: 'Chatbot Medis 24/7.',
+    img: imgChat,
+    fact: 'Respons instan berdasarkan basis data medis tervalidasi.',
+    desc: 'Punya pertanyaan jam 2 pagi tentang efek samping atau interaksi obat? Asisten AI kami dilatih khusus untuk menganalisis kekhawatiran ringan, memberikan panduan interaksi farmasi, dan menenangkan Anda di momen kritis kapan pun Anda butuhkan.'
+  },
+  {
+    id: '04', label: 'Sinkronisasi',
     title: 'Airy Family Sync.',
-    img: syncImg,
-    fact: 'Pantau orang terkasih dari mana saja, secara real-time.',
-  },
-  {
-    id: '03', label: 'Edukasi',
-    title: 'Artikel & Wawasan.',
-    img: eduImg,
-    fact: 'Konten medis dikurasi oleh tim psikiater bersertifikat.',
-  },
-  {
-    id: '04', label: 'Integrasi',
-    title: 'Konsultasi Profesional.',
-    img: consoleImg,
-    fact: 'Terhubung dengan dokter atau psikolog dalam satu platform.',
+    img: imgSync,
+    fact: 'Pantau pemulihan orang terkasih dari jarak jauh, secara real-time.',
+    desc: 'Pemulihan adalah proses komunal. Hubungkan ekosistem medis Anda dengan anggota keluarga atau pengasuh. Mereka akan menerima pembaruan kepatuhan obat dan peringatan kritis, memastikan Anda tidak pernah berjalan sendirian menuju kesembuhan.'
   },
 ];
 
-const FeatureSlide = ({ feature, index, containerRef }) => {
-  const total = features.length;
-  const { scrollYProgress } = useScroll({ target: containerRef });
+const FeatureBlock = ({ feature, index, setActiveIndex }) => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { margin: "-50% 0px -50% 0px" });
 
-  const start = index / total;
-  const end   = (index + 1) / total;
-
-  // Clamp to avoid negative or >1 values which cause WAAPI error
-  const s0 = Math.max(0, start - 0.04);
-  const s1 = start;
-  const e0 = end;
-  const e1 = Math.min(1, end + 0.04);
-
-  const y = useTransform(
-    scrollYProgress,
-    [s0, s1, e0, e1],
-    ['100%', '0%', '0%', '-45%']
-  );
-  const opacity = useTransform(
-    scrollYProgress,
-    [s0, s1, Math.max(s1, e0 - 0.04), e0],
-    [0, 1, 1, 0]
-  );
+  useEffect(() => {
+    if (isInView) {
+      setActiveIndex(index);
+    }
+  }, [isInView, index, setActiveIndex]);
 
   return (
-    <motion.div
-      className="p-feature-slide"
-      style={{ y, opacity, zIndex: index }}
-    >
-      <div className="p-feature-bg">
+    <div ref={ref} className="p-feature-block">
+      <div className="p-feature-block-img-wrapper">
         <img src={feature.img} alt={feature.title} />
-        <div className="p-feature-overlay" />
       </div>
-
-      <div className="p-feature-content">
-        <div className="p-feature-pill">
-          <span className="p-feature-pill-num">{feature.id}</span>
-          <span>{feature.label}</span>
+      <div className="p-feature-block-content">
+        <h3 className="p-feature-block-title">{feature.title}</h3>
+        <p className="p-feature-block-desc">{feature.desc}</p>
+        <div className="p-feature-sneak">
+          <strong>Wawasan Arsitektur Medis</strong>
+          {feature.fact}
         </div>
-        <h2 className="p-feature-title">{feature.title}</h2>
-        <button className="p-feature-btn">Lihat Detail Fitur</button>
       </div>
-
-      <div className="p-feature-sneak">
-        <strong>Tahukah Anda?</strong>
-        {feature.fact}
-      </div>
-    </motion.div>
+    </div>
   );
 };
 
-/* Mobile CSS-snap slider */
-const MobileSlider = () => (
-  <section className="p-features-section" data-theme="dark">
-    <div className="p-features-mobile-slider">
-      {features.map((f, i) => (
-        <div key={f.id} className="p-feature-slide" style={{ zIndex: i }}>
-          <div className="p-feature-bg">
-            <img src={f.img} alt={f.title} />
-            <div className="p-feature-overlay" />
-          </div>
-          <div className="p-feature-content">
-            <div className="p-feature-pill">
-              <span className="p-feature-pill-num">{f.id}</span>
-              <span>{f.label}</span>
-            </div>
-            <h2 className="p-feature-title">{f.title}</h2>
-            <button className="p-feature-btn">Lihat Detail</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-);
-
 const PelajariFeaturesSlider = () => {
-  const containerRef = useRef(null);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 900;
-  if (isMobile) return <MobileSlider />;
+  const [activeIndex, setActiveIndex] = useState(0);
 
   return (
-    <section ref={containerRef} className="p-features-section" data-theme="dark">
-      <div className="p-features-sticky">
+    <section className="p-features-split" data-theme="light">
+      <div className="p-features-left">
+        <div className="p-features-nav">
+          <h2 className="p-features-nav-title">Ekosistem Fitur.</h2>
+          <ul className="p-features-list">
+            {features.map((f, i) => (
+              <li key={f.id} className={`p-features-list-item ${i === activeIndex ? 'active' : ''}`}>
+                <span className="p-features-list-num">{f.id}</span>
+                {f.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div className="p-features-right">
         {features.map((f, i) => (
-          <FeatureSlide key={f.id} feature={f} index={i} containerRef={containerRef} />
+          <FeatureBlock key={f.id} feature={f} index={i} setActiveIndex={setActiveIndex} />
         ))}
       </div>
     </section>
