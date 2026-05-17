@@ -138,9 +138,9 @@ const login = async (req, res) => {
 
         res.status(200).json({
             message: 'Berhasil login',
-            user: finalUser,
-            session: authData.session,
-            access_token: authData.session.access_token
+            user: userData,
+            session: data.session,
+            access_token: data.session.access_token
         });
     } catch (error) {
         res.status(400).json({ error: error.message });
