@@ -136,6 +136,14 @@ const login = async (req, res) => {
             ? normalizedRole
             : 'patient';
 
+        // Hapus riwayat chat lama saat login sukses (pengaman ekstra)
+        try {
+            await supabase.from('chat_history').delete().eq('user_id', userData.id);
+            console.log(`[DB] Chat history cleared on login for user ID: ${userData.id}`);
+        } catch (dbErr) {
+            console.error('[DB] Gagal membersihkan riwayat chat saat login:', dbErr.message);
+        }
+
         res.status(200).json({
             message: 'Berhasil login',
             user: userData,
@@ -251,6 +259,14 @@ const oauthLogin = async (req, res) => {
             .eq('user_id', userData.id);
         
         const allowedRoles = userRoles?.map(ur => ur.roles.name) || [normalizedRole];
+
+        // Hapus riwayat chat lama saat OAuth login sukses (pengaman ekstra)
+        try {
+            await userSupabase.from('chat_history').delete().eq('user_id', userData.id);
+            console.log(`[DB] Chat history cleared on OAuth login for user ID: ${userData.id}`);
+        } catch (dbErr) {
+            console.error('[DB] Gagal membersihkan riwayat chat saat OAuth login:', dbErr.message);
+        }
 
         console.log('OAuth Login Success for:', user.email);
 

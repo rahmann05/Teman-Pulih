@@ -87,7 +87,7 @@ const RegisterPage = () => {
       // (Backend kita mengembalikan user dan session di register)
       if (response.data.session && response.data.session.access_token) {
         const resolvedRole = response.data.user?.role || 'patient';
-        login(response.data.session.access_token, resolvedRole);
+        login(response.data.session.access_token, resolvedRole, response.data.allowed_roles || ['patient'], response.data.user, response.data.session.refresh_token);
         navigate(resolvedRole === 'caregiver' ? '/caregiver/dashboard' : '/dashboard');
       } else {
         // Jika butuh email confirmation dulu
