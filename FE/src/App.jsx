@@ -20,6 +20,7 @@ const MedicationDetailPage = lazy(() => import('./features/medications/Medicatio
 const ChatbotPage = lazy(() => import('./features/chatbot/ChatbotPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const FamilySyncPage = lazy(() => import('./features/profile/FamilySyncPage'));
+const PelajariPage   = lazy(() => import('./features/pelajari/PelajariPage'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -56,6 +57,7 @@ const AnimatedRoutes = () => {
       <Suspense fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageTransition><LandingPage /></PageTransition>} />
+          <Route path="/pelajari" element={<PageTransition><PelajariPage /></PageTransition>} />
           <Route path="/login" element={<PageTransition><LoginPage /></PageTransition>} />
           <Route path="/register" element={<PageTransition><RegisterPage /></PageTransition>} />
           <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />
