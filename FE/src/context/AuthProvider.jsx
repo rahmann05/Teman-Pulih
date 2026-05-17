@@ -34,26 +34,35 @@ export const AuthProvider = ({ children }) => {
     return null;
   });
 
-  const login = (token, role, allowedRoles, userData) => {
+  const login = (token, role, allowedRoles, userData, refreshToken) => {
     localStorage.setItem('token', token);
     localStorage.setItem('role', role);
     localStorage.setItem('allowed_roles', JSON.stringify(allowedRoles));
     if (userData) {
       localStorage.setItem('user_data', JSON.stringify(userData));
     }
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken);
+    }
     setUser({ token, role, allowedRoles, ...userData });
   };
 
-  const logout = () => {
+  const logout = async () => {
     // Attempt to clear chat history from database before logging out
     if (localStorage.getItem('token')) {
-      api.delete('/chatbot/history').catch(console.error);
+      try {
+        await api.delete('/chatbot/history');
+        console.log('Chatbot history successfully cleared during manual logout.');
+      } catch (err) {
+        console.error('Failed to clear chatbot history during manual logout:', err);
+      }
     }
 
     localStorage.removeItem('token');
     localStorage.removeItem('role');
     localStorage.removeItem('allowed_roles');
     localStorage.removeItem('user_data');
+    localStorage.removeItem('refresh_token');
     setUser(null);
   };
 

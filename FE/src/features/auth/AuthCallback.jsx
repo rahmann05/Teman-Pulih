@@ -37,7 +37,7 @@ const AuthCallback = () => {
         console.log('Backend sync successful:', data);
 
         const resolvedRole = data.user?.role || role;
-        login(data.token, resolvedRole, data.allowed_roles, data.user);
+        login(data.token, resolvedRole, data.allowed_roles, data.user, session.refresh_token);
         
         // Bersihkan role sementara
         localStorage.removeItem('oauth_role');
