@@ -57,7 +57,8 @@ const sendMessage = async (req, res) => {
             supabase.from('chat_history').select('message, sender').eq('user_id', userId).order('created_at', { ascending: false }).limit(6),
             (async () => {
                 try {
-                    const gatekeeperModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b", generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
+                    // Update model gatekeeper ke versi terbaru (2.5-flash-lite)
+                    const gatekeeperModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite", generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
                     const gatekeeperPrompt = `Klasifikasikan pesan di dalam tag <pesan>.
 Kategori:
 1. MEDIS: Penyakit, gejala, obat.
@@ -123,7 +124,8 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
         let searchTerms = [message];
         try {
             console.log("[RAG] Memperluas query...");
-            const expansionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-8b", generationConfig: { temperature: 0.1 } });
+            // Update model query expansion ke versi terbaru (2.5-flash-lite)
+            const expansionModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite", generationConfig: { temperature: 0.1 } });
             const expandPrompt = `Ekstrak maksimal 3 kata kunci medis/gejala utama dari pesan ini: "${message}". Pisahkan dengan koma. (Contoh: dispepsia, mual). Jika tidak jelas, kosongkan.`;
 
             const expandResult = await expansionModel.generateContent({ contents: [{ role: 'user', parts: [{ text: expandPrompt }] }], signal: abortController.signal });
@@ -201,7 +203,8 @@ STRUKTUR JAWABAN:
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
-        const activeModelName = "gemini-1.5-flash-latest";
+        // Update model AI Utama ke versi terbaru yang didukung (2.5-flash)
+        const activeModelName = "gemini-2.5-flash";
         console.log(`[AI] Menghasilkan respons dengan model: ${activeModelName}...`);
 
         const model = genAI.getGenerativeModel({ model: activeModelName, safetySettings, generationConfig: modelConfig });
