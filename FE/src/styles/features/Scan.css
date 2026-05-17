@@ -1,13 +1,34 @@
 /* src/styles/features/Scan.css */
+/* ============================================================
+   SCAN OCR — Airy Editorial Design Language
+   Selaras dengan Dashboard & Landing Page
+   Warm cream background · Bento cards · Bold typography
+   ============================================================ */
 
 /* ── Container ────────────────────────────────────────────── */
 .scan-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  background: var(--bg);
+  background: #FAF8F5; /* Airy cream background */
   min-height: 100dvh;
-  padding-bottom: 80px; /* space for BottomNav on mobile */
+  width: 100%;
+}
+
+/* ── Dashboard Grid Layout (Desktop 2-Col) ───────────────── */
+.scan-dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: 0 var(--space-4) 120px; /* bottom clearance for floating nav */
+}
+
+.scan-col-left,
+.scan-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
 }
 
 /* ── Header ───────────────────────────────────────────────── */
@@ -15,7 +36,26 @@
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-5);
+  padding: var(--space-6) 0 var(--space-3); /* No horizontal padding on mobile/tablet since grid wrapper handles it */
+}
+
+.scan-back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out-expo);
+  flex-shrink: 0;
+}
+
+.scan-back-btn:hover {
+  background: var(--bg-muted);
 }
 
 .scan-header-title {
@@ -23,44 +63,41 @@
   font-size: var(--text-xl);
   font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 
-.scan-back-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  transition: background var(--duration-fast);
-  cursor: pointer;
-  border: none;
-  background: transparent;
-}
-
-.scan-back-btn:hover {
-  background: var(--bg-muted);
+/* ── Bento Card Base ─────────────────────────────────────── */
+.scan-bento-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
 }
 
 /* ── Preview Area ─────────────────────────────────────────── */
 .scan-preview-area {
-  margin: 0 var(--space-5);
   aspect-ratio: 4 / 3;
-  border-radius: var(--radius-2xl);
+  border-radius: 24px;
   overflow: hidden;
   position: relative;
-  background: var(--bg-muted);
-  border: 2px dashed var(--border);
+  background: #FFFFFF;
+  border: 2px dashed rgba(196, 101, 58, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color var(--duration-fast);
+  transition: all var(--duration-fast) var(--ease-out-expo);
+}
+
+.scan-preview-area:hover {
+  border-color: rgba(196, 101, 58, 0.4);
 }
 
 .scan-preview-area.has-image {
-  border: none;
-  box-shadow: var(--shadow-lg);
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
 }
 
 .scan-preview-img {
@@ -74,12 +111,14 @@
   flex-direction: column;
   align-items: center;
   gap: var(--space-3);
-  color: var(--text-muted);
+  color: var(--text-secondary);
 }
 
 .scan-preview-placeholder-icon {
   width: 48px;
   height: 48px;
+  color: var(--accent);
+  opacity: 0.8;
 }
 
 .scan-preview-placeholder-text {
@@ -121,7 +160,6 @@
 .scan-actions {
   display: flex;
   gap: var(--space-3);
-  padding: 0 var(--space-5);
 }
 
 .scan-action-btn {
@@ -130,13 +168,13 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-4);
-  border-radius: var(--radius-xl);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
   font-family: var(--font-heading);
   font-size: var(--text-sm);
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-fast) var(--spring);
   min-height: 48px;
   border: none;
 }
@@ -149,32 +187,40 @@
 .scan-action-btn--primary {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
 }
 
 .scan-action-btn--primary:hover {
-  transform: translateY(-2px);
+  background: var(--accent-dark);
+  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
+  transform: translateY(-1px);
 }
 
 .scan-action-btn--primary:active {
-  transform: scale(0.985);
+  transform: scale(0.97);
 }
 
 .scan-action-btn--outline {
-  background: transparent;
+  background: #FFFFFF;
   color: var(--text);
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
 
 .scan-action-btn--outline:hover {
   background: var(--bg-muted);
+  border-color: var(--border);
+  transform: translateY(-1px);
+}
+
+.scan-action-btn--outline:active {
+  transform: scale(0.97);
 }
 
 .scan-selected-actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: 0 var(--space-5);
 }
 
 .scan-secondary-actions {
@@ -184,26 +230,28 @@
 
 .scan-submit-btn {
   width: 100%;
-  padding: var(--space-4);
+  padding: 0 var(--space-5);
   border-radius: var(--radius-full);
   background: var(--accent);
   color: var(--text-inverse);
   font-family: var(--font-heading);
   font-size: var(--text-base);
   font-weight: 700;
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 48px;
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
+  transition: all var(--duration-fast) var(--spring);
+  min-height: 52px;
   border: none;
   cursor: pointer;
 }
 
 .scan-submit-btn:hover {
-  transform: translateY(-2px);
+  background: var(--accent-dark);
+  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
+  transform: translateY(-1px);
 }
 
 .scan-submit-btn:active {
-  transform: scale(0.985);
+  transform: scale(0.97);
 }
 
 .scan-submit-btn:disabled {
@@ -213,8 +261,22 @@
 
 /* ── History ──────────────────────────────────────────────── */
 .scan-history-section {
-  padding: 0 var(--space-5);
-  margin-top: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+}
+
+.scan-section-title {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .scan-history-scroll {
@@ -234,19 +296,22 @@
 .scan-history-card {
   width: 140px;
   height: 100px;
-  border-radius: var(--radius-lg);
+  border-radius: 16px;
   overflow: hidden;
   flex-shrink: 0;
   position: relative;
   scroll-snap-align: start;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast) var(--spring);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all var(--duration-fast) var(--ease-out-expo);
   display: block;
 }
 
 .scan-history-card:hover {
-  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+  border-color: rgba(196, 101, 58, 0.3);
 }
 
 .scan-history-card img {
@@ -260,11 +325,28 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: var(--space-1) var(--space-2);
-  background: linear-gradient(transparent, rgba(0,0,0,0.7));
-  font-size: 10px;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+  font-size: 11px;
   color: var(--text-inverse);
-  font-weight: 600;
+  font-weight: 700;
+}
+
+.scan-history-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  text-align: center;
+  min-height: 160px;
+}
+
+.scan-history-empty-text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+  max-width: 240px;
+  line-height: 1.6;
 }
 
 /* ── Cropper ──────────────────────────────────────────────── */
@@ -272,7 +354,7 @@
   display: flex;
   flex-direction: column;
   height: 100dvh;
-  background: var(--bg);
+  background: #000000;
 }
 
 .crop-header {
@@ -280,8 +362,14 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-5);
-  background: var(--bg);
+  background: #000000;
   z-index: 10;
+  color: #FFFFFF;
+}
+.crop-header .scan-back-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
 }
 
 .crop-container {
@@ -299,18 +387,18 @@
 
 .crop-controls {
   padding: var(--space-5);
-  background: var(--bg-card);
+  background: #111111;
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   z-index: 10;
-  border-top: 1px solid var(--border-light);
 }
 
 .crop-zoom-row {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  color: #FFFFFF;
 }
 
 .crop-control-btn {
@@ -320,15 +408,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-muted);
+  background: rgba(255,255,255,0.1);
   border: none;
-  color: var(--text);
+  color: #FFFFFF;
   cursor: pointer;
   transition: background var(--duration-fast);
 }
 
 .crop-control-btn:hover {
-  background: var(--border-light);
+  background: rgba(255,255,255,0.2);
 }
 
 .crop-zoom-slider {
@@ -349,11 +437,11 @@
 }
 
 .scan-result-image {
-  margin: 0 var(--space-5);
-  height: 200px;
-  border-radius: var(--radius-xl);
+  height: 240px;
+  border-radius: 24px;
   overflow: hidden;
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0,0,0,0.03);
 }
 
 .scan-result-image img {
@@ -363,17 +451,17 @@
 }
 
 .scan-result-text-card {
-  margin: 0 var(--space-5);
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
+  background: #FFFFFF;
+  border-radius: 24px;
   padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0,0,0,0.03);
   display: flex;
   flex-direction: column;
 }
 
 .scan-result-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 800;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -383,52 +471,51 @@
 
 .scan-result-textarea {
   width: 100%;
-  min-height: 160px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
+  min-height: 180px;
+  border: 1.5px solid var(--border-light);
+  border-radius: 16px;
   padding: var(--space-4);
   font-family: var(--font-body);
   font-size: var(--text-base);
   color: var(--text);
-  background: var(--bg);
+  background: #FAF8F5;
   resize: vertical;
   line-height: 1.6;
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
 .scan-result-textarea:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-light);
+  background: #FFFFFF;
 }
 
 .scan-result-actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: 0 var(--space-5);
 }
 
 .scan-error {
-  margin: 0 var(--space-5);
-  padding: var(--space-3);
-  background: #fee2e2;
-  color: #dc2626;
-  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  background: var(--error-light);
+  color: var(--error);
+  border-radius: var(--radius-lg);
   font-size: var(--text-sm);
-  text-align: center;
+  font-weight: 600;
 }
 
 /* ── Skeleton ─────────────────────────────────────────────── */
 .scan-skeleton {
-  padding: var(--space-5);
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
 }
 
 .skeleton-block {
-  border-radius: var(--radius-xl);
+  border-radius: 24px;
   background: linear-gradient(90deg, var(--bg-muted) 25%, var(--border-light) 50%, var(--bg-muted) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s ease-in-out infinite;
@@ -441,195 +528,190 @@
 
 /* ── Reduced Motion ───────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  .scan-history-card, .scan-action-btn, .scan-submit-btn { transition: none; }
+  .scan-history-card, .scan-action-btn, .scan-submit-btn, .scan-back-btn { transition: none; transform: none !important; }
   .scan-processing-bar { animation: none; }
   .skeleton-block { animation: none; }
 }
 
-/* ── Handheld Mobile Optimizations (< 520px) ─────────────── */
-@media (max-width: 520px) {
-  .scan-header { padding: var(--space-4); }
-  .scan-preview-area { margin: 0 var(--space-4); }
-  .scan-actions { padding: 0 var(--space-4); gap: var(--space-2); }
-  .scan-action-btn { font-size: var(--text-xs); padding: var(--space-3); }
-  .scan-selected-actions { padding: 0 var(--space-4); }
-  .scan-history-section { padding: 0 var(--space-4); }
-  .scan-history-card { width: 120px; height: 85px; }
-  .scan-result-image { margin: 0 var(--space-4); height: 160px; }
-  .scan-result-text-card { margin: 0 var(--space-4); padding: var(--space-4); }
-  .scan-result-actions { padding: 0 var(--space-4); }
-  .scan-error { margin: 0 var(--space-4); }
-}
-
-/* ── Tablet Optimizations (768px – 1023px) ────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (768px)
+   ══════════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
-  .scan-container {
-    padding-bottom: var(--space-8);
+  .scan-dashboard-grid {
+    padding: 0 var(--space-6) 160px;
+    gap: var(--space-5);
     max-width: 720px;
     margin: 0 auto;
   }
+  
+  .scan-header {
+    padding: var(--space-8) 0 var(--space-4);
+  }
+
+  .scan-header-title {
+    font-size: var(--text-2xl);
+    font-weight: 900;
+  }
+
   .scan-preview-area { 
     aspect-ratio: 16 / 10;
-    margin: 0;
   }
-  .scan-actions { padding: 0; }
-  .scan-selected-actions { padding: 0; }
-  .scan-history-section { padding: 0; }
-  .scan-history-card { width: 160px; height: 110px; }
-  .scan-result-image { margin: 0; height: 240px; }
-  .scan-result-text-card { margin: 0; }
-  .scan-result-actions { padding: 0; flex-direction: row; }
-  .scan-result-actions .scan-action-btn { flex: 1; }
+
+  .scan-bento-card,
+  .scan-history-section,
+  .scan-result-text-card {
+    border-radius: 32px;
+    padding: var(--space-6);
+  }
+  
+  .scan-result-image {
+    height: 320px;
+    border-radius: 32px;
+  }
+  
+  .scan-result-actions {
+    flex-direction: row;
+  }
+  
+  .scan-result-actions .scan-action-btn {
+    flex: 1;
+  }
+
   .scan-crop-page { max-width: 720px; margin: 0 auto; }
 }
 
-/* ── Desktop Optimizations (≥ 1024px) ─────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Desktop (1024px+)
+   2-Column Bento Grid
+   ══════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
+  /* Remove app-main padding so scan controls its own layout */
+  .app-main:has(.scan-container) {
+    padding: 0;
+  }
+  
   .scan-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: var(--space-10) 0;
-    padding-bottom: 120px;
+    max-width: none;
+    margin: 0;
+    padding-bottom: 0;
   }
 
+  .scan-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    padding: var(--space-8) max(5vw, 60px) 60px;
+    align-items: stretch;
+    max-width: none;
+  }
+
+  /* Header sits above the grid, full-width */
   .scan-header {
-    padding: 0 0 var(--space-6);
+    grid-column: 1 / -1;
+    padding: 0 0 var(--space-4);
   }
 
   .scan-header-title {
     font-size: var(--text-3xl);
     font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+  
+  .scan-error {
+    grid-column: 1 / -1;
+  }
+  
+  .scan-col-left {
+    gap: var(--space-6);
+  }
+
+  .scan-col-right {
+    gap: var(--space-6);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .scan-preview-area {
-    margin: 0;
-    aspect-ratio: 16 / 9;
-    border: 1.5px solid var(--border-light);
-    background: var(--bg-muted);
-    border-radius: var(--radius-xl);
-    box-shadow: none;
+    aspect-ratio: 16 / 10;
   }
 
-  .scan-preview-area.has-image {
-    border: 1.5px solid var(--border);
-    box-shadow: none;
-  }
-
-  .scan-actions {
-    padding: 0;
-    gap: var(--space-4);
-  }
-
-  .scan-action-btn {
-    padding: var(--space-4) var(--space-6);
-    font-size: var(--text-base);
-    border-radius: var(--radius-md);
-    box-shadow: none !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .scan-action-btn:hover {
-    transform: none;
-    background: var(--bg-muted);
-  }
-
-  .scan-action-btn--primary {
-    background: var(--accent);
-  }
-
-  .scan-action-btn--primary:hover {
-    background: var(--accent-dark);
-    transform: none;
-  }
-
-  .scan-submit-btn {
-    border-radius: var(--radius-md);
-    box-shadow: none !important;
-    font-weight: 800;
-  }
-
-  .scan-submit-btn:hover {
-    transform: none;
-    background: var(--accent-dark);
+  .scan-bento-card,
+  .scan-history-section,
+  .scan-result-text-card {
+    border-radius: 32px;
+    padding: var(--space-8);
   }
 
   .scan-history-section {
-    padding: var(--space-6) 0;
-    margin-top: var(--space-6);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
+  .scan-history-empty {
+    flex: 1;
+    padding: var(--space-8);
+  }
+
+  /* Turn history scroll into a grid on desktop */
   .scan-history-scroll {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-4);
     overflow: visible;
-    padding-bottom: 0;
   }
 
   .scan-history-card {
-    width: auto;
-    height: 120px;
-    box-shadow: none;
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--radius-lg);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+    height: 140px;
+    border-radius: 20px;
   }
-
-  .scan-history-card:hover {
-    transform: none;
-    border-color: var(--accent);
-    padding: 2px;
-  }
-
+  
+  /* Result specific */
   .scan-result-image {
-    margin: 0;
-    height: 320px;
-    box-shadow: none;
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius-xl);
+    height: 380px;
+    border-radius: 32px;
   }
-
-  .scan-result-text-card {
-    margin: 0;
-    padding: var(--space-8);
-    box-shadow: none;
-    border: 1.5px solid var(--border-light);
-    border-radius: var(--radius-2xl);
-    background: var(--bg-card);
-  }
-
-  .scan-result-label {
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    color: var(--text-secondary);
-  }
-
+  
   .scan-result-textarea {
-    background: var(--bg-muted);
-    border: 1.5px solid var(--border);
-    font-size: var(--text-base);
+    min-height: 400px; /* take up full height of right column */
+    font-size: 17px;
+    line-height: 1.7;
+    padding: var(--space-5);
   }
 
-  .scan-result-actions {
-    padding: var(--space-4) 0;
-    flex-direction: row;
-    gap: var(--space-4);
-  }
-
-  .scan-result-actions .scan-action-btn {
-    flex: 1;
-  }
-
+  /* Crop */
   .scan-crop-page {
     max-width: 800px;
-    margin: 0 auto;
     padding: var(--space-10) 0;
+    background: transparent;
   }
-
+  .crop-header {
+    background: transparent;
+    color: var(--text);
+  }
+  .crop-header .scan-back-btn {
+    background: var(--bg-card);
+    border-color: var(--border);
+    color: var(--text);
+  }
   .crop-controls {
-    border-radius: var(--radius-2xl);
+    background: var(--bg-card);
+    border-radius: 32px;
     margin-top: var(--space-4);
-    border: 1.5px solid var(--border-light);
+    border: 1px solid var(--border-light);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.03);
+  }
+  .crop-zoom-row {
+    color: var(--text);
+  }
+  .crop-control-btn {
+    background: var(--bg-muted);
+    color: var(--text);
+  }
+  .crop-area {
+    border-radius: 24px;
+    overflow: hidden;
   }
 }

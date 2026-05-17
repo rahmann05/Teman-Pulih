@@ -1,22 +1,60 @@
 /* ============================================================
-   PROFILE PAGE — Pulih Design Language
-   Clean Data Typography, warm neutrals, single-column layout
+   PROFILE PAGE — Airy Editorial Design Language
+   Selaras penuh dengan Dashboard & Landing Page
+   Warm cream background · Bento cards · Bold typography
    ============================================================ */
 
+/* ── Container ───────────────────────────────────────────── */
 .profile-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  background: var(--bg);
+  gap: 0;
+  background: #FAF8F5;
   min-height: 100dvh;
-  padding: var(--space-5);
-  padding-bottom: 80px;
+  padding-bottom: 96px;
+  width: 100%;
 }
 
+/* ── Grid Layout (matches .patient-dashboard-grid) ───────── */
+.profile-dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: 0 var(--space-4) 120px; /* Spacing for floating bottom-nav */
+}
+
+.profile-hero-wrapper {
+  width: 100%;
+}
+
+.profile-col-left,
+.profile-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.profile-footer-wrapper {
+  width: 100%;
+}
+
+/* ── Bento Card (matches Dashboard bento-card) ───────────── */
+.bento-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+}
+
+/* ── Page Header (Profil Saya + back btn) ────────────────── */
 .profile-header {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  padding: var(--space-6) var(--space-4) var(--space-3);
 }
 
 .profile-back-btn {
@@ -31,6 +69,7 @@
   justify-content: center;
   cursor: pointer;
   transition: background var(--duration-fast) var(--ease-out-expo);
+  flex-shrink: 0;
 }
 
 .profile-back-btn:hover {
@@ -42,99 +81,125 @@
   font-size: var(--text-xl);
   font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .profile-error {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--error-light);
+  color: var(--error);
   border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-sm);
   font-weight: 600;
+  margin: 0 var(--space-5);
 }
 
+/* ── Hero Avatar Card ────────────────────────────────────── */
 .profile-avatar-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-8) var(--space-5);
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-6) var(--space-5);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  box-shadow: var(--shadow-card);
+  gap: var(--space-4);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
   text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle warm gradient accent strip at top */
+.profile-avatar-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--copper), var(--sage));
+}
+
+.profile-avatar-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .profile-avatar {
-  width: 80px;
-  height: 80px;
+  width: 88px;
+  height: 88px;
   border-radius: var(--radius-full);
   background: linear-gradient(135deg, var(--accent), var(--accent-dark));
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
-  font-weight: 800;
-  font-size: var(--text-2xl);
+  font-weight: 900;
+  font-size: var(--text-3xl);
   color: var(--text-inverse);
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
-  position: relative;
+  box-shadow: 0 8px 30px rgba(196, 101, 58, 0.35);
+  flex-shrink: 0;
 }
 
 .profile-name {
   font-family: var(--font-heading);
-  font-size: var(--text-xl);
-  font-weight: 800;
+  font-size: var(--text-2xl);
+  font-weight: 900;
   color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 .profile-email {
   font-size: var(--text-sm);
   color: var(--text-secondary);
+  font-weight: 500;
 }
 
 .profile-role-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
+  padding: 5px 14px;
   border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
 }
 
 .profile-role-badge--patient {
-  background: var(--accent-light);
+  background: rgba(196, 101, 58, 0.10);
   color: var(--accent);
 }
 
 .profile-role-badge--caregiver {
   background: var(--sage-light);
-  color: var(--sage);
+  color: var(--sage-dark);
 }
 
+/* ── Section Title (shared) ──────────────────────────────── */
 .profile-section-title {
   font-family: var(--font-heading);
   font-size: var(--text-base);
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
-  margin-bottom: var(--space-3);
+  margin-bottom: var(--space-4);
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  letter-spacing: -0.01em;
 }
 
 .profile-section-title-icon {
   color: var(--accent);
 }
 
+/* ── Info Card — Fields ──────────────────────────────────── */
 .profile-info-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -156,7 +221,7 @@
 .profile-field-label {
   font-size: 11px;
   font-weight: 800;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   margin-bottom: 2px;
@@ -166,6 +231,7 @@
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--text);
+  line-height: 1.4;
 }
 
 .profile-field-value.empty {
@@ -184,17 +250,18 @@
   background: var(--bg);
   transition: border-color var(--duration-fast);
   min-height: 44px;
+  width: 100%;
 }
 
 .profile-field-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(196, 101, 58, 0.12);
 }
 
 .profile-field-textarea {
   resize: vertical;
-  min-height: 96px;
+  min-height: 80px;
 }
 
 .profile-field-select {
@@ -208,15 +275,18 @@
   background: var(--bg);
   cursor: pointer;
   min-height: 44px;
+  width: 100%;
 }
 
 .profile-field-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-light);
+  box-shadow: 0 0 0 3px rgba(196, 101, 58, 0.12);
 }
 
+/* ── Edit / Save Button ──────────────────────────────────── */
 .profile-edit-btn {
+  margin-top: var(--space-5);
   align-self: stretch;
   padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-full);
@@ -228,35 +298,38 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-in-out);
   border: none;
   cursor: pointer;
 }
 
 .profile-edit-btn--edit {
-  background: var(--bg-card);
+  background: transparent;
   color: var(--text);
   border: 1.5px solid var(--border);
 }
 
 .profile-edit-btn--edit:hover {
   background: var(--bg-muted);
+  border-color: var(--text-muted);
 }
 
 .profile-edit-btn--save {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
 }
 
 .profile-edit-btn--save:hover {
-  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.45);
 }
 
 .profile-edit-btn--save:active {
-  transform: scale(0.985);
+  transform: scale(0.98);
 }
 
+/* ── Family Section ──────────────────────────────────────── */
 .profile-family-list {
   display: flex;
   flex-direction: column;
@@ -264,26 +337,32 @@
 }
 
 .profile-family-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  background: var(--bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
   padding: var(--space-4);
-  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  transition: all 0.25s var(--ease-in-out);
+}
+
+.profile-family-card:hover {
+  border-color: rgba(196, 101, 58, 0.3);
+  background: #FFF8F5;
 }
 
 .profile-family-avatar {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   background: var(--sage-light);
-  color: var(--sage);
+  color: var(--sage-dark);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-sm);
   flex-shrink: 0;
 }
@@ -307,46 +386,43 @@
 }
 
 .profile-status-badge {
-  padding: var(--space-1) var(--space-3);
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  flex-shrink: 0;
 }
 
 .profile-status-badge--active {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--success-light);
+  color: var(--success);
 }
 
 .profile-status-badge--pending {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--warning-light);
+  color: var(--warning);
 }
 
 .profile-empty {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  color: var(--text-secondary);
+  color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-6) 0;
+  font-style: italic;
 }
 
+/* ── Settings Section ────────────────────────────────────── */
 .profile-settings-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  /* inherits from section wrapper */
 }
 
 .profile-setting-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--space-3) 0;
+  padding: var(--space-4) 0;
   border-bottom: 1px solid var(--border-light);
 }
 
@@ -361,14 +437,15 @@
 }
 
 .profile-toggle {
-  width: 44px;
-  height: 24px;
+  width: 48px;
+  height: 26px;
   border-radius: var(--radius-full);
   background: var(--border);
   position: relative;
   cursor: pointer;
-  transition: background var(--duration-fast);
+  transition: background var(--duration-normal) var(--ease);
   border: none;
+  flex-shrink: 0;
 }
 
 .profile-toggle.active {
@@ -378,78 +455,50 @@
 .profile-toggle::after {
   content: '';
   position: absolute;
-  top: 2px;
-  left: 2px;
+  top: 3px;
+  left: 3px;
   width: 20px;
   height: 20px;
   border-radius: var(--radius-full);
   background: #fff;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--duration-fast) var(--spring);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  transition: transform var(--duration-normal) var(--spring);
 }
 
 .profile-toggle.active::after {
-  transform: translateX(20px);
-}
-
-.profile-logout-btn {
-  width: 100%;
-  padding: var(--space-4);
-  border-radius: var(--radius-full);
-  background: #fee2e2;
-  color: #dc2626;
-  font-family: var(--font-heading);
-  font-size: var(--text-base);
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: 48px;
-  transition: all var(--duration-fast);
-  border: none;
-  cursor: pointer;
-}
-
-.profile-logout-btn:hover {
-  background: #fecaca;
-}
-
-.profile-logout-btn:active {
-  transform: scale(0.985);
+  transform: translateX(22px);
 }
 
 /* ── EMR Section ─────────────────────────────────────────── */
 .profile-emr-section {
-  margin-top: var(--space-4);
-  background: var(--bg-card);
-  padding: var(--space-5);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
 }
 
 .profile-emr-header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  margin-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .profile-emr-text {
   font-size: var(--text-sm);
   color: var(--text-secondary);
   margin-bottom: var(--space-5);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .profile-emr-btn {
-  width: 100%;
-  background: var(--accent-light);
+  align-self: flex-start;
+  background: rgba(196, 101, 58, 0.10);
   color: var(--accent);
   border: none;
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-full);
-  font-weight: 700;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: var(--text-sm);
   cursor: pointer;
   transition: all var(--duration-fast);
 }
@@ -457,44 +506,88 @@
 .profile-emr-btn:hover {
   background: var(--accent);
   color: var(--text-inverse);
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.35);
 }
 
-@media (max-width: 520px) {
+/* ── Logout Button ───────────────────────────────────────── */
+.profile-logout-btn {
+  width: 100%;
+  padding: var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--error-light);
+  color: var(--error);
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 52px;
+  transition: all var(--duration-fast);
+  border: none;
+  cursor: pointer;
+}
+
+.profile-logout-btn:hover {
+  background: #fecaca;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.15);
+}
+
+.profile-logout-btn:active {
+  transform: scale(0.985);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (768px)
+   ══════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
   .profile-container {
-    padding: var(--space-4);
-    padding-bottom: 80px;
+    max-width: 720px;
+    margin: 0 auto;
+    padding-bottom: 120px; /* Airy bottom space above nav bar */
   }
 
-  .profile-avatar {
-    width: 64px;
-    height: 64px;
-    font-size: var(--text-xl);
+  .profile-header {
+    padding: var(--space-8) var(--space-6) var(--space-4);
   }
 
-  .profile-name {
-    font-size: var(--text-lg);
+  .profile-header-title {
+    font-size: var(--text-2xl);
+    font-weight: 900;
+  }
+
+  .profile-dashboard-grid {
+    padding: 0 var(--space-6) 160px; /* Spacious clearance for bottom-nav */
+    gap: var(--space-5);
+  }
+
+  .profile-col-left,
+  .profile-col-right {
+    gap: var(--space-5);
+  }
+
+  .profile-error {
+    margin: 0 var(--space-6);
+  }
+
+  .bento-card {
+    border-radius: 32px;
+    padding: var(--space-6);
   }
 
   .profile-avatar-card {
-    padding: var(--space-6) var(--space-4);
-  }
-
-  .profile-info-card {
-    padding: var(--space-4);
-  }
-}
-
-@media (min-width: 768px) {
-  .profile-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: var(--space-6);
-    padding-bottom: var(--space-8);
+    border-radius: 32px;
+    padding: var(--space-8) var(--space-6);
   }
 
   .profile-avatar {
-    width: 96px;
-    height: 96px;
+    width: 100px;
+    height: 100px;
+    font-size: var(--text-3xl);
+  }
+
+  .profile-name {
     font-size: var(--text-3xl);
   }
 
@@ -516,17 +609,23 @@
   }
 }
 
-/* ── Desktop Optimizations (≥ 1024px) ─────────────────────── */
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Desktop (1024px)
+   Selaras penuh dengan .patient-dashboard-grid di Dashboard.css
+   ══════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
+  /* Remove app-main padding so profile controls its own layout */
+  .app-main:has(.profile-container) {
+    padding: 0;
+  }
   .profile-container {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: var(--space-10) 0;
-    padding-bottom: 120px;
+    max-width: none;
+    margin: 0;
+    padding-bottom: 0;
   }
 
   .profile-header {
-    padding: 0 0 var(--space-6);
+    padding: var(--space-8) max(5vw, 60px) var(--space-4);
   }
 
   .profile-header-title {
@@ -534,111 +633,154 @@
     font-weight: 900;
   }
 
+  .profile-error {
+    margin: 0 max(5vw, 60px);
+  }
+
+  .profile-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    padding: 0 max(5vw, 60px) 60px;
+    align-items: start;
+  }
+
+  .profile-hero-wrapper {
+    grid-column: 1 / -1;
+  }
+
+  .profile-footer-wrapper {
+    grid-column: 1 / -1;
+  }
+
+  /* Hero card: horizontal layout on desktop */
   .profile-avatar-card {
-    background: transparent;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    padding: var(--space-10) max(5vw, 60px);
+    gap: var(--space-8);
     border-radius: 0;
+    border: none;
+    border-bottom: 1px solid var(--border-light);
     box-shadow: none;
-    padding: var(--space-10) 0 var(--space-8);
-    border-bottom: 1.5px solid var(--border-light);
-    margin-bottom: var(--space-6);
+    background: #FAF8F5;
+  }
+
+  .profile-avatar-card::before {
+    display: none;
+  }
+
+  .profile-avatar-info {
+    align-items: flex-start;
   }
 
   .profile-avatar {
-    width: 110px;
-    height: 110px;
+    width: 128px;
+    height: 128px;
     font-size: var(--text-4xl);
-    box-shadow: 0 8px 30px rgba(196, 101, 58, 0.25);
+    box-shadow: 0 12px 40px rgba(196, 101, 58, 0.30);
   }
 
   .profile-name {
-    font-size: var(--text-3xl);
+    font-size: clamp(32px, 4vw, 52px);
     font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .profile-email {
+    font-size: var(--text-base);
+  }
+
+  .profile-role-badge {
+    padding: 6px 16px;
+    font-size: 11px;
+  }
+
+  /* Left column: Info & Settings */
+  .profile-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  /* Right column: EMR & Family */
+  .profile-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
   }
 
   .profile-info-card {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    padding: var(--space-2) 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
+    gap: 0 var(--space-8);
   }
 
   .profile-field {
-    border-bottom: 1.5px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
     padding: var(--space-4) 0;
   }
 
   .profile-edit-btn {
-    align-self: flex-end;
-    width: auto;
-    padding: var(--space-3) var(--space-10);
+    align-self: flex-start;
     border-radius: var(--radius-md);
-    box-shadow: none !important;
+    padding: var(--space-3) var(--space-8);
   }
 
-  .profile-edit-btn:hover {
-    transform: none;
+  .profile-edit-btn--edit {
+    border: 1.5px solid var(--border);
   }
 
-  .profile-emr-section {
-    background: transparent;
+  .profile-edit-btn--save {
     box-shadow: none;
-    border-radius: 0;
-    border-top: 1.5px solid var(--border-light);
-    border-bottom: 1.5px solid var(--border-light);
-    padding: var(--space-8) 0;
-    margin: var(--space-6) 0;
+  }
+
+  .profile-edit-btn--save:hover {
+    box-shadow: none;
+    filter: brightness(1.05);
   }
 
   .profile-emr-btn {
-    width: auto;
-    padding: var(--space-3) var(--space-8);
     border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-8);
   }
 
   .profile-family-list {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   .profile-family-card {
-    box-shadow: none;
-    border: 1.5px solid var(--border-light);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .profile-family-card:hover {
-    border-color: var(--accent);
-    background: var(--bg-muted);
-  }
-
-  .profile-settings-card {
-    background: transparent;
-    box-shadow: none;
-    border-radius: 0;
-    padding: var(--space-4) 0;
+    border-radius: var(--radius-xl);
   }
 
   .profile-setting-item {
-    border-bottom: 1.5px solid var(--border-light);
     padding: var(--space-4) 0;
   }
 
   .profile-logout-btn {
     max-width: 320px;
-    margin: var(--space-10) auto 0;
+    margin: var(--space-4) auto 0;
     border-radius: var(--radius-md);
+    box-shadow: none;
+  }
+
+  .profile-logout-btn:hover {
+    box-shadow: none;
   }
 }
 
+/* ── Reduced Motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .profile-edit-btn,
   .profile-logout-btn,
   .profile-toggle::after,
-  .profile-back-btn {
+  .profile-back-btn,
+  .profile-family-card {
     transition: none;
   }
 }

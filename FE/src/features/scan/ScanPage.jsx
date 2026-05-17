@@ -47,76 +47,80 @@ const ScanPage = () => {
   return (
     <DashboardLayout>
       <div className="scan-container" data-testid="scan-page">
-        {/* Header */}
-        <header className="scan-header">
-          <button
-            className="scan-back-btn"
-            onClick={() => navigate('/dashboard')}
-            aria-label="Kembali ke dashboard"
-          >
-            <LuArrowLeft size={20} />
-          </button>
-          <h1 className="scan-header-title">Scan Resep</h1>
-        </header>
-
-        {/* Preview area */}
-        <ScanPreview
-          imagePreview={imagePreview}
-          isProcessing={isProcessing}
-        />
-
-        {/* Action buttons: camera + gallery (shown when no image yet) */}
-        {!imagePreview && (
-          <ScanActions
-            onFileSelect={handleFileSelect}
-            disabled={isProcessing}
-          />
-        )}
-
-        {/* Post-selection controls: crop, change, submit */}
-        {imagePreview && (
-          <div className="scan-selected-actions">
-            <div className="scan-secondary-actions">
-              <button
-                className="scan-action-btn scan-action-btn--outline"
-                onClick={handleCrop}
-                disabled={isProcessing}
-              >
-                <LuCrop size={16} />
-                <span>Potong</span>
-              </button>
-              <button
-                className="scan-action-btn scan-action-btn--outline"
-                onClick={resetScan}
-                disabled={isProcessing}
-              >
-                Ganti Gambar
-              </button>
-            </div>
+        <div className="scan-dashboard-grid">
+          {/* Header */}
+          <header className="scan-header">
             <button
-              className="scan-submit-btn"
-              onClick={submitScan}
-              disabled={isProcessing}
+              className="scan-back-btn"
+              onClick={() => navigate('/dashboard')}
+              aria-label="Kembali ke dashboard"
             >
-              {isProcessing ? 'Memproses…' : 'Proses Scan'}
+              <LuArrowLeft size={20} />
             </button>
-          </div>
-        )}
+            <h1 className="scan-header-title">Scan Resep</h1>
+          </header>
 
-        {/* Error message */}
-        {error && (
-          <div className="scan-error" role="alert">
-            {error}
-          </div>
-        )}
+          {/* Error message */}
+          {error && (
+            <div className="scan-error" role="alert">
+              {error}
+            </div>
+          )}
 
-        {/* History */}
-        {!imagePreview && (
-          <ScanHistory
-            history={history}
-            loading={historyLoading}
-          />
-        )}
+          <div className="scan-col-left">
+            {/* Preview area */}
+            <ScanPreview
+              imagePreview={imagePreview}
+              isProcessing={isProcessing}
+            />
+
+            {/* Action buttons: camera + gallery (shown when no image yet) */}
+            {!imagePreview && (
+              <ScanActions
+                onFileSelect={handleFileSelect}
+                disabled={isProcessing}
+              />
+            )}
+
+            {/* Post-selection controls: crop, change, submit */}
+            {imagePreview && (
+              <div className="scan-selected-actions scan-bento-card">
+                <div className="scan-secondary-actions">
+                  <button
+                    className="scan-action-btn scan-action-btn--outline"
+                    onClick={handleCrop}
+                    disabled={isProcessing}
+                  >
+                    <LuCrop size={16} />
+                    <span>Potong</span>
+                  </button>
+                  <button
+                    className="scan-action-btn scan-action-btn--outline"
+                    onClick={resetScan}
+                    disabled={isProcessing}
+                  >
+                    Ganti Gambar
+                  </button>
+                </div>
+                <button
+                  className="scan-submit-btn"
+                  onClick={submitScan}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? 'Memproses…' : 'Proses Scan'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="scan-col-right">
+            {/* History */}
+            <ScanHistory
+              history={history}
+              loading={historyLoading}
+            />
+          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

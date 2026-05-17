@@ -142,55 +142,75 @@ const ProfilePage = () => {
 
         {error && <div className="profile-error">{error}</div>}
 
-        <ProfileAvatarCard
-          initials={initials}
-          name={displayName}
-          email={displayEmail}
-          roleLabel={caregiverMode ? 'Caregiver' : 'Pasien'}
-          roleClassName={roleBadgeClass}
-        />
-
-        <ProfileInfoSection
-          isEditing={isEditing}
-          formData={formData}
-          infoFields={infoFields}
-          onFieldChange={handleInputChange}
-          onEdit={() => toggleEdit(true)}
-          onSave={handleSave}
-          isSaving={isSaving}
-        />
-
-        {/* EMR Section */}
-        <div className="profile-emr-section">
-          <div className="profile-emr-header">
-            <span className="profile-section-title-icon">
-              <FiClipboard />
-            </span>
-            <h3 className="profile-section-title">Rekam Medis Elektronik</h3>
+        <div className="profile-dashboard-grid">
+          {/* Hero Section (Spans full width of the grid on desktop) */}
+          <div className="profile-hero-wrapper">
+            <ProfileAvatarCard
+              initials={initials}
+              name={displayName}
+              email={displayEmail}
+              roleLabel={caregiverMode ? 'Caregiver' : 'Pasien'}
+              roleClassName={roleBadgeClass}
+            />
           </div>
-          <p className="profile-emr-text">
-            Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
-          </p>
-          <button
-            type="button"
-            className="profile-emr-btn"
-            onClick={() => setIsEMRModalOpen(true)}
-          >
-            Buka Rekam Medis
-          </button>
+
+          {/* Column 1: Info & Settings */}
+          <div className="profile-col-left">
+            <div className="bento-card">
+              <ProfileInfoSection
+                isEditing={isEditing}
+                formData={formData}
+                infoFields={infoFields}
+                onFieldChange={handleInputChange}
+                onEdit={() => toggleEdit(true)}
+                onSave={handleSave}
+                isSaving={isSaving}
+              />
+            </div>
+            
+            <div className="bento-card">
+              <ProfileSettingsSection
+                notificationsEnabled={notificationsEnabled}
+                onToggleNotifications={() => setNotificationsEnabled((prev) => !prev)}
+              />
+            </div>
+          </div>
+
+          {/* Column 2: EMR & Family */}
+          <div className="profile-col-right">
+            {/* EMR Section (Bento Card style) */}
+            <div className="bento-card profile-emr-section">
+              <div className="profile-emr-header">
+                <span className="profile-section-title-icon">
+                  <FiClipboard />
+                </span>
+                <h3 className="profile-section-title">Rekam Medis Elektronik</h3>
+              </div>
+              <p className="profile-emr-text">
+                Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
+              </p>
+              <button
+                type="button"
+                className="profile-emr-btn"
+                onClick={() => setIsEMRModalOpen(true)}
+              >
+                Buka Rekam Medis
+              </button>
+            </div>
+
+            <div className="bento-card">
+              <ProfileFamilySection
+                members={familyCards}
+                emptyMessage="Belum ada keluarga terhubung."
+              />
+            </div>
+          </div>
+          
+          {/* Footer Grid / Full Width */}
+          <div className="profile-footer-wrapper">
+            <ProfileLogoutButton onLogout={handleLogout} />
+          </div>
         </div>
-
-        <ProfileFamilySection
-          members={familyCards}
-          emptyMessage="Belum ada keluarga terhubung."
-        />
-
-        <ProfileSettingsSection
-          notificationsEnabled={notificationsEnabled}
-          onToggleNotifications={() => setNotificationsEnabled((prev) => !prev)}
-        />
-
-        <ProfileLogoutButton onLogout={handleLogout} />
       </div>
 
       <EMROnboardingModal

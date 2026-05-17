@@ -92,47 +92,51 @@ const ScanResultPage = () => {
   return (
     <DashboardLayout>
       <div className="scan-container" data-testid="scan-result-page">
-        {/* Header */}
-        <header className="scan-header">
-          <button
-            className="scan-back-btn"
-            onClick={() => navigate('/scan')}
-            aria-label="Kembali ke scan"
-          >
-            <LuArrowLeft size={20} />
-          </button>
-          <h1 className="scan-header-title">Hasil Scan</h1>
-        </header>
+        <div className="scan-dashboard-grid">
+          {/* Header */}
+          <header className="scan-header">
+            <button
+              className="scan-back-btn"
+              onClick={() => navigate('/scan')}
+              aria-label="Kembali ke scan"
+            >
+              <LuArrowLeft size={20} />
+            </button>
+            <h1 className="scan-header-title">Hasil Scan</h1>
+          </header>
 
-        {/* Result card with image + editable text */}
-        <ScanResultCard
-          extractedText={scan?.extracted_text}
-          imageUrl={scan?.image_url}
-        />
-
-        {/* Action shortcuts */}
-        <div className="scan-result-actions">
-          <button
-            className="scan-action-btn scan-action-btn--primary"
-            onClick={handleAskAI}
-          >
-            <LuMessageCircle size={18} />
-            <span>Tanyakan ke AI</span>
-          </button>
-          <button
-            className="scan-action-btn scan-action-btn--outline"
-            onClick={() => navigate('/medications')}
-          >
-            <LuPill size={18} />
-            <span>Tambah ke Jadwal</span>
-          </button>
-          <button
-            className="scan-action-btn scan-action-btn--outline"
-            onClick={() => navigate('/scan')}
-          >
-            <LuRefreshCw size={18} />
-            <span>Scan Ulang</span>
-          </button>
+          {/* Result card with image + editable text (now split into 2 columns) */}
+          <ScanResultCard
+            extractedText={scan?.extracted_text}
+            imageUrl={scan?.image_url}
+            actions={
+              <div className="scan-result-actions scan-bento-card">
+                <button
+                  className="scan-action-btn scan-action-btn--primary"
+                  onClick={handleAskAI}
+                >
+                  <LuMessageCircle size={18} />
+                  <span>Tanyakan ke AI</span>
+                </button>
+                <div className="scan-secondary-actions" style={{ display: 'flex', gap: 'var(--space-3)' }}>
+                  <button
+                    className="scan-action-btn scan-action-btn--outline"
+                    onClick={() => navigate('/medications')}
+                  >
+                    <LuPill size={18} />
+                    <span>Jadwal</span>
+                  </button>
+                  <button
+                    className="scan-action-btn scan-action-btn--outline"
+                    onClick={() => navigate('/scan')}
+                  >
+                    <LuRefreshCw size={18} />
+                    <span>Ulangi</span>
+                  </button>
+                </div>
+              </div>
+            }
+          />
         </div>
       </div>
     </DashboardLayout>

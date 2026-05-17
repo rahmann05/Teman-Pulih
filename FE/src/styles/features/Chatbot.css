@@ -425,7 +425,8 @@
 /* ── Tablet (768px+) ─────────────────────────────────────────── */
 @media (min-width: 768px) {
   .chat-container {
-    height: 100%;
+    height: calc(100dvh - 80px) !important;
+    overflow: hidden;
   }
 
   .chat-messages {
@@ -461,31 +462,35 @@
     min-height: 40px;
   }
 }
-
 /* ── Desktop (1024px+) ───────────────────────────────────────── */
 @media (min-width: 1024px) {
   .chat-container {
-    /* Full-bleed within DashboardLayout — no centered card, no border box */
-    height: calc(100dvh - 72px); /* 72px = TopNav height */
+    /* Full-bleed within DashboardLayout — cancel parent padding to stretch edge-to-edge */
+    height: calc(100dvh - 80px) !important;
     max-width: none;
-    margin: 0;
+    margin-top: calc(-1 * clamp(16px, 3vw, 24px)) !important;
+    margin-bottom: calc(-1 * clamp(16px, 3vw, 24px)) !important;
+    margin-left: calc(-1 * clamp(20px, 4vw, 32px)) !important;
+    margin-right: calc(-1 * clamp(20px, 4vw, 32px)) !important;
     border: none;
     border-radius: 0;
     background: var(--bg);
   }
 
   .chat-header {
-    padding: var(--space-5) max(5vw, var(--space-8));
+    padding: var(--space-5) max(var(--space-8), calc((100% - 1000px) / 2));
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    background: var(--bg-card);
+    width: 100%;
   }
 
   .chat-messages {
-    padding: var(--space-8) max(5vw, var(--space-8));
+    padding: var(--space-8) max(var(--space-8), calc((100% - 1000px) / 2));
     gap: var(--space-6);
-    max-width: 900px;
+    max-width: none;
     width: 100%;
-    margin: 0 auto;
-    align-self: center;
+    margin: 0;
+    align-self: stretch;
   }
 
   .chat-bubble-wrapper {
@@ -502,24 +507,28 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
   }
 
-  .chat-input-bar {
-    padding: var(--space-5) max(5vw, var(--space-8));
-    max-width: 900px;
-    width: 100%;
-    margin: 0 auto;
-    background: var(--bg-card);
-  }
-
   .chat-quick-replies {
-    padding: var(--space-3) max(5vw, var(--space-8));
+    padding: var(--space-4) max(var(--space-8), calc((100% - 1000px) / 2));
     justify-content: center;
     flex-wrap: wrap;
     overflow-x: visible;
+    background: var(--bg-card);
+    width: 100%;
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
   }
 
   .chat-quick-chip {
     min-height: 38px;
     font-size: 13px;
+  }
+
+  .chat-input-bar {
+    padding: var(--space-4) max(var(--space-8), calc((100% - 1000px) / 2)) var(--space-5);
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    background: var(--bg-card);
+    border-top: 1px solid rgba(0, 0, 0, 0.04);
   }
 
   .chat-input {

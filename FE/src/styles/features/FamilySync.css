@@ -1,34 +1,57 @@
-/* Family Sync styles */
+/* ============================================================
+   FAMILY SYNC — Airy Editorial Design Language
+   Selaras penuh dengan Dashboard & Landing Page
+   Warm cream background · Bento cards · Bold typography
+   ============================================================ */
 
+/* ── Container ───────────────────────────────────────────── */
 .family-container {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  background: var(--bg);
+  gap: 0;
+  background: #FAF8F5;
   min-height: 100dvh;
-  padding: var(--space-5);
-  padding-bottom: 80px;
+  width: 100%;
 }
 
+/* ── Dashboard Grid Layout ───────────────────────────────── */
+.family-dashboard-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: 0 var(--space-4) 120px; /* bottom clearance for floating nav */
+}
+
+.family-col-left,
+.family-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+/* ── Page Header ─────────────────────────────────────────── */
 .family-header {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  padding: var(--space-6) 0 var(--space-3);
 }
 
 .family-back-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
-  display: flex;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
-  transition: background var(--duration-fast);
-  flex-shrink: 0;
-  border: none;
-  background: transparent;
   cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out-expo);
+  flex-shrink: 0;
 }
 
 .family-back-btn:hover {
@@ -40,36 +63,81 @@
   font-size: var(--text-xl);
   font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.02em;
 }
 
+/* ── Error Banner ────────────────────────────────────────── */
 .family-error {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--error-light);
+  color: var(--error);
   border-radius: var(--radius-lg);
   padding: var(--space-3) var(--space-4);
   font-size: var(--text-sm);
   font-weight: 600;
+  margin: 0 var(--space-4) var(--space-2);
 }
 
-.family-invite-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
+/* ── Bento Card Base ─────────────────────────────────────── */
+.family-bento-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
   padding: var(--space-5);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Invite Card Hero ────────────────────────────────────── */
+.family-invite-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-6) var(--space-5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
-  border: 1.5px solid var(--accent-light);
+  gap: var(--space-5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Warm accent gradient strip at top */
+.family-invite-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent), var(--copper), var(--sage));
+  border-radius: 24px 24px 0 0;
 }
 
 .family-invite-title {
-  font-family: var(--font-heading);
-  font-size: var(--text-base);
-  font-weight: 700;
-  color: var(--text);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+}
+
+.family-invite-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(196, 101, 58, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.family-invite-title-text {
+  font-family: var(--font-heading);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.02em;
 }
 
 .family-invite-title-icon {
@@ -79,7 +147,8 @@
 .family-invite-desc {
   font-size: var(--text-sm);
   color: var(--text-secondary);
-  line-height: 1.5;
+  line-height: 1.6;
+  margin-top: calc(var(--space-1) * -1);
 }
 
 .family-invite-row {
@@ -93,13 +162,13 @@
   flex: 1;
   padding: var(--space-3) var(--space-4);
   border: 1.5px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   font-family: var(--font-body);
   font-size: var(--text-sm);
   color: var(--text);
   background: var(--bg);
   min-height: 48px;
-  transition: border-color var(--duration-fast);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
 .family-invite-input::placeholder {
@@ -113,34 +182,36 @@
 }
 
 .family-invite-input.error {
-  border-color: #dc2626;
+  border-color: var(--error);
 }
 
 .family-invite-btn {
-  padding: 0 var(--space-4);
-  border-radius: var(--radius-lg);
+  padding: 0 var(--space-5);
+  border-radius: var(--radius-full);
   background: var(--accent);
   color: var(--text-inverse);
+  font-family: var(--font-heading);
   font-weight: 700;
   font-size: var(--text-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-width: 48px;
   min-height: 48px;
   transition: all var(--duration-fast) var(--spring);
-  box-shadow: 0 2px 12px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
   border: none;
   cursor: pointer;
 }
 
 .family-invite-btn:hover {
+  background: var(--accent-dark);
+  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
   transform: translateY(-1px);
 }
 
 .family-invite-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.97);
 }
 
 .family-invite-btn:disabled {
@@ -150,46 +221,66 @@
 
 .family-invite-error {
   font-size: var(--text-xs);
-  color: #dc2626;
+  color: var(--error);
   font-weight: 600;
+  animation: family-fade-in 200ms var(--ease-out-expo);
 }
 
 .family-invite-success {
   font-size: var(--text-xs);
-  color: #16a34a;
+  color: var(--success);
   font-weight: 600;
+  animation: family-fade-in 200ms var(--ease-out-expo);
 }
 
+/* ── Section Wrapper ─────────────────────────────────────── */
 .family-section {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  border-radius: 24px;
+  padding: var(--space-5);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: var(--space-4);
+}
+
+.family-pending-section {
+  /* Subtle warm border for pending state */
+  border-color: rgba(217, 119, 6, 0.12);
 }
 
 .family-section-header {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .family-section-title {
   font-family: var(--font-heading);
-  font-size: var(--text-base);
-  font-weight: 700;
+  font-size: var(--text-lg);
+  font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.02em;
+  flex: 1;
 }
 
 .family-section-count {
-  padding: var(--space-1) var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 var(--space-2);
   border-radius: var(--radius-full);
-  background: var(--accent-light);
+  background: rgba(196, 101, 58, 0.1);
   color: var(--accent);
   font-size: 11px;
-  font-weight: 700;
-  min-width: 22px;
-  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
+/* ── Request List ────────────────────────────────────────── */
 .family-request-list {
   display: flex;
   flex-direction: column;
@@ -197,14 +288,18 @@
 }
 
 .family-request-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
+  background: rgba(255, 248, 240, 0.6);
+  border: 1px solid rgba(217, 119, 6, 0.1);
+  border-radius: 20px;
   padding: var(--space-4);
-  box-shadow: var(--shadow-card);
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  border-left: 4px solid #d97706;
+  gap: var(--space-4);
+  transition: box-shadow var(--duration-fast);
+}
+
+.family-request-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
 .family-request-header {
@@ -217,13 +312,13 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-full);
-  background: var(--accent-light);
+  background: linear-gradient(135deg, var(--copper-light), var(--accent-light));
   color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-sm);
   flex-shrink: 0;
 }
@@ -240,6 +335,7 @@
   font-size: var(--text-base);
   font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .family-request-email {
@@ -278,11 +374,13 @@
 .family-approve-btn {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 2px 12px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.25);
 }
 
 .family-approve-btn:hover {
+  background: var(--accent-dark);
   transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.35);
 }
 
 .family-approve-btn:active {
@@ -296,15 +394,16 @@
 }
 
 .family-reject-btn:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  border-color: #fecaca;
+  background: var(--error-light);
+  color: var(--error);
+  border-color: rgba(220, 38, 38, 0.2);
 }
 
 .family-reject-btn:active {
   transform: scale(0.97);
 }
 
+/* ── Member List ─────────────────────────────────────────── */
 .family-member-list {
   display: flex;
   flex-direction: column;
@@ -312,18 +411,21 @@
 }
 
 .family-member-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
+  background: #FAF8F5;
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
   padding: var(--space-4);
-  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--duration-fast) var(--ease-out-expo);
 }
 
 .family-member-card:hover {
   background: var(--bg-muted);
+  border-color: var(--border);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
 }
 
 .family-member-avatar {
@@ -334,7 +436,7 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--text-sm);
   flex-shrink: 0;
 }
@@ -357,9 +459,11 @@
 }
 
 .family-member-name {
+  font-family: var(--font-heading);
   font-size: var(--text-sm);
   font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.01em;
 }
 
 .family-member-role {
@@ -367,138 +471,118 @@
   color: var(--text-secondary);
 }
 
+/* ── Status Badge ────────────────────────────────────────── */
 .family-status-badge {
-  padding: var(--space-1) var(--space-3);
+  padding: 4px 12px;
   border-radius: var(--radius-full);
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   flex-shrink: 0;
 }
 
 .family-status-badge--active {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--success-light);
+  color: var(--success);
 }
 
 .family-status-badge--pending {
-  background: #fef3c7;
-  color: #d97706;
+  background: var(--warning-light);
+  color: var(--warning);
 }
 
+/* ── Empty State ─────────────────────────────────────────── */
 .family-empty-state {
-  background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8) var(--space-5);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-3);
-  border: 1px dashed var(--border);
+  gap: var(--space-4);
+  padding: var(--space-10) var(--space-5);
   text-align: center;
 }
 
 .family-empty-icon {
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   color: var(--text-muted);
+  opacity: 0.6;
 }
 
 .family-empty-text {
   font-size: var(--text-sm);
   color: var(--text-muted);
-  max-width: 260px;
+  max-width: 240px;
   line-height: 1.6;
 }
 
+/* ── Skeleton Loading ────────────────────────────────────── */
 .family-skeleton {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  padding: var(--space-5) var(--space-4);
 }
 
 .family-skeleton-block {
-  border-radius: var(--radius-lg);
-  background: var(--bg-muted);
-  position: relative;
-  overflow: hidden;
-}
-
-.family-skeleton-block::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  transform: translateX(-100%);
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.6) 50%, rgba(255, 255, 255, 0) 100%);
-  animation: family-shimmer 1.4s infinite;
+  border-radius: 24px;
+  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--border-light) 50%, var(--bg-muted) 75%);
+  background-size: 200% 100%;
+  animation: family-shimmer 1.4s ease-in-out infinite;
 }
 
 @keyframes family-shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.family-invite-success,
-.family-invite-error {
-  animation: family-fade-in 250ms var(--ease-out-expo);
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
 }
 
 @keyframes family-fade-in {
   from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 520px) {
-  .family-container {
-    padding: var(--space-4);
-    padding-bottom: 80px;
-  }
-
-  .family-invite-card {
-    padding: var(--space-4);
-  }
-
-  .family-invite-input {
-    font-size: var(--text-xs);
-  }
-
-  .family-request-card {
-    padding: var(--space-3);
-  }
-
-  .family-request-avatar {
-    width: 36px;
-    height: 36px;
-    font-size: var(--text-xs);
-  }
-
-  .family-request-name {
-    font-size: var(--text-sm);
-  }
-
-  .family-approve-btn,
-  .family-reject-btn {
-    font-size: var(--text-xs);
-    padding: var(--space-2) var(--space-3);
-    min-height: 40px;
-  }
-
-  .family-invite-row {
-    flex-direction: column;
-  }
-}
-
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Tablet (768px)
+   ══════════════════════════════════════════════════════════ */
 @media (min-width: 768px) {
   .family-container {
-    max-width: 600px;
+    max-width: 720px;
     margin: 0 auto;
+  }
+
+  .family-header {
+    padding: var(--space-8) 0 var(--space-4);
+  }
+
+  .family-header-title {
+    font-size: var(--text-2xl);
+    font-weight: 900;
+  }
+
+  .family-error {
+    margin: 0 var(--space-6) var(--space-2);
+  }
+
+  .family-dashboard-grid {
+    padding: 0 var(--space-6) 160px;
+    gap: var(--space-5);
+  }
+
+  .family-col-left,
+  .family-col-right {
+    gap: var(--space-5);
+  }
+
+  .family-bento-card,
+  .family-invite-card,
+  .family-section {
+    border-radius: 32px;
     padding: var(--space-6);
-    padding-bottom: var(--space-8);
   }
 
   .family-invite-row {
     flex-direction: row;
+    align-items: stretch;
   }
 
   .family-member-list {
@@ -517,32 +601,87 @@
     flex-shrink: 0;
     flex-direction: column;
     gap: var(--space-2);
+    min-width: 120px;
   }
 
   .family-approve-btn,
   .family-reject-btn {
     white-space: nowrap;
     flex: unset;
+    min-height: 40px;
+  }
+
+  .family-skeleton {
+    padding: var(--space-6);
   }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — Desktop (1024px+)
+   Selaras penuh dengan .patient-dashboard-grid di Dashboard.css
+   ══════════════════════════════════════════════════════════ */
 @media (min-width: 1024px) {
-  .family-container {
-    max-width: 640px;
-    margin: 0 auto;
-    padding: var(--space-8) 0;
-    padding-bottom: var(--space-10);
+  /* Remove app-main padding so family controls its own layout */
+  .app-main:has(.family-container) {
+    padding: 0;
   }
 
+  .family-container {
+    max-width: none;
+    margin: 0;
+    padding-bottom: 0;
+  }
+
+  .family-dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    padding: var(--space-8) max(5vw, 60px) 60px;
+    align-items: start;
+  }
+
+  /* Header sits above the grid, full-width */
   .family-header {
+    grid-column: 1 / -1;
     padding: 0 0 var(--space-4);
   }
 
-  .family-invite-card {
-    background: transparent;
-    box-shadow: none;
+  .family-header-title {
+    font-size: var(--text-3xl);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+  }
+
+  .family-error {
+    grid-column: 1 / -1;
+    margin: 0 0 var(--space-4);
+  }
+
+  .family-col-left,
+  .family-col-right {
+    gap: var(--space-6);
+  }
+
+  .family-bento-card,
+  .family-invite-card,
+  .family-section {
+    border-radius: 32px;
     padding: var(--space-8) var(--space-6);
-    border: 1.5px solid var(--accent-light);
+  }
+
+  .family-invite-icon-wrapper {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+  }
+
+  .family-invite-title-text {
+    font-size: var(--text-xl);
+  }
+
+  .family-invite-row {
+    flex-direction: row;
+    align-items: center;
   }
 
   .family-invite-input {
@@ -550,43 +689,58 @@
     padding: var(--space-3) var(--space-5);
   }
 
+  .family-section-title {
+    font-size: var(--text-xl);
+    letter-spacing: -0.02em;
+  }
+
   .family-member-list {
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-4);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
   }
 
   .family-member-card {
-    box-shadow: none;
-    border: 1px solid var(--border-light);
+    background: #FFFFFF;
+    border-color: var(--border-light);
   }
 
   .family-request-card {
-    background: transparent;
-    box-shadow: none;
-    border: 1.5px solid var(--border-light);
-    border-left: 4px solid #d97706;
-    padding: var(--space-5);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-5);
   }
 
   .family-request-avatar {
-    width: 48px;
-    height: 48px;
+    width: 52px;
+    height: 52px;
+  }
+
+  .family-request-actions {
+    flex-shrink: 0;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 130px;
+  }
+
+  .family-approve-btn,
+  .family-reject-btn {
+    white-space: nowrap;
+    flex: unset;
+    min-height: 40px;
+    font-size: var(--text-xs);
   }
 
   .family-empty-state {
-    background: transparent;
-    box-shadow: none;
-    border: 1.5px solid var(--border-light);
     padding: var(--space-12) var(--space-8);
   }
 
-  .family-empty-icon {
-    width: 56px;
-    height: 56px;
-    margin-bottom: var(--space-2);
+  .family-skeleton {
+    padding: 0 max(5vw, 60px) 60px;
   }
 }
 
+/* ── Reduced Motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .family-member-card,
   .family-approve-btn,
@@ -600,7 +754,7 @@
     animation: none;
   }
 
-  .family-skeleton-block::after {
+  .family-skeleton-block {
     animation: none;
   }
 }
