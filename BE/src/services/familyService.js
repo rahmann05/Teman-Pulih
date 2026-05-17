@@ -1,6 +1,7 @@
 const { emailRegex } = require('../helpers/validation');
 const { normalizePhone, phoneRegex } = require('../helpers/phone');
 const { cacheGet, cacheSet, cacheDel } = require('../helpers/cache');
+const db = require('../config/db');
 
 const invite = async (user, supabase, identifier) => {
     if (!identifier) throw Object.assign(new Error('Email atau nomor telepon wajib diisi.'), { statusCode: 400 });
@@ -10,25 +11,21 @@ const invite = async (user, supabase, identifier) => {
     let invitedUser = null;
 
     if (isEmail) {
-        const { data, error } = await supabase
-            .from('users')
-            .select('id, email')
-            .eq('email', trimmedIdentifier.toLowerCase())
-            .single();
-        if (error) throw error;
-        invitedUser = data;
+        const { rows } = await db.query('SELECT id, email FROM users WHERE email = $1', [trimmedIdentifier.toLowerCase()]);
+        invitedUser = rows[0] || null;
     } else {
         const normalizedPhone = normalizePhone(trimmedIdentifier);
         if (!phoneRegex.test(normalizedPhone)) {
             throw Object.assign(new Error('Format nomor telepon tidak valid.'), { statusCode: 400 });
         }
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('user_id, users ( id, email )')
-            .eq('phone', normalizedPhone)
-            .single();
-        if (error) throw error;
-        invitedUser = data?.users ? { id: data.users.id, email: data.users.email } : null;
+        const query = `
+            SELECT p.user_id, u.id, u.email 
+            FROM profiles p 
+            JOIN users u ON p.user_id = u.id 
+            WHERE p.phone = $1
+        `;
+        const { rows } = await db.query(query, [normalizedPhone]);
+        invitedUser = rows[0] ? { id: rows[0].id, email: rows[0].email } : null;
     }
 
     if (!invitedUser) throw Object.assign(new Error('Pengguna tidak ditemukan.'), { statusCode: 404 });
@@ -57,18 +54,20 @@ const getMembers = async (user, supabase) => {
         return cached;
     }
 
-    const { data, error } = await supabase
-        .from('family_relations')
-        .select(`
-            id, status, created_at,
-            patient:patient_id (id, name, email),
-            caregiver:caregiver_id (id, name, email)
-        `)
-        .or(`patient_id.eq.${user.id},caregiver_id.eq.${user.id}`);
-    if (error) throw error;
+    const query = `
+        SELECT 
+            fr.id, fr.status, fr.created_at,
+            json_build_object('id', p.id, 'name', p.name, 'email', p.email) as patient,
+            json_build_object('id', c.id, 'name', c.name, 'email', c.email) as caregiver
+        FROM family_relations fr
+        JOIN users p ON fr.patient_id = p.id
+        JOIN users c ON fr.caregiver_id = c.id
+        WHERE fr.patient_id = $1 OR fr.caregiver_id = $1
+    `;
+    const { rows } = await db.query(query, [user.id]);
 
-    await cacheSet(cacheKey, data);
-    return data;
+    await cacheSet(cacheKey, rows);
+    return rows;
 };
 
 module.exports = { invite, getMembers };

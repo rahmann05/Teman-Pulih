@@ -52,8 +52,9 @@ const updateProfile = async (userId, supabase, updates) => {
         .update(updates)
         .eq('user_id', userId)
         .select()
-        .single();
+        .maybeSingle();
     if (error) throw error;
+    if (!data) throw Object.assign(new Error('Profil tidak ditemukan.'), { statusCode: 404 });
 
     await cacheDel(
         `profile_data:${userId}`,

@@ -1,6 +1,7 @@
 const { emailRegex } = require('../helpers/validation');
 const { normalizePhone } = require('../helpers/phone');
 const { cacheDel } = require('../helpers/cache');
+const db = require('../config/db');
 
 const requestAccess = async (caregiverId, supabase, identifier) => {
     if (!identifier) throw Object.assign(new Error('Email atau nomor telepon pasien wajib diisi.'), { statusCode: 400 });
@@ -9,16 +10,16 @@ const requestAccess = async (caregiverId, supabase, identifier) => {
     let patientId = null;
 
     if (isEmail) {
-        const { data: user, error } = await supabase
-            .from('users').select('id, profiles(phone)').eq('email', identifier.toLowerCase()).single();
-        if (error || !user) throw Object.assign(new Error('Pasien dengan email tersebut tidak ditemukan.'), { statusCode: 404 });
-        patientId = user.id;
+        const { rows } = await db.query('SELECT id FROM users WHERE email = $1', [identifier.toLowerCase()]);
+        const userRow = rows[0];
+        if (!userRow) throw Object.assign(new Error('Pasien dengan email tersebut tidak ditemukan.'), { statusCode: 404 });
+        patientId = userRow.id;
     } else {
         const normalizedPhone = normalizePhone(identifier);
-        const { data: profile, error } = await supabase
-            .from('profiles').select('user_id, phone').eq('phone', normalizedPhone).single();
-        if (error || !profile) throw Object.assign(new Error('Pasien dengan nomor telepon tersebut tidak ditemukan.'), { statusCode: 404 });
-        patientId = profile.user_id;
+        const { rows } = await db.query('SELECT user_id FROM profiles WHERE phone = $1', [normalizedPhone]);
+        const profileRow = rows[0];
+        if (!profileRow) throw Object.assign(new Error('Pasien dengan nomor telepon tersebut tidak ditemukan.'), { statusCode: 404 });
+        patientId = profileRow.user_id;
     }
 
     if (patientId === caregiverId) {
@@ -66,13 +67,16 @@ const approveAccess = async (patientId, supabase, relation_id, status) => {
 };
 
 const getPendingRequests = async (patientId, supabase) => {
-    const { data, error } = await supabase
-        .from('family_relations')
-        .select('id, created_at, caregiver:users!caregiver_id(id, name, email)')
-        .eq('patient_id', patientId)
-        .eq('status', 'pending');
-    if (error) throw error;
-    return data;
+    const query = `
+        SELECT 
+            fr.id, fr.created_at,
+            json_build_object('id', c.id, 'name', c.name, 'email', c.email) as caregiver
+        FROM family_relations fr
+        JOIN users c ON fr.caregiver_id = c.id
+        WHERE fr.patient_id = $1 AND fr.status = 'pending'
+    `;
+    const { rows } = await db.query(query, [patientId]);
+    return rows;
 };
 
 module.exports = { requestAccess, approveAccess, getPendingRequests };
