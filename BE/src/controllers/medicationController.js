@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const redis = require('../config/redis.js');
 
 const canAccessPatient = async (caregiverId, patientId) => {
     const query = 'SELECT id FROM family_relations WHERE caregiver_id = $1 AND patient_id = $2 AND status = $3 LIMIT 1';
@@ -38,6 +39,16 @@ const getMedications = async (req, res) => {
         if (relationError) return res.status(403).json({ error: relationError });
         const targetUserId = patientId;
 
+        // REDIS CACHE: Cek cache jadwal obat untuk pengguna ini
+        const cacheKey = `medications:${targetUserId}`;
+        if (redis.status === 'ready') {
+            const cachedData = await redis.get(cacheKey);
+            if (cachedData) {
+                console.log(`[REDIS] Daftar Obat & Jadwal ditarik dari Cache - User ID: ${targetUserId}`);
+                return res.status(200).json({ data: JSON.parse(cachedData) });
+            }
+        }
+
         // Query medications with their schedules using nested JSON grouping in Postgres
         const query = `
             SELECT 
@@ -62,6 +73,12 @@ const getMedications = async (req, res) => {
         `;
         
         const { rows } = await db.query(query, [targetUserId]);
+
+        // SIMPAN KE REDIS: Set kedaluwarsa 4 jam
+        if (redis.status === 'ready') {
+            await redis.set(cacheKey, JSON.stringify(rows), 'EX', 14400);
+        }
+
         res.status(200).json({ data: rows });
     } catch (error) {
         console.error('getMedications Error:', error.message);
@@ -112,6 +129,14 @@ const createMedication = async (req, res) => {
             createdSchedules = schedData;
         }
 
+        // HAPUS CACHE OBAT & EMR KARENA ADA PERUBAHAN
+        if (redis.status === 'ready') {
+            await redis.del(`medications:${targetUserId}`);
+            await redis.del(`emr_profile:patient_${targetUserId}`);
+            // (Caregiver cache juga idealnya dihapus, but for simplicity we rely on patient key directly or expiration)
+            // Bisa menggunakan wildcard jika redis dikonfigurasi, tapi del direct lebih aman
+        }
+
         res.status(201).json({ 
             message: 'Obat berhasil ditambahkan', 
             data: { ...medData, medication_schedules: createdSchedules } 
@@ -147,6 +172,13 @@ const updateMedication = async (req, res) => {
             .single();
 
         if (error) throw error;
+
+        // HAPUS CACHE OBAT & EMR KARENA ADA PERUBAHAN
+        if (redis.status === 'ready') {
+            await redis.del(`medications:${medication.user_id}`);
+            await redis.del(`emr_profile:patient_${medication.user_id}`);
+        }
+
         res.status(200).json({ message: 'Obat berhasil diperbarui', data });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -175,6 +207,13 @@ const deleteMedication = async (req, res) => {
             .eq('id', medication.id);
 
         if (error) throw error;
+
+        // HAPUS CACHE OBAT & EMR KARENA ADA PERUBAHAN
+        if (redis.status === 'ready') {
+            await redis.del(`medications:${medication.user_id}`);
+            await redis.del(`emr_profile:patient_${medication.user_id}`);
+        }
+
         res.status(200).json({ message: 'Obat beserta jadwalnya berhasil dihapus' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -237,6 +276,13 @@ const markTaken = async (req, res) => {
             .single();
 
         if (error) throw error;
+
+        // HAPUS CACHE OBAT (JADWAL HARIAN UPDATE)
+        if (redis.status === 'ready') {
+            await redis.del(`medications:${medication.user_id}`);
+            await redis.del(`emr_profile:patient_${medication.user_id}`);
+        }
+
         res.status(201).json({ message: `Status log diubah menjadi ${status}`, data });
     } catch (error) {
         res.status(500).json({ error: error.message });

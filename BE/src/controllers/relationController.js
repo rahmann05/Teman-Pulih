@@ -7,6 +7,8 @@ const normalizePhone = (rawPhone) => {
     return cleaned;
 };
 
+const redis = require('../config/redis.js');
+
 const getSupabaseClient = (req) => {
     if (!req.supabase) {
         throw new Error('Supabase client is not initialized for this request.');
@@ -89,6 +91,11 @@ const requestAccess = async (req, res) => {
 
         if (relationError) throw relationError;
 
+        // HAPUS CACHE RELASI
+        if (redis.status === 'ready') {
+            await redis.del(`family_relations:${caregiverId}`);
+            await redis.del(`family_relations:${patientId}`);
+        }
 
         res.status(200).json({ message: 'Permintaan akses berhasil dikirim ke pasien.', relation });
     } catch (error) {
@@ -117,6 +124,13 @@ const approveAccess = async (req, res) => {
 
         if (error || !relation) {
             return res.status(404).json({ error: 'Permintaan tidak ditemukan atau Anda tidak memiliki akses.' });
+        }
+
+        // HAPUS CACHE RELASI DAN EMR CACHE (KARENA STATUS BARU BERUBAH)
+        if (redis.status === 'ready') {
+            await redis.del(`family_relations:${patientId}`);
+            await redis.del(`family_relations:${relation.caregiver_id}`);
+            await redis.del(`emr_profile:caregiver_${relation.caregiver_id}`);
         }
 
         res.status(200).json({ message: `Permintaan akses telah di-${status === 'accepted' ? 'setujui' : 'tolak'}.`, relation });

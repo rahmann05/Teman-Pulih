@@ -1,6 +1,8 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { chromaClient } = require('../config/chroma.js');
+const redis = require('../config/redis.js');
 
+// Inisialisasi Google Generative AI dengan API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
 
 const getSupabaseClient = (req) => {
@@ -99,22 +101,90 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
             return;
         }
 
-        // PARSING HASIL PARALEL
+        // Step 0: Fetch EMR Profile (Rekam Medis) & Konteks Privat
         let emrContext = "";
-        let allergies = "";
-        let routineMedications = "";
+        let routineMedicationsForSearch = "";
+        let privateContext = "";
+        
+        try {
+            // REDIS CACHE: Cek apakah profil dan obat untuk user ini sudah di-cache?
+            const cacheKey = req.user.role === 'caregiver' ? `emr_profile:caregiver_${userId}` : `emr_profile:patient_${userId}`;
+            const cachedData = redis.status === 'ready' ? await redis.get(cacheKey) : null;
 
-        if (emrDataResult.data) {
-            const userProfile = emrDataResult.data;
-            allergies = userProfile.allergies || "";
-            routineMedications = userProfile.routine_medications || "";
-            emrContext = `[REKAM MEDIS PASIEN]
-- Alergi: ${allergies || 'Tidak ada'}
-- Obat Rutin: ${routineMedications || 'Tidak ada'}
-- Penyakit Kronis/Bawaan: ${userProfile.chronic_conditions || '-'}
-- Kondisi Tensi/Fisik: ${userProfile.blood_pressure_range || '-'}, ${userProfile.weight || '-'}kg`;
+            if (cachedData) {
+                console.log(`[REDIS] EMR & Private Medications ditarik dari Cache (Super Cepat) - User ID: ${userId}`);
+                const parsed = JSON.parse(cachedData);
+                emrContext = parsed.emrContext;
+                routineMedicationsForSearch = parsed.routineMedicationsForSearch;
+                privateContext = parsed.privateContext;
+            } else {
+                // ENKRIPSI/PRIVASI: Caregiver hanya bisa melihat data pasien yang terhubung
+                let targetPatientId = userId;
+                let patientProfileName = req.user.name || "Pasien";
+
+                if (req.user.role === 'caregiver') {
+                    const { data: rel } = await supabase
+                        .from('family_relations')
+                        .select('patient_id, users!family_relations_patient_id_fkey(name)')
+                        .eq('caregiver_id', userId)
+                        .eq('status', 'accepted')
+                        .single();
+
+                    if (rel) {
+                        targetPatientId = rel.patient_id;
+                        patientProfileName = rel.users?.name || 'Pasien Anda';
+                    }
+                }
+
+                // Ambil profile EMR dari Pasien Terhubung
+                const { data: userProfile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('user_id', targetPatientId)
+                    .single();
+                
+                if (userProfile) {
+                    routineMedicationsForSearch = userProfile.routine_medications || "";
+                    emrContext = `[REKAM MEDIS PASIEN (${patientProfileName})]
+- Gol. Darah: ${userProfile.blood_type || '-'}
+- Tensi Normal: ${userProfile.blood_pressure_range || '-'}
+- Tinggi/Berat: ${userProfile.height || '-'}
+- Alergi: ${userProfile.allergies || '-'}
+- Penyakit Kronis: ${userProfile.chronic_conditions || '-'}
+- Penyakit Terdahulu: ${userProfile.past_illnesses || '-'}
+- Penyakit Terakhir: ${userProfile.last_illness || '-'}
+- Riwayat Operasi: ${userProfile.surgeries_history || '-'}
+- OBAT RUTIN: ${routineMedicationsForSearch || '-'}
+`;
+                }
+
+                // Ambil Data Obat Milik Pasien Secara Spesifik
+                const { data: patientMedications } = await supabase
+                    .from('medications')
+                    .select('name, dosage, instructions')
+                    .eq('user_id', targetPatientId);
+
+                if (patientMedications && patientMedications.length > 0) {
+                    privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---
+\n(Informasi ini terenkripsi dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
+                    privateContext += patientMedications.map(m => `- ${m.name} (${m.dosage}): ${m.instructions}`).join("\n");
+                    routineMedicationsForSearch += " " + patientMedications.map(m => m.name).join(" ");
+                }
+
+                // SIMPAN KE REDIS: Set kedaluwarsa 6 jam (21600 detik)
+                if (redis.status === 'ready') {
+                    await redis.set(cacheKey, JSON.stringify({
+                        emrContext,
+                        routineMedicationsForSearch,
+                        privateContext
+                    }), 'EX', 21600);
+                }
+            }
+        } catch (e) {
+            console.error("[RAG] Gagal mengambil Private EMR Profile:", e.message);
         }
 
+        // PARSING HASIL PARALEL
         let chatHistoryFormat = [];
         if (historyResult.data && historyResult.data.length > 0) {
             chatHistoryFormat = normalizeHistory(historyResult.data.reverse());

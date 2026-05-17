@@ -1,4 +1,5 @@
 const { supabase } = require('../config/db');
+const redis = require('../config/redis.js');
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^(?:\+62|62|08)\d{8,12}$/;
@@ -144,20 +145,13 @@ const login = async (req, res) => {
         }
 
         res.status(200).json({
-            message: 'Login successful',
-            user: {
-                id: userData.id,
-                auth_id: data.user.id,
-                email: data.user.email,
-                name: userData.name,
-                role: activeRole
-            },
-            allowed_roles: allowedRoles,
-            token: data.session.access_token,
-            refresh_token: data.session.refresh_token
+            message: 'Berhasil login',
+            user: finalUser,
+            session: authData.session,
+            access_token: authData.session.access_token
         });
     } catch (error) {
-        res.status(401).json({ error: error.message });
+        res.status(400).json({ error: error.message });
     }
 };
 
@@ -301,10 +295,20 @@ const getMe = async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized' });
         }
 
+        // REDIS CACHE: Cek cache 'me' untuk user ini
+        const cacheKey = `auth_me:${req.user.id}:${req.user.role || 'patient'}`;
+        if (redis.status === 'ready') {
+            const cachedData = await redis.get(cacheKey);
+            if (cachedData) {
+                console.log(`[REDIS] Auth Data ditarik dari Cache - User ID: ${req.user.id}`);
+                return res.status(200).json(JSON.parse(cachedData));
+            }
+        }
+
         const allowedRoles = req.user.allowed_roles || ['patient', 'caregiver'];
         const activeRole = req.user.role || 'patient';
 
-        res.status(200).json({
+        const responseData = {
             user: {
                 id: req.user.id,
                 auth_id: req.user.auth_id,
@@ -313,7 +317,14 @@ const getMe = async (req, res) => {
                 role: activeRole
             },
             allowed_roles: allowedRoles
-        });
+        };
+
+        // SIMPAN KE REDIS: Set kedaluwarsa 2 jam
+        if (redis.status === 'ready') {
+            await redis.set(cacheKey, JSON.stringify(responseData), 'EX', 7200);
+        }
+
+        res.status(200).json(responseData);
     } catch (error) {
         res.status(401).json({ error: error.message });
     }
