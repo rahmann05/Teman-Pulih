@@ -1,5 +1,7 @@
+import { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { LuPill } from 'react-icons/lu';
-import heroImg from '../../../assets/images/dashboard-hero-patient.png';
+import heroImg from '../../../assets/images/feature-medication.png';
 
 const NextMedicationHero = ({
   time,
@@ -10,35 +12,53 @@ const NextMedicationHero = ({
   scheduleId,
   onMarkTaken
 }) => {
+  const containerRef = useRef(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start start', 'end start'] // Tailored for top-of-page bento hero
+  });
+
+  // Moderated parallax calculations for a smooth, balanced effect on the image
+  const imgY = useTransform(scrollYProgress, [0, 1], ['-22%', '22%']);
+
   return (
-    <div className="dashboard-hero-wide" data-testid="next-med-hero">
-      <div className="hero-wide-container">
-        <img src={heroImg} alt="Patient" className="hero-wide-bg" />
-        <div className="hero-wide-overlay">
-          <div className="hero-content-top">
-            <div className="hero-badge-pill">
-              <LuPill />
-              <span>PENGINGAT OBAT AKTIF</span>
-            </div>
+    <div ref={containerRef} className="split-bento-hero" data-testid="next-med-hero">
+      <div className="hero-glass-content-pane">
+        <div className="hero-content-header">
+          <div className="hero-badge-pill">
+            <LuPill />
+            <span>OBAT BERIKUTNYA</span>
           </div>
-          
-          <div className="hero-content-bottom">
-            <h2 className="hero-main-title">{medName}</h2>
-            <p className="hero-main-subtitle">Jadwal berikutnya: {time} • {instruction}</p>
-            
-            {id && (
-              <div className="hero-actions-overlay">
-                <button
-                  className="btn-glass-pill"
-                  type="button"
-                  onClick={() => onMarkTaken && onMarkTaken(id, medicationId, scheduleId)}
-                >
-                  Sudah Diminum →
-                </button>
-              </div>
-            )}
-          </div>
+          {medName !== 'Tidak ada obat terjadwal' && <span className="hero-status-dot"></span>}
         </div>
+        
+        <div className="hero-main-typography">
+          <h2 className="hero-giant-time">{time}</h2>
+          <h3 className="hero-med-name">{medName}</h3>
+          <p className="hero-med-desc">{instruction}</p>
+        </div>
+        
+        {id && (
+          <div className="hero-action-footer">
+            <button
+              className="btn-primary"
+              type="button"
+              onClick={() => onMarkTaken && onMarkTaken(id, medicationId, scheduleId)}
+            >
+              Sudah Diminum
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="hero-image-pane">
+        <motion.img 
+          style={{ y: imgY, scale: 1.35 }} 
+          src={heroImg} 
+          alt="Medication illustration" 
+          className="hero-bento-img" 
+        />
       </div>
     </div>
   );

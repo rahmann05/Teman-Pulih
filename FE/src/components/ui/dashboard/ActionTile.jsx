@@ -1,21 +1,15 @@
 /* src/components/ui/dashboard/ActionTile.jsx */
 import { Link } from 'react-router-dom';
 
-const ActionTile = ({ to, label, icon: Icon, image, alt }) => {
+const ActionTile = ({ to, label, icon: Icon, testId }) => {
   return (
-    <Link to={to} className="action-card" aria-label={label.replace('\n', ' ')}>
-      <img
-        src={image}
-        alt={alt}
-        className="action-card-img"
-        loading="lazy"
-      />
-      <div className="action-card-overlay" aria-hidden="true" />
-      <div className="action-card-content">
-        {Icon && <Icon size={20} className="action-icon" aria-hidden="true" />}
-        <span className="action-label" style={{ whiteSpace: 'pre-line' }}>
-          {label}
-        </span>
+    <Link to={to} className="action-tile" data-testid={testId}>
+      <div className="action-icon-wrapper">
+        <Icon size={20} aria-hidden="true" />
+      </div>
+      <div className="action-tile-label">
+        {/* Replace newlines with spaces or keep as is, but we want it flow cleanly */}
+        {label.replace('\n', ' ')}
       </div>
     </Link>
   );
