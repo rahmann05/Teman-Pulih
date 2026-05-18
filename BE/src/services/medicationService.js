@@ -12,22 +12,32 @@ const normalizeText = (text) => (text || '')
 const tokenize = (text) => normalizeText(text).split(' ').filter(Boolean);
 
 const SYNONYM_MAP = {
-    paracetamol: ['parasetamol', 'acetaminophen'],
-    parasetamol: ['paracetamol', 'acetaminophen'],
+    paracetamol: ['parasetamol', 'acetaminophen', 'panadol', 'sanmol', 'tempra'],
+    parasetamol: ['paracetamol', 'acetaminophen', 'panadol', 'sanmol', 'tempra'],
+    acetaminophen: ['paracetamol', 'parasetamol'],
     promag: ['antasida', 'antacid', 'maag', 'lambung'],
     antasida: ['promag', 'antacid', 'maag', 'lambung'],
-    maag: ['dispepsia', 'gastritis', 'lambung', 'gerd'],
-    gerd: ['maag', 'lambung', 'asam lambung'],
-    'obat cacing': ['cacing', 'albendazole', 'mebendazole', 'pirantel', 'pamoat'],
-    cacing: ['obat cacing', 'albendazole', 'mebendazole', 'pirantel', 'pamoat']
+    maag: ['dispepsia', 'gastritis', 'lambung', 'gerd', 'antasida'],
+    gerd: ['maag', 'lambung', 'asam lambung', 'refluks'],
+    lambung: ['maag', 'gerd', 'dispepsia', 'gastritis'],
+    'obat cacing': ['cacing', 'albendazole', 'mebendazole', 'pirantel', 'pamoat', 'combantrin'],
+    cacing: ['albendazole', 'mebendazole', 'pirantel', 'pamoat', 'combantrin'],
+    demam: ['panas', 'febris', 'antipiretik'],
+    'sakit kepala': ['cephalgia', 'migrain', 'pusing', 'sefalgia'],
+    batuk: ['antitusif', 'ekspektoran', 'mukolitik'],
+    flu: ['influenza', 'pilek', 'selesma'],
+    diare: ['mencret', 'gastroenteritis'],
+    amoxicillin: ['amoksisilin', 'amoxilin'],
+    amoksisilin: ['amoxicillin', 'amoxilin'],
+    ibuprofen: ['brufen', 'proris'],
+    paramex: ['obat sakit kepala', 'analgesik'],
+    epilepsi: ['antikonvulsan', 'kejang'],
 };
 
 const buildExpandedQueries = (queryText) => {
     const base = normalizeText(queryText);
-    const expanded = new Set();
     if (!base) return [];
-
-    expanded.add(base);
+    const expanded = new Set([base]);
     const tokens = tokenize(base);
     for (const token of tokens) {
         const synonyms = SYNONYM_MAP[token];
@@ -35,12 +45,10 @@ const buildExpandedQueries = (queryText) => {
             for (const syn of synonyms) expanded.add(syn);
         }
     }
-
     const joined = tokens.join(' ');
     if (SYNONYM_MAP[joined]) {
         for (const syn of SYNONYM_MAP[joined]) expanded.add(syn);
     }
-
     return Array.from(expanded).filter(Boolean);
 };
 
@@ -240,17 +248,17 @@ const getLogs = async (user, candidatePatientId) => {
     return rows;
 };
 
-// Parse raw unstructured drug string from ChromaDB into structured fields
+// Parse raw drug string from ChromaDB into structured fields (works for both collections)
 const parseDrugContent = (content) => {
     if (!content) return {};
     
     const extractField = (text, fieldName) => {
-        const regex = new RegExp(`${fieldName}:\\s*(.*?)(?=\\s*\\b(?:Kategori|Indikasi|Komposisi|Dosis|Aturan Pakai|Efek Samping|Peringatan):|$)`, 'i');
+        const regex = new RegExp(`${fieldName}:\\s*(.*?)(?=\\s*\\b(?:Kategori|Indikasi|Komposisi|Dosis|Aturan Pakai|Efek Samping|Peringatan|Obat Terkait):|$)`, 'is');
         const match = text.match(regex);
         return match ? match[1].trim() : '';
     };
 
-    const namaObatMatch = content.match(/Informasi Obat:\s*(.*?)(?=\s*\b(?:Kategori|Indikasi|Komposisi|Dosis|Aturan Pakai|Efek Samping|Peringatan):|$)/i);
+    const namaObatMatch = content.match(/Informasi Obat:\s*(.*?)(?=\s*\b(?:Kategori|Indikasi|Komposisi|Dosis|Aturan Pakai|Efek Samping|Peringatan):|$)/is);
     const namaObat = namaObatMatch ? namaObatMatch[1].trim() : '';
 
     return {
@@ -262,6 +270,20 @@ const parseDrugContent = (content) => {
         aturan_pakai: extractField(content, 'Aturan Pakai'),
         efek_samping: extractField(content, 'Efek Samping')
     };
+};
+
+// Try to extract drug-like structured data from general RAG-TemanPulih content
+const parseGeneralContentToDrug = (content, queryText) => {
+    if (!content) return null;
+    const parsed = parseDrugContent(content);
+    if (parsed.nama_obat) return parsed;
+
+    // Try extracting "Obat Terkait:" mentions
+    const obatTerkaitMatch = content.match(/Obat Terkait:\s*([^\n.]+)/i);
+    if (obatTerkaitMatch) {
+        return { ...parsed, nama_obat: obatTerkaitMatch[1].trim() };
+    }
+    return null;
 };
 
 // Retrieve and merge all chunks of a drug document from ChromaDB using its metadata source_id
@@ -317,6 +339,70 @@ const checkDrugAllergy = (drug, patientProfile) => {
     return { hasAllergy: false, details: '' };
 };
 
+// ─── RELEVANCE VALIDATION GATES ──────────────────────────────────────────────
+// These MUST pass before a result is included, preventing vector-only noise
+
+const isDrugRelevant = (queryText, drug, expandedQueries = []) => {
+    const query = normalizeText(queryText);
+    const queryTokens = tokenize(query);
+    const name = normalizeText(drug.nama_obat || '');
+    const komposisi = normalizeText(drug.komposisi || '');
+    const indikasi = normalizeText(drug.indikasi || '');
+    const kategori = normalizeText(drug.kategori || '');
+    const raw = normalizeText(drug.raw_content || '');
+
+    // Gate 1: Bidirectional name match
+    if (name && (name.includes(query) || query.includes(name))) return true;
+
+    // Gate 2: Any significant query token in drug name
+    for (const token of queryTokens) {
+        if (token.length >= 3 && name.includes(token)) return true;
+    }
+
+    // Gate 3: Query in composition or indication
+    if (query.length >= 3 && komposisi.includes(query)) return true;
+    if (query.length >= 3 && indikasi.includes(query)) return true;
+
+    // Gate 4: Synonym-expanded match against name/komposisi/indikasi/kategori
+    for (const exp of expandedQueries) {
+        const expNorm = normalizeText(exp);
+        if (expNorm.length >= 3) {
+            if (name.includes(expNorm)) return true;
+            if (komposisi.includes(expNorm)) return true;
+            if (indikasi.includes(expNorm)) return true;
+            if (kategori.includes(expNorm)) return true;
+        }
+    }
+
+    // Gate 5: Majority token overlap in raw content (weak but catches edge cases)
+    let tokenHits = 0;
+    for (const token of queryTokens) {
+        if (token.length >= 3 && raw.includes(token)) tokenHits++;
+    }
+    if (queryTokens.length > 0 && tokenHits >= Math.ceil(queryTokens.length * 0.6)) return true;
+
+    return false;
+};
+
+const isConditionRelevant = (queryText, condition, expandedQueries = []) => {
+    const query = normalizeText(queryText);
+    const queryTokens = tokenize(query);
+    const content = normalizeText(condition.content || '');
+
+    // Must have at least one lexical overlap
+    if (content.includes(query)) return true;
+    for (const token of queryTokens) {
+        if (token.length >= 3 && content.includes(token)) return true;
+    }
+    for (const exp of expandedQueries) {
+        const expNorm = normalizeText(exp);
+        if (expNorm.length >= 3 && content.includes(expNorm)) return true;
+    }
+    return false;
+};
+
+// ─── SCORING (rewritten with stronger name weighting) ─────────────────────────
+
 const scoreDrugMatch = (queryText, drug, patientContextText = '') => {
     const query = normalizeText(queryText);
     if (!query) return 0;
@@ -325,31 +411,40 @@ const scoreDrugMatch = (queryText, drug, patientContextText = '') => {
     const indikasi = normalizeText(drug.indikasi);
     const kategori = normalizeText(drug.kategori);
     const raw = normalizeText(drug.raw_content || '');
-    const patientText = normalizeText(patientContextText);
 
     let score = 0;
-    if (name === query) score += 8;
-    if (name.includes(query)) score += 6;
-    if (komposisi.includes(query)) score += 4;
-    if (indikasi.includes(query)) score += 4;
+
+    // Exact name match is the strongest signal
+    if (name === query) score += 15;
+    else if (name.includes(query)) score += 10;
+    else if (query.includes(name) && name.length >= 3) score += 8;
+
+    // Composition / indication / category match
+    if (komposisi.includes(query)) score += 5;
+    if (indikasi.includes(query)) score += 5;
     if (kategori.includes(query)) score += 2;
     if (raw.includes(query)) score += 1;
 
+    // Token-level matching
     const queryTokens = tokenize(query);
     for (const token of queryTokens) {
-        if (name.includes(token)) score += 2;
-        if (komposisi.includes(token)) score += 1;
-        if (indikasi.includes(token)) score += 1;
+        if (token.length >= 3) {
+            if (name.includes(token)) score += 3;
+            if (komposisi.includes(token)) score += 1.5;
+            if (indikasi.includes(token)) score += 1.5;
+        }
     }
 
+    // Vector distance as secondary signal (not primary)
     if (drug.distance !== null && drug.distance !== undefined) {
-        score += Math.max(0, 1 - drug.distance) * 3;
+        score += Math.max(0, 1 - drug.distance) * 4;
     }
 
-    if (patientText) {
-        const queryTokens = tokenize(queryText);
+    // Patient context bonus (minor)
+    if (patientContextText) {
+        const patientText = normalizeText(patientContextText);
         for (const token of queryTokens) {
-            if (patientText.includes(token)) score += 1;
+            if (token.length >= 3 && patientText.includes(token)) score += 0.5;
         }
     }
 
@@ -360,24 +455,36 @@ const scoreConditionMatch = (queryText, condition, patientContextText = '', expa
     const query = normalizeText(queryText);
     if (!query) return 0;
     const content = normalizeText(condition.content || '');
-    const patientText = normalizeText(patientContextText);
 
     let score = 0;
-    if (content.includes(query)) score += 4;
+    // Full query match
+    if (content.includes(query)) score += 5;
+
+    // Token overlap
     const tokens = tokenize(query);
     for (const token of tokens) {
-        if (content.includes(token)) score += 1;
-        if (patientText && patientText.includes(token)) score += 0.5;
+        if (token.length >= 3 && content.includes(token)) score += 1.5;
     }
-    if (expandedQueries.length > 0) {
-        for (const exp of expandedQueries) {
-            const expNorm = normalizeText(exp);
-            if (expNorm && content.includes(expNorm)) score += 1;
+
+    // Synonym expansion match
+    for (const exp of expandedQueries) {
+        const expNorm = normalizeText(exp);
+        if (expNorm.length >= 3 && content.includes(expNorm)) score += 1.5;
+    }
+
+    // Patient context bonus
+    if (patientContextText) {
+        const patientText = normalizeText(patientContextText);
+        for (const token of tokens) {
+            if (token.length >= 3 && patientText.includes(token)) score += 0.5;
         }
     }
+
+    // Distance as tiebreaker only
     if (condition.distance !== null && condition.distance !== undefined) {
         score += Math.max(0, 1 - condition.distance) * 2;
     }
+
     return score;
 };
 
@@ -391,16 +498,16 @@ const enrichDrugDetails = async (drug, drugCol) => {
     return {
         ...drug,
         raw_content: fullContent,
-        kategori: drug.kategori || parsedFull.kategori || drug.kategori,
-        indikasi: drug.indikasi || parsedFull.indikasi || drug.indikasi,
-        komposisi: drug.komposisi || parsedFull.komposisi || drug.komposisi,
-        dosis: drug.dosis || parsedFull.dosis || drug.dosis,
-        aturan_pakai: drug.aturan_pakai || parsedFull.aturan_pakai || drug.aturan_pakai,
-        efek_samping: drug.efek_samping || parsedFull.efek_samping || drug.efek_samping
+        kategori: drug.kategori || parsedFull.kategori,
+        indikasi: drug.indikasi || parsedFull.indikasi,
+        komposisi: drug.komposisi || parsedFull.komposisi,
+        dosis: drug.dosis || parsedFull.dosis,
+        aturan_pakai: drug.aturan_pakai || parsedFull.aturan_pakai,
+        efek_samping: drug.efek_samping || parsedFull.efek_samping
     };
 };
 
-// Dual-collection search across medications and conditions/symptoms
+// ─── MAIN RAG SEARCH (overhauled dual-collection algorithm) ───────────────────
 const searchChroma = async (queryText, user = null, supabase = null, targetPatientId = null) => {
     if (!queryText || queryText.trim() === '') {
         return { obat: [], kondisi: [] };
@@ -426,7 +533,7 @@ const searchChroma = async (queryText, user = null, supabase = null, targetPatie
         return { obat: [], kondisi: [] };
     }
 
-    // Load Patient profile for safety warnings & co-morbidity relevance tuning
+    // Load patient profile for allergy warnings & context
     let patientProfile = null;
     if (user && supabase && targetPatientId) {
         try {
@@ -436,27 +543,27 @@ const searchChroma = async (queryText, user = null, supabase = null, targetPatie
             );
             patientProfile = rows[0];
         } catch (e) {
-            console.error('[CHROMA] Failed to fetch patient profile for EMR context:', e.message);
+            console.error('[CHROMA] Failed to fetch patient profile:', e.message);
         }
     }
 
-    // Hybrid Search: Define search list and perform Query Expansion if category keyword triggers
-    const searchQueries = Array.from(new Set([queryText, ...buildExpandedQueries(queryText)]));
-    const dedupedQueries = Array.from(new Set(searchQueries.map(q => q.trim()).filter(Boolean)));
+    // Build expanded query list with synonyms
+    const expandedQueries = buildExpandedQueries(queryText);
+    const dedupedQueries = Array.from(new Set([queryText, ...expandedQueries].map(q => q.trim()).filter(Boolean)));
 
-    // Increase nResults pool size so that we retrieve all candidate options before strict context matching
+    console.log(`[RAG] Query: "${queryText}" → Expanded: [${dedupedQueries.join(', ')}]`);
+
+    // ═══ PHASE 1: Parallel search both collections ═══
     const [hasilObat, hasilKondisi] = await Promise.allSettled([
-        drugCol ? drugCol.query({ queryTexts: dedupedQueries, nResults: 24 }) : Promise.resolve(null),
-        condCol ? condCol.query({ queryTexts: dedupedQueries, nResults: 10 }) : Promise.resolve(null)
+        drugCol ? drugCol.query({ queryTexts: dedupedQueries, nResults: 20 }) : Promise.resolve(null),
+        condCol ? condCol.query({ queryTexts: dedupedQueries, nResults: 12 }) : Promise.resolve(null)
     ]);
 
+    // ═══ PHASE 2: Process drug collection results with RELEVANCE GATE ═══
     const rawObatList = [];
     if (hasilObat.status === 'fulfilled' && hasilObat.value) {
         const r = hasilObat.value;
-        const queryCount = r.ids.length;
-        
-        // Traverse over the candidate pool of both base and expanded query results
-        for (let q = 0; q < queryCount; q++) {
+        for (let q = 0; q < r.ids.length; q++) {
             const ids = r.ids[q] || [];
             const docs = r.documents[q] || [];
             const metas = r.metadatas[q] || [];
@@ -465,105 +572,95 @@ const searchChroma = async (queryText, user = null, supabase = null, targetPatie
             for (let i = 0; i < docs.length; i++) {
                 const fullText = docs[i];
                 const parsed = parseDrugContent(fullText);
-                
                 const nameToCompare = metas[i]?.nama_obat || parsed.nama_obat || '';
-                const alreadyAdded = rawObatList.some(o => o.nama_obat.toLowerCase() === nameToCompare.toLowerCase());
-                if (!alreadyAdded && nameToCompare) {
-                    rawObatList.push({
-                        id: ids[i],
-                        raw_content: fullText,
-                        nama_obat: nameToCompare,
-                        source_id: metas[i]?.source_id || null,
-                        kategori: metas[i]?.kategori || parsed.kategori || 'Medis',
-                        indikasi: parsed.indikasi || '',
-                        komposisi: parsed.komposisi || '',
-                        dosis: parsed.dosis || '',
-                        aturan_pakai: parsed.aturan_pakai || '',
-                        efek_samping: parsed.efek_samping || '',
-                        distance: dists[i] !== undefined ? dists[i] : null
-                    });
+                if (!nameToCompare) continue;
+
+                const alreadyAdded = rawObatList.some(o => normalizeText(o.nama_obat) === normalizeText(nameToCompare));
+                if (alreadyAdded) continue;
+
+                const drugCandidate = {
+                    id: ids[i],
+                    raw_content: fullText,
+                    nama_obat: nameToCompare,
+                    source_id: metas[i]?.source_id || null,
+                    kategori: metas[i]?.kategori || parsed.kategori || '',
+                    indikasi: parsed.indikasi || '',
+                    komposisi: parsed.komposisi || '',
+                    dosis: parsed.dosis || '',
+                    aturan_pakai: parsed.aturan_pakai || '',
+                    efek_samping: parsed.efek_samping || '',
+                    distance: dists[i] !== undefined ? dists[i] : null
+                };
+
+                // ★ RELEVANCE GATE: Must have lexical connection to query
+                if (!isDrugRelevant(queryText, drugCandidate, expandedQueries)) {
+                    continue;
                 }
+
+                rawObatList.push(drugCandidate);
             }
         }
     }
 
-    const enrichedRawObatList = [];
+    // Enrich drugs that lack structured fields (max 10)
+    const obatList = [];
     let enrichCount = 0;
     for (const drug of rawObatList) {
-        if (enrichCount < 12) {
+        let enriched = drug;
+        if (enrichCount < 10) {
             const needsEnrich = !(drug.kategori || drug.indikasi || drug.komposisi || drug.aturan_pakai || drug.dosis);
             if (needsEnrich && drug.source_id) {
-                enrichedRawObatList.push(await enrichDrugDetails(drug, drugCol));
+                enriched = await enrichDrugDetails(drug, drugCol);
                 enrichCount++;
-                continue;
             }
         }
-        enrichedRawObatList.push(drug);
-    }
-
-    // Resolve primary search category intent
-    const patientContextText = getPatientContextText(patientProfile);
-
-    // Apply strict filtering on the retrieved drugs to purge irrelevant category cross-matches
-    const obatList = [];
-    for (const drug of enrichedRawObatList) {
-        const distance = drug.distance;
-        
-        // Distance filtering only if the name has no lexical overlap with query
-        if (distance !== null && distance > 0.75) {
-            const queryClean = normalizeText(queryText);
-            const drugLower = normalizeText(drug.nama_obat);
-            if (queryClean && !drugLower.includes(queryClean)) {
-                continue;
-            }
+        // Re-check relevance after enrichment (may have gained composition/indication)
+        if (isDrugRelevant(queryText, enriched, expandedQueries)) {
+            const allergyCheck = checkDrugAllergy(enriched, patientProfile);
+            enriched.allergy_warning = allergyCheck.hasAllergy ? allergyCheck.details : null;
+            obatList.push(enriched);
         }
-
-        // 3. Perform Allergy Verification
-        const allergyCheck = checkDrugAllergy(drug, patientProfile);
-        drug.allergy_warning = allergyCheck.hasAllergy ? allergyCheck.details : null;
-
-        obatList.push(drug);
     }
 
+    console.log(`[RAG] Drug collection: ${rawObatList.length} candidates → ${obatList.length} after relevance gate`);
+
+    // ═══ PHASE 3: Process condition collection results with RELEVANCE GATE ═══
     const rawKondisiList = [];
     if (hasilKondisi.status === 'fulfilled' && hasilKondisi.value) {
         const r = hasilKondisi.value;
-        const queryCount = r.ids.length;
-
-        for (let q = 0; q < queryCount; q++) {
+        const seenIds = new Set();
+        for (let q = 0; q < r.ids.length; q++) {
             const ids = r.ids[q] || [];
             const docs = r.documents[q] || [];
             const metas = r.metadatas[q] || [];
             const dists = r.distances ? r.distances[q] : [];
 
             for (let i = 0; i < docs.length; i++) {
-                rawKondisiList.push({
+                if (seenIds.has(ids[i])) continue;
+                seenIds.add(ids[i]);
+
+                const condCandidate = {
                     id: ids[i],
                     content: docs[i],
                     source: metas[i]?.source || '',
                     distance: dists[i] !== undefined ? dists[i] : null
-                });
+                };
+
+                // ★ RELEVANCE GATE: Must have lexical connection to query
+                if (!isConditionRelevant(queryText, condCandidate, expandedQueries)) {
+                    continue;
+                }
+
+                rawKondisiList.push(condCandidate);
             }
         }
     }
 
-    // Apply strict filtering on the condition/symptom matches
-    const kondisiList = [];
-    for (const cond of rawKondisiList) {
-        // Skip low-similarity chunks if they also lack lexical overlap with query
-        if (cond.distance !== null && cond.distance > 0.78) {
-            const queryClean = normalizeText(queryText);
-            const contentClean = normalizeText(cond.content);
-            if (queryClean && !contentClean.includes(queryClean)) {
-                continue;
-            }
-        }
-        kondisiList.push(cond);
-    }
+    console.log(`[RAG] Condition collection: ${rawKondisiList.length} results after relevance gate`);
 
-    // Comprehensive check: Extract related drug names mentioned inside disease/condition RAG chunks
+    // ═══ PHASE 4: Extract drug names from conditions → cross-reference in drug collection ═══
     const extractedDrugNames = [];
-    for (const k of kondisiList) {
+    for (const k of rawKondisiList) {
         if (k.content) {
             const regex = /Obat Terkait:\s*([^.\n]+)/gi;
             let match;
@@ -578,89 +675,160 @@ const searchChroma = async (queryText, user = null, supabase = null, targetPatie
         }
     }
 
-    // Query ChromaDB for structural details of the extracted drugs if not already in obatList
     if (extractedDrugNames.length > 0 && drugCol) {
         const extraQueries = [];
         for (const drugName of extractedDrugNames) {
-            const exists = obatList.some(o => o.nama_obat.toLowerCase() === drugName.toLowerCase());
+            const exists = obatList.some(o => normalizeText(o.nama_obat) === normalizeText(drugName));
             if (!exists) {
                 extraQueries.push(
-                    drugCol.query({ queryTexts: [drugName], nResults: 1 }).then(res => ({
-                        drugName,
-                        res
-                    })).catch(e => {
-                        console.error(`[CHROMA] Failed to query extracted drug "${drugName}":`, e.message);
-                        return null;
-                    })
+                    drugCol.query({ queryTexts: [drugName], nResults: 2 }).then(res => ({
+                        drugName, res
+                    })).catch(() => null)
                 );
             }
         }
 
         if (extraQueries.length > 0) {
             const extraResults = await Promise.all(extraQueries);
-            
             for (const item of extraResults) {
-                if (item && item.res) {
-                    const r = item.res;
-                    const ids = r.ids[0] || [];
-                    const docs = r.documents[0] || [];
-                    const metas = r.metadatas[0] || [];
-                    const dists = r.distances ? r.distances[0] : [];
+                if (!item?.res) continue;
+                const r = item.res;
+                const ids = r.ids[0] || [];
+                const docs = r.documents[0] || [];
+                const metas = r.metadatas[0] || [];
+                const dists = r.distances ? r.distances[0] : [];
 
-                    for (let i = 0; i < docs.length; i++) {
-                        const fullContent = await getFullDrugContent(drugCol, metas[i]?.source_id, docs[i]);
-                        const parsed = parseDrugContent(fullContent);
-                        const nameToCompare = metas[i]?.nama_obat || parsed.nama_obat || item.drugName;
-                        
-                        // 1. Strict name validation: ensure the retrieved drug is actually a match for the extracted query
-                        const queryClean = item.drugName.toLowerCase().trim();
-                        const matchedClean = nameToCompare.toLowerCase();
-                        if (!matchedClean.includes(queryClean) && !queryClean.includes(matchedClean)) {
-                            continue; // Skip mismatching background vector noise
-                        }
+                for (let i = 0; i < docs.length; i++) {
+                    const parsed = parseDrugContent(docs[i]);
+                    const nameToCompare = metas[i]?.nama_obat || parsed.nama_obat || item.drugName;
 
-                        const alreadyAdded = obatList.some(o => o.nama_obat.toLowerCase() === nameToCompare.toLowerCase());
-                        if (!alreadyAdded && nameToCompare) {
-                            const drugObj = {
-                                id: ids[i],
-                                raw_content: fullContent,
-                                nama_obat: nameToCompare,
-                                source_id: metas[i]?.source_id || null,
-                                kategori: metas[i]?.kategori || parsed.kategori || 'Medis (Terkait Kondisi)',
-                                indikasi: parsed.indikasi || '',
-                                komposisi: parsed.komposisi || '',
-                                dosis: parsed.dosis || '',
-                                aturan_pakai: parsed.aturan_pakai || '',
-                                efek_samping: parsed.efek_samping || '',
-                                distance: dists[i] !== undefined ? dists[i] : null,
-                                is_extracted_from_condition: true
-                            };
-
-                            // Perform allergy check on extracted drug
-                            const allergyCheck = checkDrugAllergy(drugObj, patientProfile);
-                            drugObj.allergy_warning = allergyCheck.hasAllergy ? allergyCheck.details : null;
-                            
-                            obatList.push(drugObj);
-                        }
+                    // Strict name validation for cross-referenced drugs
+                    const queryClean = normalizeText(item.drugName);
+                    const matchedClean = normalizeText(nameToCompare);
+                    if (!matchedClean.includes(queryClean) && !queryClean.includes(matchedClean)) {
+                        continue;
                     }
+
+                    const alreadyAdded = obatList.some(o => normalizeText(o.nama_obat) === normalizeText(nameToCompare));
+                    if (alreadyAdded || !nameToCompare) continue;
+
+                    const fullContent = await getFullDrugContent(drugCol, metas[i]?.source_id, docs[i]);
+                    const parsedFull = parseDrugContent(fullContent);
+
+                    const drugObj = {
+                        id: ids[i],
+                        raw_content: fullContent,
+                        nama_obat: nameToCompare,
+                        source_id: metas[i]?.source_id || null,
+                        kategori: metas[i]?.kategori || parsedFull.kategori || 'Medis (Terkait Kondisi)',
+                        indikasi: parsedFull.indikasi || '',
+                        komposisi: parsedFull.komposisi || '',
+                        dosis: parsedFull.dosis || '',
+                        aturan_pakai: parsedFull.aturan_pakai || '',
+                        efek_samping: parsedFull.efek_samping || '',
+                        distance: dists[i] !== undefined ? dists[i] : null,
+                        is_extracted_from_condition: true
+                    };
+
+                    const allergyCheck = checkDrugAllergy(drugObj, patientProfile);
+                    drugObj.allergy_warning = allergyCheck.hasAllergy ? allergyCheck.details : null;
+                    obatList.push(drugObj);
                 }
             }
         }
     }
 
+    // ═══ PHASE 5: Fallback — if drug collection gave < 2 results, try extracting ═══
+    //     drug info from general collection (RAG-TemanPulih) content
+    if (obatList.length < 2 && condCol) {
+        console.log('[RAG] Drug results insufficient, attempting fallback to general collection...');
+        for (const cond of rawKondisiList) {
+            if (!cond.content) continue;
+            const generalParsed = parseGeneralContentToDrug(cond.content, queryText);
+            if (!generalParsed || !generalParsed.nama_obat) continue;
+
+            const alreadyAdded = obatList.some(o => normalizeText(o.nama_obat) === normalizeText(generalParsed.nama_obat));
+            if (alreadyAdded) continue;
+
+            // Try to find this drug in the drug collection for full details
+            if (drugCol) {
+                try {
+                    const lookupRes = await drugCol.query({ queryTexts: [generalParsed.nama_obat], nResults: 1 });
+                    if (lookupRes?.documents?.[0]?.[0]) {
+                        const lookupParsed = parseDrugContent(lookupRes.documents[0][0]);
+                        const lookupName = lookupRes.metadatas[0]?.[0]?.nama_obat || lookupParsed.nama_obat || '';
+                        const lookupClean = normalizeText(lookupName);
+                        const queryClean = normalizeText(generalParsed.nama_obat);
+
+                        if (lookupClean.includes(queryClean) || queryClean.includes(lookupClean)) {
+                            const fullContent = await getFullDrugContent(drugCol, lookupRes.metadatas[0]?.[0]?.source_id, lookupRes.documents[0][0]);
+                            const fullParsed = parseDrugContent(fullContent);
+                            const drugObj = {
+                                id: lookupRes.ids[0][0],
+                                raw_content: fullContent,
+                                nama_obat: lookupName || generalParsed.nama_obat,
+                                source_id: lookupRes.metadatas[0]?.[0]?.source_id || null,
+                                kategori: fullParsed.kategori || generalParsed.kategori || 'Medis',
+                                indikasi: fullParsed.indikasi || generalParsed.indikasi || '',
+                                komposisi: fullParsed.komposisi || generalParsed.komposisi || '',
+                                dosis: fullParsed.dosis || generalParsed.dosis || '',
+                                aturan_pakai: fullParsed.aturan_pakai || generalParsed.aturan_pakai || '',
+                                efek_samping: fullParsed.efek_samping || generalParsed.efek_samping || '',
+                                distance: lookupRes.distances?.[0]?.[0] ?? null,
+                                is_fallback_from_general: true
+                            };
+                            const allergyCheck = checkDrugAllergy(drugObj, patientProfile);
+                            drugObj.allergy_warning = allergyCheck.hasAllergy ? allergyCheck.details : null;
+                            obatList.push(drugObj);
+                            continue;
+                        }
+                    }
+                } catch (e) {
+                    console.warn(`[RAG] Fallback lookup failed for "${generalParsed.nama_obat}":`, e.message);
+                }
+            }
+
+            // If drug collection lookup failed, use the general content as-is
+            const drugObj = {
+                id: cond.id,
+                raw_content: cond.content,
+                nama_obat: generalParsed.nama_obat,
+                source_id: null,
+                kategori: generalParsed.kategori || 'Medis',
+                indikasi: generalParsed.indikasi || '',
+                komposisi: generalParsed.komposisi || '',
+                dosis: generalParsed.dosis || '',
+                aturan_pakai: generalParsed.aturan_pakai || '',
+                efek_samping: generalParsed.efek_samping || '',
+                distance: cond.distance,
+                is_fallback_from_general: true
+            };
+            const allergyCheck = checkDrugAllergy(drugObj, patientProfile);
+            drugObj.allergy_warning = allergyCheck.hasAllergy ? allergyCheck.details : null;
+            obatList.push(drugObj);
+        }
+        console.log(`[RAG] After fallback: ${obatList.length} total drug results`);
+    }
+
+    // ═══ PHASE 6: Score, rank, and return ═══
+    const patientContextText = getPatientContextText(patientProfile);
+
     const rankedObat = obatList
         .map((drug) => ({ ...drug, match_score: scoreDrugMatch(queryText, drug, patientContextText) }))
+        .filter((drug) => drug.match_score > 0)
         .sort((a, b) => b.match_score - a.match_score)
         .slice(0, 5);
 
-    const rankedKondisi = kondisiList
+    const rankedKondisi = rawKondisiList
         .map((cond) => ({
             ...cond,
             match_score: scoreConditionMatch(queryText, cond, patientContextText, dedupedQueries)
         }))
+        .filter((cond) => cond.match_score >= 3)
         .sort((a, b) => b.match_score - a.match_score)
-        .filter((cond) => cond.match_score >= 2)
         .slice(0, 3);
+
+    console.log(`[RAG] Final: ${rankedObat.length} obat (top: ${rankedObat[0]?.nama_obat || 'none'}), ${rankedKondisi.length} kondisi`);
 
     return {
         obat: rankedObat,
