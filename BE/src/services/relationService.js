@@ -32,7 +32,14 @@ const requestAccess = async (caregiverId, supabase, identifier) => {
 
     if (existingRelation) {
         if (existingRelation.status === 'accepted') throw Object.assign(new Error('Pasien ini sudah ada di daftar Anda.'), { statusCode: 400 });
-        if (existingRelation.status === 'pending') throw Object.assign(new Error('Permintaan akses ke pasien ini sedang menunggu persetujuan.'), { statusCode: 400 });
+        if (existingRelation.status === 'pending') {
+            const createdAt = new Date(existingRelation.created_at);
+            const now = new Date();
+            const diffMinutes = (now - createdAt) / (1000 * 60);
+            if (diffMinutes < 10) {
+                throw Object.assign(new Error('Permintaan akses ke pasien ini sedang menunggu persetujuan.'), { statusCode: 400 });
+            }
+        }
     }
 
     // Generate 6-digit verification code
@@ -45,7 +52,8 @@ const requestAccess = async (caregiverId, supabase, identifier) => {
             patient_id: patientId, 
             status: 'pending',
             initiated_by: caregiverId,
-            verification_code: verificationCode
+            verification_code: verificationCode,
+            created_at: new Date().toISOString()
         }, { onConflict: 'patient_id, caregiver_id' })
         .select().single();
     if (relationError) throw relationError;
@@ -89,6 +97,14 @@ const approveAccess = async (userId, supabase, relation_id, status, verification
 
     if (relation.status !== 'pending') {
         throw Object.assign(new Error('Permintaan ini sudah diproses.'), { statusCode: 400 });
+    }
+
+    // Check expiration (10 minutes)
+    const createdAt = new Date(relation.created_at);
+    const now = new Date();
+    const diffMinutes = (now - createdAt) / (1000 * 60);
+    if (diffMinutes >= 10) {
+        throw Object.assign(new Error('Permintaan verifikasi telah kedaluwarsa (batas waktu 10 menit). Silakan minta pengiriman ulang.'), { statusCode: 400 });
     }
 
     // Enforce that the approver is the RECIPIENT of the request
@@ -138,6 +154,7 @@ const getPendingRequests = async (userId, supabase) => {
         WHERE 
             ((fr.patient_id = $1 AND fr.initiated_by != $1) OR (fr.caregiver_id = $1 AND fr.initiated_by != $1))
             AND fr.status = 'pending'
+            AND fr.created_at >= NOW() - INTERVAL '10 minutes'
     `;
     const { rows } = await db.query(query, [userId]);
     return rows;

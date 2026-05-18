@@ -56,7 +56,12 @@ const invite = async (user, supabase, identifier) => {
             throw Object.assign(new Error('Hubungan keluarga dengan pengguna ini sudah terhubung.'), { statusCode: 400 });
         }
         if (existingRelation.status === 'pending') {
-            throw Object.assign(new Error('Undangan keluarga sedang dalam proses persetujuan.'), { statusCode: 400 });
+            const createdAt = new Date(existingRelation.created_at);
+            const now = new Date();
+            const diffMinutes = (now - createdAt) / (1000 * 60);
+            if (diffMinutes < 10) {
+                throw Object.assign(new Error('Undangan keluarga sedang dalam proses persetujuan.'), { statusCode: 400 });
+            }
         }
     }
 
@@ -65,13 +70,14 @@ const invite = async (user, supabase, identifier) => {
 
     const { error: inviteError } = await supabase
         .from('family_relations')
-        .insert([{ 
+        .upsert({ 
             patient_id: patientId, 
             caregiver_id: caregiverId, 
             status: 'pending',
             initiated_by: user.id,
-            verification_code: verificationCode
-        }]);
+            verification_code: verificationCode,
+            created_at: new Date().toISOString()
+        }, { onConflict: 'patient_id, caregiver_id' });
     if (inviteError) throw inviteError;
 
     // Send verification code to the recipient
@@ -108,11 +114,26 @@ const getMembers = async (user, supabase) => {
         FROM family_relations fr
         JOIN users p ON fr.patient_id = p.id
         JOIN users c ON fr.caregiver_id = c.id
-        WHERE fr.patient_id = $1 OR fr.caregiver_id = $1
+        WHERE (fr.patient_id = $1 OR fr.caregiver_id = $1)
+          AND (fr.status != 'pending' OR fr.created_at >= NOW() - INTERVAL '10 minutes')
     `;
     const { rows } = await db.query(query, [user.id]);
 
-    await cacheSet(cacheKey, rows);
+    // Calculate dynamic TTL to ensure Redis cache auto-expires exactly when the pending requests expire
+    let ttlSeconds = 14400; // default 4 hours
+    const pendingRelations = rows.filter(r => r.status === 'pending');
+    if (pendingRelations.length > 0) {
+        const now = new Date();
+        const remainingTimes = pendingRelations.map(r => {
+            const createdAt = new Date(r.created_at);
+            const expiryTime = new Date(createdAt.getTime() + 10 * 60 * 1000); // 10 minutes limit
+            const diffMs = expiryTime - now;
+            return Math.max(1, Math.floor(diffMs / 1000));
+        });
+        ttlSeconds = Math.min(...remainingTimes);
+    }
+
+    await cacheSet(cacheKey, rows, ttlSeconds);
     return rows;
 };
 
