@@ -59,4 +59,18 @@ const getMedicationLogs = async (req, res, next) => {
     }
 };
 
-module.exports = { getMedications, createMedication, updateMedication, deleteMedication, markTaken, getMedicationLogs };
+const searchChroma = async (req, res, next) => {
+    try {
+        const { query, patient_id } = req.query;
+        if (!query || query.trim() === '') {
+            return res.status(200).json({ data: { obat: [], kondisi: [] } });
+        }
+        const supabase = getSupabaseClient(req);
+        const data = await medicationService.searchChroma(query, req.user, supabase, patient_id);
+        res.status(200).json({ data });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { getMedications, createMedication, updateMedication, deleteMedication, markTaken, getMedicationLogs, searchChroma };

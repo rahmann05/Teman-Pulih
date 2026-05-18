@@ -167,6 +167,7 @@ const MedicationListPage = () => {
           isOpen={showAddModal}
           onClose={() => setShowAddModal(false)}
           onSubmit={handleAdd}
+          patientId={isCaregiver ? selectedPatientId : undefined}
         />
       </div>
     </DashboardLayout>

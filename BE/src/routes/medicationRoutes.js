@@ -5,6 +5,7 @@ const { requireAuth } = require('../middleware/authMiddleware');
 
 router.use(requireAuth); // Protect all routes
 
+router.get('/search-chroma', medicationController.searchChroma);
 router.get('/', medicationController.getMedications);
 router.post('/', medicationController.createMedication);
 router.patch('/:id', medicationController.updateMedication);

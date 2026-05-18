@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { chromaClient } = require('../config/chroma.js');
 const { cacheGet, cacheSet } = require('../helpers/cache');
+const medicationService = require('./medicationService');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
 
@@ -44,7 +45,7 @@ const getEmrContext = async (supabase, user) => {
         : `emr_profile:patient_${userId}`;
 
     const cached = await cacheGet(cacheKey);
-    if (cached) {
+    if (cached && cached.targetPatientId) {
         console.log(`[REDIS] EMR & Private Medications ditarik dari Cache (Super Cepat) - User ID: ${userId}`);
         return cached;
     }
@@ -97,12 +98,52 @@ const getEmrContext = async (supabase, user) => {
         routineMedicationsForSearch += ' ' + patientMedications.map(m => m.name).join(' ');
     }
 
-    const result = { emrContext, routineMedicationsForSearch, privateContext };
+    const result = { emrContext, routineMedicationsForSearch, privateContext, targetPatientId };
     await cacheSet(cacheKey, result, 21600);
     return result;
 };
 
-const buildRagContext = async (searchTerms, routineMedications) => {
+const buildRagContext = async (searchTerms, routineMedications, user = null, supabase = null, targetPatientId = null) => {
+    const primaryQuery = (searchTerms && searchTerms.length > 0) ? searchTerms[0] : '';
+    if (primaryQuery) {
+        try {
+            const chromaResult = await medicationService.searchChroma(primaryQuery, user, supabase, targetPatientId);
+            if (chromaResult) {
+                const obatItems = chromaResult.obat || [];
+                const kondisiItems = chromaResult.kondisi || [];
+
+                let ragContext = '';
+                if (kondisiItems.length > 0) {
+                    const kondisiText = kondisiItems.slice(0, 3).map((k) => k.content).filter(Boolean).join('\n---\n');
+                    if (kondisiText) ragContext += `=== REFERENSI KONDISI MEDIS ===\n${kondisiText}\n\n`;
+                }
+
+                if (obatItems.length > 0) {
+                    const obatText = obatItems.slice(0, 5).map((o) => {
+                        const parts = [
+                            `Informasi Obat: ${o.nama_obat}`,
+                            o.kategori ? `Kategori: ${o.kategori}` : '',
+                            o.indikasi ? `Indikasi: ${o.indikasi}` : '',
+                            o.komposisi ? `Komposisi: ${o.komposisi}` : '',
+                            o.dosis ? `Dosis: ${o.dosis}` : '',
+                            o.aturan_pakai ? `Aturan Pakai: ${o.aturan_pakai}` : '',
+                            o.efek_samping ? `Efek Samping: ${o.efek_samping}` : ''
+                        ].filter(Boolean);
+                        return parts.join('\n');
+                    }).join('\n---\n');
+                    if (obatText) ragContext += `=== REFERENSI OBAT & INTERAKSI ===\n${obatText}\n\n`;
+                }
+
+                if (ragContext) {
+                    console.log(`[RAG] Referensi dari searchChroma: ${obatItems.length} Obat, ${kondisiItems.length} Kondisi.`);
+                    return ragContext;
+                }
+            }
+        } catch (e) {
+            console.warn('[RAG] Fallback ke query langsung ChromaDB:', e.message);
+        }
+    }
+
     const [penyakitCol, obatCol] = await Promise.all([
         chromaClient.getCollection({ name: process.env.CHROMA_DATABASE || 'RAG-TemanPulih' }),
         chromaClient.getCollection({ name: process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat' }),

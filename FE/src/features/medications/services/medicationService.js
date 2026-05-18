@@ -48,3 +48,11 @@ export const markTaken = (id, body) =>
  */
 export const getMedicationLogs = (patientId) =>
   api.get('/medications/logs', { params: patientId ? { patient_id: patientId } : {} });
+
+/**
+ * Search ChromaDB drug & disease RAG collections for suggestions.
+ * @param {string} query - Search term.
+ * @param {string} [patientId] - Optional patient ID.
+ */
+export const searchChromaDrugs = (query, patientId) =>
+  api.get('/medications/search-chroma', { params: { query, patient_id: patientId } });

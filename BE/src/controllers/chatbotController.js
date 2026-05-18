@@ -59,11 +59,13 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
         }
 
         let emrContext = '', routineMedicationsForSearch = '', privateContext = '';
+        let targetPatientId = null;
         try {
             const emrData = await chatbotService.getEmrContext(supabase, req.user);
             emrContext = emrData.emrContext;
             routineMedicationsForSearch = emrData.routineMedicationsForSearch;
             privateContext = emrData.privateContext;
+            targetPatientId = emrData.targetPatientId || null;
         } catch (e) {
             console.error('[RAG] Gagal mengambil Private EMR Profile:', e.message);
         }
@@ -88,7 +90,13 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
 
         let ragContextFormatted = '';
         try {
-            ragContextFormatted = await chatbotService.buildRagContext(searchTerms, routineMedicationsForSearch);
+            ragContextFormatted = await chatbotService.buildRagContext(
+                searchTerms,
+                routineMedicationsForSearch,
+                req.user,
+                supabase,
+                targetPatientId
+            );
         } catch (e) { console.error('[RAG] Error ChromaDB Initialization:', e.message); }
 
         const modelConfig = { temperature: 0.2, maxOutputTokens: 2048 };

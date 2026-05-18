@@ -82,6 +82,7 @@ CREATE TABLE medications (
     name VARCHAR(255) NOT NULL,
     dosage VARCHAR(100),
     instructions TEXT,
+    medicinal_insight JSONB,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
