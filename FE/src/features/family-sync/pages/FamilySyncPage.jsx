@@ -6,7 +6,9 @@ import FamilyPendingSection from '@/features/family-sync/components/FamilyPendin
 import FamilyHeader from '@/features/family-sync/components/FamilyHeader';
 import FamilySyncProvider from '@/features/family-sync/context/FamilySyncProvider';
 import { useFamilySyncContext } from '@/features/family-sync/hooks/useFamilySyncContext';
+import VerificationModal from '@/features/family-sync/components/VerificationModal';
 import '@/features/family-sync/family-sync.css';
+
 
 const FamilySyncContent = () => {
   const navigate = useNavigate();
@@ -28,7 +30,13 @@ const FamilySyncContent = () => {
     handleInviteSubmit,
     handleApprove,
     handleReject,
+    isVerificationOpen,
+    setIsVerificationOpen,
+    verificationError,
+    verificationLoading,
+    handleVerifySubmit,
   } = useFamilySyncContext();
+
 
   const handleBack = () => {
     if (window.history.length > 1) {
@@ -74,15 +82,14 @@ const FamilySyncContent = () => {
         </div>
 
         <div className="family-col-right">
-          {!caregiverMode && (
-            <FamilyPendingSection
-              title={sectionTitles.pending}
-              requests={pendingCards}
-              onApprove={handleApprove}
-              onReject={handleReject}
-              processingRequestId={processingRequestId}
-            />
-          )}
+          <FamilyPendingSection
+            title={sectionTitles.pending}
+            requests={pendingCards}
+            onApprove={handleApprove}
+            onReject={handleReject}
+            processingRequestId={processingRequestId}
+          />
+
 
           <FamilyMemberList
             title={sectionTitles.members}
@@ -91,7 +98,16 @@ const FamilySyncContent = () => {
           />
         </div>
       </div>
+
+      <VerificationModal
+        isOpen={isVerificationOpen}
+        onClose={() => setIsVerificationOpen(false)}
+        onSubmit={handleVerifySubmit}
+        error={verificationError}
+        isLoading={verificationLoading}
+      />
     </FamilySyncLayout>
+
   );
 };
 

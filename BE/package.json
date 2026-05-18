@@ -30,7 +30,9 @@
     "node-cron": "^4.2.1",
     "pdf-parse": "^1.1.1",
     "pg": "^8.20.0",
-    "sharp": "^0.34.5"
+    "resend": "^6.12.3",
+    "sharp": "^0.34.5",
+    "twilio": "^6.0.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.14",

@@ -25,6 +25,14 @@ export const useFamilySync = () => {
   const [isSending, setIsSending] = useState(false);
   const [processingRequestId, setProcessingRequestId] = useState(null);
 
+  // Verification modal states
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationError, setVerificationError] = useState('');
+  const [verificationLoading, setVerificationLoading] = useState(false);
+  const [activeRequestId, setActiveRequestId] = useState(null);
+
+
   const inviteCopy = useMemo(() => ({
     title: caregiverMode ? 'Tambah Pasien' : 'Undang Caregiver',
     description: caregiverMode
@@ -49,13 +57,10 @@ export const useFamilySync = () => {
   }, []);
 
   const fetchPending = useCallback(async () => {
-    if (caregiverMode) {
-      setPendingRequests([]);
-      return;
-    }
     const response = await getPendingRequests();
     setPendingRequests(response.data?.requests || []);
-  }, [caregiverMode]);
+  }, []);
+
 
   const loadFamilySync = useCallback(async () => {
     setLoading(true);
@@ -118,12 +123,12 @@ export const useFamilySync = () => {
     }
   }, [caregiverMode, fetchMembers, fetchPending, inviteValue]);
 
-  const handleRequestAction = useCallback(async (relationId, status) => {
+  const handleRequestAction = useCallback(async (relationId, status, code = null) => {
     setProcessingRequestId(relationId);
     setError('');
 
     try {
-      await approveRequest(relationId, status);
+      await approveRequest(relationId, status, code);
       await Promise.all([fetchMembers(), fetchPending()]);
     } catch (err) {
       setError(err.response?.data?.error || 'Gagal memperbarui permintaan.');
@@ -133,12 +138,38 @@ export const useFamilySync = () => {
   }, [fetchMembers, fetchPending]);
 
   const handleApprove = useCallback((relationId) => {
-    handleRequestAction(relationId, 'accepted');
-  }, [handleRequestAction]);
+    setActiveRequestId(relationId);
+    setVerificationCode('');
+    setVerificationError('');
+    setIsVerificationOpen(true);
+  }, []);
+
+  const handleVerifySubmit = useCallback(async (code) => {
+    if (!code || code.length !== 6) {
+      setVerificationError('Kode verifikasi harus 6 digit.');
+      return false;
+    }
+
+    setVerificationError('');
+    setVerificationLoading(true);
+
+    try {
+      await approveRequest(activeRequestId, 'accepted', code);
+      setIsVerificationOpen(false);
+      await Promise.all([fetchMembers(), fetchPending()]);
+      return true;
+    } catch (err) {
+      setVerificationError(err.response?.data?.error || 'Kode verifikasi salah.');
+      return false;
+    } finally {
+      setVerificationLoading(false);
+    }
+  }, [activeRequestId, fetchMembers, fetchPending]);
 
   const handleReject = useCallback((relationId) => {
     handleRequestAction(relationId, 'rejected');
   }, [handleRequestAction]);
+
 
   const memberCards = useMemo(() => (
     members.map((member) => {
@@ -163,17 +194,18 @@ export const useFamilySync = () => {
 
   const pendingCards = useMemo(() => (
     pendingRequests.map((request) => {
-      const caregiver = request.caregiver || {};
-      const name = caregiver.name || 'Caregiver';
+      const displayPerson = caregiverMode ? (request.patient || {}) : (request.caregiver || {});
+      const name = displayPerson.name || (caregiverMode ? 'Pasien' : 'Caregiver');
       return {
         id: request.id,
         initials: getInitials(name),
         name,
-        email: caregiver.email || '',
+        email: displayPerson.email || '',
         dateLabel: formatRequestDate(request.created_at),
       };
     })
-  ), [pendingRequests]);
+  ), [caregiverMode, pendingRequests]);
+
 
   return {
     caregiverMode,
@@ -193,5 +225,13 @@ export const useFamilySync = () => {
     handleInviteSubmit,
     handleApprove,
     handleReject,
+    isVerificationOpen,
+    setIsVerificationOpen,
+    verificationCode,
+    setVerificationCode,
+    verificationError,
+    verificationLoading,
+    handleVerifySubmit,
   };
+
 };
