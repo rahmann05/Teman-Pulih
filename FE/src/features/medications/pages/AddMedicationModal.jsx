@@ -376,6 +376,18 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
   const [debouncedName, setDebouncedName] = useState('');
   const [dosageOptions, setDosageOptions] = useState([]);
 
+  // Handle adding class to body to smoothly hide TopNav on desktop
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add('add-medication-modal-open');
+    } else {
+      document.body.classList.remove('add-medication-modal-open');
+    }
+    return () => {
+      document.body.classList.remove('add-medication-modal-open');
+    };
+  }, [isOpen]);
+
   // Debounce form.name input
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -893,6 +905,21 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
                   >
                     <LuRefreshCw size={14} /> Reset Pilihan
                   </button>
+                </div>
+              </div>
+            ) : debouncedName.trim().length >= 2 && !searchingChroma && suggestions.obat?.length === 0 && suggestions.kondisi?.length === 0 ? (
+              <div className="med-large-info-placeholder med-apology-state">
+                <div className="med-placeholder-icon-wrapper" style={{ borderColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}>
+                  <LuTriangleAlert className="med-placeholder-sparkle-icon" size={36} />
+                </div>
+                <h4 className="med-placeholder-title">Data Tidak Tersedia</h4>
+                <p className="med-placeholder-desc" style={{ maxWidth: '300px' }}>
+                  Mohon maaf, data obat atau detail rekomendasi untuk pencarian &quot;{debouncedName}&quot; tidak tersedia di database kami. Silakan periksa kembali penulisan nama obat atau gejala Anda.
+                </p>
+                <div className="med-placeholder-visual-bars">
+                  <div className="med-placeholder-bar short" style={{ background: 'rgba(239, 68, 68, 0.08)' }} />
+                  <div className="med-placeholder-bar long" style={{ background: 'rgba(239, 68, 68, 0.08)' }} />
+                  <div className="med-placeholder-bar medium" style={{ background: 'rgba(239, 68, 68, 0.08)' }} />
                 </div>
               </div>
             ) : (

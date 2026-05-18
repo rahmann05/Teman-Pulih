@@ -199,5 +199,13 @@
 @media (min-width: 1024px) {
   .topnav-desktop {
     display: block;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), 
+                opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  body.add-medication-modal-open .topnav-desktop {
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
   }
 }
