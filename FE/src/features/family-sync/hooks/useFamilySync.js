@@ -181,6 +181,7 @@ export const useFamilySync = () => {
 
       return {
         id: member.id,
+        userId: relationPerson?.id,
         name,
         email,
         initials: getInitials(name),

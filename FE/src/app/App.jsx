@@ -21,6 +21,7 @@ const ChatbotPage = lazy(() => import('@/features/chatbot/pages/ChatbotPage'));
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage'));
 const FamilySyncPage = lazy(() => import('@/features/family-sync/pages/FamilySyncPage'));
 const PelajariPage   = lazy(() => import('@/features/pelajari/pages/PelajariPage'));
+const DirectChatPage = lazy(() => import('@/features/chat/pages/DirectChatPage'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -136,6 +137,15 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
                 <PageTransition><FamilySyncPage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/chat/:userId"
+            element={
+              <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
+                <PageTransition><DirectChatPage /></PageTransition>
               </ProtectedRoute>
             }
           />

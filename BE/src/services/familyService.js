@@ -115,7 +115,10 @@ const getMembers = async (user, supabase) => {
         JOIN users p ON fr.patient_id = p.id
         JOIN users c ON fr.caregiver_id = c.id
         WHERE (fr.patient_id = $1 OR fr.caregiver_id = $1)
-          AND (fr.status != 'pending' OR fr.created_at >= NOW() - INTERVAL '10 minutes')
+          AND (
+            fr.status = 'accepted' 
+            OR (fr.status = 'pending' AND fr.created_at >= NOW() - INTERVAL '10 minutes')
+          )
     `;
     const { rows } = await db.query(query, [user.id]);
 

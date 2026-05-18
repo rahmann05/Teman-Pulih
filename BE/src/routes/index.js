@@ -9,5 +9,6 @@ router.use('/profile', require('./profileRoutes'));
 router.use('/relations', require('./relationRoutes'));
 router.use('/emr', require('./emrRoutes'));
 router.use('/family', require('./familyRoutes'));
+router.use('/chat', require('./chatRoutes'));
 
 module.exports = router;
