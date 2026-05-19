@@ -84,7 +84,7 @@
   overflow: hidden;
   position: relative;
   background: #FFFFFF;
-  border: 2px dashed rgba(196, 101, 58, 0.2);
+  border: 2px dashed rgba(var(--accent-rgb), 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -92,7 +92,7 @@
 }
 
 .scan-preview-area:hover {
-  border-color: rgba(196, 101, 58, 0.4);
+  border-color: rgba(var(--accent-rgb), 0.4);
 }
 
 .scan-preview-area.has-image {
@@ -187,12 +187,12 @@
 .scan-action-btn--primary {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
 }
 
 .scan-action-btn--primary:hover {
   background: var(--accent-dark);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.4);
   transform: translateY(-1px);
 }
 
@@ -237,7 +237,7 @@
   font-family: var(--font-heading);
   font-size: var(--text-base);
   font-weight: 700;
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
   transition: all var(--duration-fast) var(--spring);
   min-height: 52px;
   border: none;
@@ -246,7 +246,7 @@
 
 .scan-submit-btn:hover {
   background: var(--accent-dark);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.4);
   transform: translateY(-1px);
 }
 
@@ -311,7 +311,7 @@
 .scan-history-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-  border-color: rgba(196, 101, 58, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 .scan-history-card img {

@@ -38,7 +38,7 @@ const SideNav = ({ caregiverMode = false }) => {
         </Link>
 
         <div className="sidenav-menu">
-          {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
+          {(caregiverMode ? NAV_ITEMS.filter(item => item.id !== 'scan') : NAV_ITEMS).map(({ id, label, icon: Icon, path }) => {
             const active = isActive(path === '/dashboard' ? homePath : path);
 
             return (

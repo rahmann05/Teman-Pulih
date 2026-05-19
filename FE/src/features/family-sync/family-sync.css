@@ -124,7 +124,7 @@
   width: 44px;
   height: 44px;
   border-radius: 14px;
-  background: rgba(196, 101, 58, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,14 +199,14 @@
   gap: var(--space-2);
   min-height: 48px;
   transition: all var(--duration-fast) var(--spring);
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
   border: none;
   cursor: pointer;
 }
 
 .family-invite-btn:hover {
   background: var(--accent-dark);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.4);
   transform: translateY(-1px);
 }
 
@@ -273,7 +273,7 @@
   height: 24px;
   padding: 0 var(--space-2);
   border-radius: var(--radius-full);
-  background: rgba(196, 101, 58, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   color: var(--accent);
   font-size: 11px;
   font-weight: 800;
@@ -374,13 +374,13 @@
 .family-approve-btn {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.25);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.25);
 }
 
 .family-approve-btn:hover {
   background: var(--accent-dark);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.35);
 }
 
 .family-approve-btn:active {
@@ -828,7 +828,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--radius-full);
-  background: rgba(196, 101, 58, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   color: var(--accent);
   display: flex;
   align-items: center;
@@ -882,7 +882,7 @@
 
 .verification-otp-input.has-value {
   border-color: var(--accent);
-  background: rgba(196, 101, 58, 0.02);
+  background: rgba(var(--accent-rgb), 0.02);
 }
 
 .verification-modal-error {
@@ -915,13 +915,13 @@
   justify-content: center;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
   transition: all var(--duration-fast) var(--spring);
 }
 
 .verification-submit-btn:hover:not(:disabled) {
   background: var(--accent-dark);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.4);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.4);
   transform: translateY(-1px);
 }
 

@@ -65,7 +65,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.35);
   flex-shrink: 0;
 }
 
@@ -101,7 +101,7 @@
 .topnav-item.active {
   color: var(--accent);
   background: var(--accent-light);
-  border-color: rgba(196, 101, 58, 0.1);
+  border-color: rgba(var(--accent-rgb), 0.1);
 }
 
 .topnav-actions {
@@ -175,7 +175,7 @@
   justify-content: center;
   font-weight: 800;
   font-size: 14px;
-  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.25);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.25);
   transition: transform 0.2s;
 }
 

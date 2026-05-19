@@ -94,7 +94,7 @@
   font-size: 11px;
   font-weight: 800;
   color: var(--accent);
-  background: rgba(196, 101, 58, 0.1);
+  background: rgba(var(--accent-rgb), 0.1);
   padding: 6px 14px;
   border-radius: 999px;
   text-transform: uppercase;
@@ -106,7 +106,7 @@
   height: 8px;
   background: var(--sage);
   border-radius: 50%;
-  box-shadow: 0 0 10px rgba(138, 154, 91, 0.4);
+  box-shadow: 0 0 10px rgba(var(--sage-rgb), 0.4);
 }
 
 .hero-main-typography {
@@ -181,7 +181,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--radius-full);
-  background: var(--sage);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -190,7 +190,7 @@
   color: #fff;
   font-family: var(--font-heading);
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(138, 154, 91, 0.3);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.3);
 }
 
 .greeting-text {
@@ -250,14 +250,14 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, transparent, rgba(196, 101, 58, 0.05));
+  background: linear-gradient(135deg, transparent, rgba(var(--accent-rgb), 0.05));
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
 .action-tile:hover {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-  border-color: rgba(196, 101, 58, 0.15);
+  border-color: rgba(var(--accent-rgb), 0.15);
 }
 
 .action-tile:hover::before {
@@ -498,11 +498,11 @@
     border-radius: 99px;
   }
   .timeline-list::-webkit-scrollbar-thumb {
-    background: rgba(196, 101, 58, 0.15);
+    background: rgba(var(--accent-rgb), 0.15);
     border-radius: 99px;
   }
   .timeline-list::-webkit-scrollbar-thumb:hover {
-    background: rgba(196, 101, 58, 0.35);
+    background: rgba(var(--accent-rgb), 0.35);
   }
 }
 
@@ -563,6 +563,32 @@
   }
 }
 
+/* ── Empty States ────────────────────────────────────────── */
+.empty-state-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+  color: var(--text-secondary);
+  width: 100%;
+  height: 100%;
+}
+
+.empty-state-icon {
+  color: var(--accent);
+  opacity: 0.75;
+  margin-bottom: var(--space-3);
+}
+
+.empty-state-text {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
 
 /* ── Skeleton ────────────────────────────────────────────── */
 .dashboard-skeleton {
@@ -618,7 +644,7 @@
 
 .weekly-calendar-toggle:hover {
   transform: translateY(-1px);
-  border-color: rgba(196, 101, 58, 0.18);
+  border-color: rgba(var(--accent-rgb), 0.18);
   box-shadow: var(--shadow-card);
 }
 
@@ -627,7 +653,7 @@
   padding: var(--space-4);
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, rgba(255, 245, 241, 0.92) 0%, rgba(255, 255, 255, 0.96) 100%);
-  border: 1px solid rgba(196, 101, 58, 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -699,7 +725,7 @@
 .calendar-column.today {
   background: #FFF5F1;
   border-color: var(--accent-light);
-  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.08);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.08);
 }
 
 .calendar-day-header {

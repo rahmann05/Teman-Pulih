@@ -86,12 +86,12 @@
   letter-spacing: 0.01em;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(196, 101, 58, 0.2);
+  box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.2);
 }
 .med-add-btn:hover {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.3);
 }
 .med-add-btn:active {
   transform: scale(0.97);
@@ -210,7 +210,7 @@
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.2);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
 }
 .med-chip:hover:not(.active) {
   border-color: var(--accent);
@@ -255,7 +255,7 @@
 }
 .med-card:hover {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-  border-color: rgba(196, 101, 58, 0.15);
+  border-color: rgba(var(--accent-rgb), 0.15);
   transform: translateY(-2px);
 }
 .med-card.active-today:hover {
@@ -557,7 +557,7 @@
   flex-direction: column;
   gap: 4px;
   padding-bottom: var(--space-3);
-  border-bottom: 1px dashed rgba(196, 101, 58, 0.15);
+  border-bottom: 1px dashed rgba(var(--accent-rgb), 0.15);
 }
 
 .med-detail-field:last-child {
@@ -921,7 +921,7 @@
   background: var(--accent);
   color: #fff;
   border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.2);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.2);
   transform: translateY(-1px);
 }
  
@@ -1006,7 +1006,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.45);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.45);
   z-index: 90;
   border: none;
   cursor: pointer;
@@ -1035,8 +1035,8 @@
 .med-empty-icon {
   width: 80px; height: 80px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--accent-light), rgba(196, 101, 58, 0.15));
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.15);
+  background: linear-gradient(135deg, var(--accent-light), rgba(var(--accent-rgb), 0.15));
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.15);
   display: flex; align-items: center; justify-content: center;
   color: var(--accent);
 }
@@ -1227,7 +1227,7 @@
   .med-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
-    border-color: rgba(196, 101, 58, 0.15);
+    border-color: rgba(var(--accent-rgb), 0.15);
     /* Reset any old expand-left hover tricks */
     padding-left: var(--space-6);
     padding-right: var(--space-6);
@@ -1395,7 +1395,7 @@
 .med-search-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid rgba(196, 101, 58, 0.1);
+  border: 2px solid rgba(var(--accent-rgb), 0.1);
   border-top-color: var(--accent);
   border-radius: 50%;
   animation: medSpinner 0.8s linear infinite;
@@ -1413,10 +1413,10 @@
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(196, 101, 58, 0.15);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
   border-radius: 20px;
   margin-top: 6px;
-  box-shadow: 0 12px 36px rgba(196, 101, 58, 0.1);
+  box-shadow: 0 12px 36px rgba(var(--accent-rgb), 0.1);
   z-index: 10;
   max-height: 280px;
   overflow-y: auto;
@@ -1441,7 +1441,7 @@
   align-items: center;
   gap: 4px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(196, 101, 58, 0.08);
+  border-bottom: 1px solid rgba(var(--accent-rgb), 0.08);
 }
 .med-sparkles-icon { color: var(--accent); }
 .med-info-icon { color: #2563eb; }
@@ -1522,7 +1522,7 @@
     max-width: 1240px !important;
     border-radius: 32px !important;
     max-height: 90vh !important;
-    box-shadow: 0 30px 80px rgba(196, 101, 58, 0.12) !important;
+    box-shadow: 0 30px 80px rgba(var(--accent-rgb), 0.12) !important;
     margin: auto;
   }
   
@@ -1547,7 +1547,7 @@
     background: transparent;
   }
   .med-modal-left-pane::-webkit-scrollbar-thumb {
-    background: rgba(196, 101, 58, 0.12);
+    background: rgba(var(--accent-rgb), 0.12);
     border-radius: 3px;
   }
   
@@ -1571,7 +1571,7 @@
     font-size: 15px !important;
     border-radius: 16px !important;
     padding: 0 20px !important;
-    border-color: rgba(196, 101, 58, 0.15) !important;
+    border-color: rgba(var(--accent-rgb), 0.15) !important;
   }
   
   .med-form-textarea {
@@ -1584,7 +1584,7 @@
   .med-form-textarea:focus,
   .med-form-select:focus {
     border-color: var(--accent) !important;
-    box-shadow: 0 0 0 4px rgba(196, 101, 58, 0.08), 0 4px 12px rgba(196, 101, 58, 0.05) !important;
+    box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.08), 0 4px 12px rgba(var(--accent-rgb), 0.05) !important;
   }
 
   .med-freq-btn {
@@ -1620,12 +1620,12 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 248, 245, 0.7) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(196, 101, 58, 0.15);
+  border: 1px solid rgba(var(--accent-rgb), 0.15);
   border-radius: 24px;
   padding: 24px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 16px 40px rgba(196, 101, 58, 0.04);
+  box-shadow: 0 16px 40px rgba(var(--accent-rgb), 0.04);
   animation: medCardSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -1648,7 +1648,7 @@
   background: transparent;
 }
 .med-large-info-scrollable::-webkit-scrollbar-thumb {
-  background: rgba(196, 101, 58, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
   border-radius: 3px;
 }
 
@@ -1657,7 +1657,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 14px;
-  border-bottom: 1.5px solid rgba(196, 101, 58, 0.08);
+  border-bottom: 1.5px solid rgba(var(--accent-rgb), 0.08);
 }
 
 .med-info-title-group {
@@ -1670,7 +1670,7 @@
   color: var(--accent);
   display: flex;
   align-items: center;
-  filter: drop-shadow(0 2px 8px rgba(196, 101, 58, 0.25));
+  filter: drop-shadow(0 2px 8px rgba(var(--accent-rgb), 0.25));
 }
 
 .med-info-card-title {
@@ -1691,7 +1691,7 @@
   background: var(--accent);
   padding: 4px 12px;
   border-radius: var(--radius-full);
-  box-shadow: 0 4px 10px rgba(196, 101, 58, 0.15);
+  box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.15);
 }
 
 .med-info-card-body {
@@ -1714,7 +1714,7 @@
 
 .med-info-cell {
   background: rgba(255, 255, 255, 0.65);
-  border: 1px solid rgba(196, 101, 58, 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.08);
   border-radius: 16px;
   padding: 12px 14px;
   display: flex;
@@ -1724,7 +1724,7 @@
 }
 .med-info-cell:hover {
   background: rgba(255, 255, 255, 0.85);
-  border-color: rgba(196, 101, 58, 0.15);
+  border-color: rgba(var(--accent-rgb), 0.15);
   transform: translateY(-1px);
 }
 .med-info-cell.danger {
@@ -1760,7 +1760,7 @@
 .med-info-card-actions {
   display: flex;
   gap: 12px;
-  border-top: 1px solid rgba(196, 101, 58, 0.08);
+  border-top: 1px solid rgba(var(--accent-rgb), 0.08);
   padding-top: 16px;
 }
 
@@ -1784,13 +1784,13 @@
   background: var(--accent);
   color: #fff;
   border: none;
-  box-shadow: 0 4px 14px rgba(196, 101, 58, 0.15);
+  box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.15);
 }
 
 .med-info-autofill-btn:hover {
   background: var(--accent-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(196, 101, 58, 0.25);
+  box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.25);
 }
 
 .med-info-reset-btn {
@@ -1815,7 +1815,7 @@
 /* Gorgeous Visual Placeholder for right pane */
 .med-large-info-placeholder {
   height: 100%;
-  border: 2px dashed rgba(196, 101, 58, 0.15);
+  border: 2px dashed rgba(var(--accent-rgb), 0.15);
   background: rgba(255, 255, 255, 0.3);
   border-radius: 24px;
   padding: 32px;
@@ -1831,7 +1831,7 @@
 
 .med-placeholder-icon-wrapper {
   background: linear-gradient(135deg, rgba(255, 248, 245, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%);
-  border: 1px solid rgba(196, 101, 58, 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
   width: 72px;
   height: 72px;
   border-radius: 20px;
@@ -1839,7 +1839,7 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 20px;
-  box-shadow: 0 10px 24px rgba(196, 101, 58, 0.06);
+  box-shadow: 0 10px 24px rgba(var(--accent-rgb), 0.06);
   color: var(--accent);
 }
 
@@ -1879,7 +1879,7 @@
 
 .med-placeholder-bar {
   height: 6px;
-  background: rgba(196, 101, 58, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   border-radius: 3px;
 }
 .med-placeholder-bar.short { width: 45%; align-self: center; }
@@ -1947,21 +1947,21 @@
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 248, 245, 0.75) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(196, 101, 58, 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
   border-radius: 24px;
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 10px;
   transition: all 0.4s var(--ease-out-expo);
-  box-shadow: 0 10px 30px rgba(196, 101, 58, 0.02);
+  box-shadow: 0 10px 30px rgba(var(--accent-rgb), 0.02);
 }
 
 .med-bento-card:hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 245, 0.85) 100%);
-  border-color: rgba(196, 101, 58, 0.22);
+  border-color: rgba(var(--accent-rgb), 0.22);
   transform: translateY(-2px);
-  box-shadow: 0 16px 40px rgba(196, 101, 58, 0.08);
+  box-shadow: 0 16px 40px rgba(var(--accent-rgb), 0.08);
 }
 
 .med-bento-card.danger {
@@ -2042,7 +2042,7 @@
 .med-info-cell.info-border,
 .med-info-cell.duration-border,
 .med-info-cell.price-border {
-  border: 1px solid rgba(196, 101, 58, 0.08) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.08) !important;
   background: rgba(255, 255, 255, 0.65) !important;
 }
 
@@ -2051,7 +2051,7 @@
 .med-info-cell.duration-border:hover,
 .med-info-cell.price-border:hover {
   background: rgba(255, 255, 255, 0.85) !important;
-  border-color: rgba(196, 101, 58, 0.15) !important;
+  border-color: rgba(var(--accent-rgb), 0.15) !important;
 }
 
 /* Accessible Detailed Bento Cards */
@@ -2059,7 +2059,7 @@
 .med-bento-card.info-card,
 .med-bento-card.duration-card,
 .med-bento-card.price-card {
-  border: 1px solid rgba(196, 101, 58, 0.12) !important;
+  border: 1px solid rgba(var(--accent-rgb), 0.12) !important;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 248, 245, 0.75) 100%) !important;
 }
 
@@ -2068,7 +2068,7 @@
 .med-bento-card.duration-card:hover,
 .med-bento-card.price-card:hover {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 245, 0.85) 100%) !important;
-  border-color: rgba(196, 101, 58, 0.22) !important;
+  border-color: rgba(var(--accent-rgb), 0.22) !important;
 }
 
 /* Beautiful Muted Typography */
@@ -2142,8 +2142,8 @@
   gap: 8px;
 }
 .med-dosage-chip-btn {
-  background: rgba(196, 101, 58, 0.03);
-  border: 1.5px dashed rgba(196, 101, 58, 0.2);
+  background: rgba(var(--accent-rgb), 0.03);
+  border: 1.5px dashed rgba(var(--accent-rgb), 0.2);
   color: var(--text);
   padding: 8px 16px;
   border-radius: 20px;
@@ -2153,7 +2153,7 @@
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .med-dosage-chip-btn:hover {
-  background: rgba(196, 101, 58, 0.08);
+  background: rgba(var(--accent-rgb), 0.08);
   border-color: var(--accent);
   transform: translateY(-1.5px);
 }
@@ -2161,7 +2161,7 @@
   background: var(--accent);
   border: 1.5px solid var(--accent);
   color: #ffffff;
-  box-shadow: 0 6px 16px rgba(196, 101, 58, 0.18);
+  box-shadow: 0 6px 16px rgba(var(--accent-rgb), 0.18);
 }
 
 

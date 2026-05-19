@@ -119,7 +119,7 @@
 
 .chat-header-status.online::before {
   background: var(--sage);
-  box-shadow: 0 0 0 2px rgba(91, 123, 106, 0.2), 0 0 8px rgba(91, 123, 106, 0.4);
+  box-shadow: 0 0 0 2px rgba(var(--sage-rgb), 0.2), 0 0 8px rgba(var(--sage-rgb), 0.4);
 }
 
 /* ── Message Area ────────────────────────────────────────────── */
@@ -171,7 +171,7 @@
   background: var(--accent);
   color: #fff;
   border-radius: 20px 20px 5px 20px;
-  box-shadow: 0 4px 14px rgba(196, 101, 58, 0.2);
+  box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.2);
 }
 
 .direct-message-time {
@@ -228,7 +228,7 @@
 .direct-chat-input-area input:focus {
   outline: none;
   background: #fff;
-  border-color: rgba(196, 101, 58, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
@@ -243,7 +243,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(196, 101, 58, 0.2);
+  box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.2);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
@@ -251,7 +251,7 @@
 .direct-chat-input-area .send-btn:hover:not(:disabled) {
   background: var(--accent-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(196, 101, 58, 0.3);
+  box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.3);
 }
 
 .direct-chat-input-area .send-btn:active {

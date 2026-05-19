@@ -140,7 +140,7 @@
   font-weight: 900;
   font-size: var(--text-3xl);
   color: var(--text-inverse);
-  box-shadow: 0 8px 30px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 8px 30px rgba(var(--accent-rgb), 0.35);
   flex-shrink: 0;
 }
 
@@ -172,7 +172,7 @@
 }
 
 .profile-role-badge--patient {
-  background: rgba(196, 101, 58, 0.10);
+  background: rgba(var(--accent-rgb), 0.10);
   color: var(--accent);
 }
 
@@ -256,7 +256,7 @@
 .profile-field-input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(196, 101, 58, 0.12);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
 }
 
 .profile-field-textarea {
@@ -281,7 +281,7 @@
 .profile-field-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(196, 101, 58, 0.12);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
 }
 
 /* ── Edit / Save Button ──────────────────────────────────── */
@@ -317,12 +317,12 @@
 .profile-edit-btn--save {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.35);
 }
 
 .profile-edit-btn--save:hover {
   filter: brightness(1.08);
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.45);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.45);
 }
 
 .profile-edit-btn--save:active {
@@ -348,7 +348,7 @@
 }
 
 .profile-family-card:hover {
-  border-color: rgba(196, 101, 58, 0.3);
+  border-color: rgba(var(--accent-rgb), 0.3);
   background: #FFF8F5;
 }
 
@@ -491,7 +491,7 @@
 
 .profile-emr-btn {
   align-self: flex-start;
-  background: rgba(196, 101, 58, 0.10);
+  background: rgba(var(--accent-rgb), 0.10);
   color: var(--accent);
   border: none;
   padding: var(--space-3) var(--space-6);
@@ -506,7 +506,7 @@
 .profile-emr-btn:hover {
   background: var(--accent);
   color: var(--text-inverse);
-  box-shadow: 0 4px 16px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.35);
 }
 
 /* ── Logout Button ───────────────────────────────────────── */
@@ -680,7 +680,7 @@
     width: 128px;
     height: 128px;
     font-size: var(--text-4xl);
-    box-shadow: 0 12px 40px rgba(196, 101, 58, 0.30);
+    box-shadow: 0 12px 40px rgba(var(--accent-rgb), 0.30);
   }
 
   .profile-name {

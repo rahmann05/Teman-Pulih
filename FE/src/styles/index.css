@@ -22,11 +22,16 @@
   --accent-light:  #F4DDD3;
   --accent-dark:   #9E4E2A;
   --accent-hover:  #B35830;
+  --accent-rgb:    196, 101, 58;
+  --accent-darkest:#6A3018;
+  --accent-medium: #D78058;
+  --accent-tint:   #FDF7F5;
 
   /* ── Secondary — Deep Sage ── */
   --sage:          #5B7B6A;
   --sage-light:    #E4EDE8;
   --sage-dark:     #3D5C4D;
+  --sage-rgb:      91, 123, 106;
 
   /* ── Tertiary — Dusty Copper ── */
   --copper:        #B08968;
@@ -172,7 +177,7 @@ ul, ol { list-style: none; }
   font-size: 15px; font-weight: 700;
   color: #fff; background: var(--accent);
   padding: 14px 32px; border-radius: var(--radius-full);
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.35);
   transition: all var(--duration-normal) var(--spring);
   min-height: 48px;
   border: none;
@@ -181,7 +186,7 @@ ul, ol { list-style: none; }
 .btn-primary:hover { 
   transform: translateY(-2px); 
   filter: brightness(1.08); 
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.45);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.45);
 }
 .btn-primary:active {
   transform: translateY(0) scale(0.98);
@@ -290,6 +295,23 @@ ul, ol { list-style: none; }
   .app-main {
     padding: clamp(16px, 3vw, 24px) clamp(20px, 4vw, 32px);
   }
+}
+
+/* ── Caregiver Mode (Inverted Theme: Sage primary, Terracotta secondary) ── */
+body.caregiver-theme {
+  --accent-darkest: #1B2E24;  /* Deep Forest Sage */
+  --accent-dark:    #2F483A;  /* Deep Laurel Sage */
+  --accent:         #4B6E5A;  /* Balanced Sage */
+  --accent-medium:  #769C85;  /* Soft Moss */
+  --accent-light:   #B7D2C1;  /* Laurel Frost */
+  --accent-hover:   #3D5C4D;
+  --accent-tint:    #E5EFEA;  /* Mist Meadow (Lightest) */
+  --accent-rgb:     75, 110, 90;
+
+  --sage:          #C4653A;
+  --sage-light:    #F4DDD3;
+  --sage-dark:     #9E4E2A;
+  --sage-rgb:      196, 101, 58;
 }
 
 

@@ -21,7 +21,7 @@ const BottomNav = ({ caregiverMode = false }) => {
 
   return (
     <nav className="bottom-nav" aria-label="Navigasi utama">
-      {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
+      {(caregiverMode ? NAV_ITEMS.filter(item => item.id !== 'scan') : NAV_ITEMS).map(({ id, label, icon: Icon, path }) => {
         const active = isActive(path === '/dashboard' ? homePath : path);
         const isScan = id === 'scan';
 
@@ -34,7 +34,14 @@ const BottomNav = ({ caregiverMode = false }) => {
             aria-current={active ? 'page' : undefined}
           >
             {(id === 'scan' || id === 'chat') ? (
-              <span className={`highlight-fab ${id}`} aria-hidden="true">
+              <span 
+                className={`highlight-fab ${id}`} 
+                aria-hidden="true"
+                style={{
+                  background: (id === 'chat' && caregiverMode) ? 'var(--accent)' : undefined,
+                  boxShadow: (id === 'chat' && caregiverMode) ? '0 4px 12px rgba(var(--accent-rgb), 0.35)' : undefined
+                }}
+              >
                 <Icon size={22} />
               </span>
             ) : (

@@ -43,7 +43,7 @@ const TopNav = ({ caregiverMode = false }) => {
         </div>
 
         <nav className="topnav-menu">
-          {NAV_ITEMS.map(({ id, label, icon: Icon, path }) => {
+          {(caregiverMode ? NAV_ITEMS.filter(item => item.id !== 'scan') : NAV_ITEMS).map(({ id, label, icon: Icon, path }) => {
             const active = isActive(path === '/dashboard' ? homePath : path);
             return (
               <Link

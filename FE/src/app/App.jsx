@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from '@/shared/components/PageTransition';
@@ -52,6 +52,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.role === 'caregiver') {
+      document.body.classList.add('caregiver-theme');
+    } else {
+      document.body.classList.remove('caregiver-theme');
+    }
+  }, [user?.role]);
 
   return (
     <AnimatePresence mode="wait">

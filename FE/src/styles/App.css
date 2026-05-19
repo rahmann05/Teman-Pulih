@@ -21,13 +21,13 @@
   border-radius: var(--radius-full);
   border: 1.5px solid transparent;
   transition: all 0.25s var(--spring);
-  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb), 0.35);
   line-height: 1;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(196, 101, 58, 0.4);
+  box-shadow: 0 8px 28px rgba(var(--accent-rgb), 0.4);
 }
 
 .btn-primary:active {
@@ -168,12 +168,17 @@
 
 .highlight-fab.scan {
   background: var(--accent);
-  box-shadow: 0 4px 12px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.35);
 }
 
 .highlight-fab.chat {
   background: var(--sage);
-  box-shadow: 0 4px 12px rgba(91, 123, 106, 0.35);
+  box-shadow: 0 4px 12px rgba(var(--sage-rgb), 0.35);
+}
+
+body.caregiver-theme .highlight-fab.chat {
+  background: var(--accent) !important;
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.35) !important;
 }
 
 .bottom-nav-highlight:hover .highlight-fab {
@@ -181,11 +186,15 @@
 }
 
 .bottom-nav-highlight.scan:hover .highlight-fab {
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.45);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.45);
 }
 
 .bottom-nav-highlight.chat:hover .highlight-fab {
-  box-shadow: 0 8px 24px rgba(91, 123, 106, 0.45);
+  box-shadow: 0 8px 24px rgba(var(--sage-rgb), 0.45);
+}
+
+body.caregiver-theme .bottom-nav-highlight.chat:hover .highlight-fab {
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.45) !important;
 }
 
 .bottom-nav-highlight:active .highlight-fab {

@@ -275,7 +275,7 @@
 .form-group input:focus {
   background: #FFFFFF;
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(196, 101, 58, 0.1);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1);
 }
 
 .error-msg {
@@ -299,7 +299,7 @@
   background: var(--accent);
   color: white;
   border: none;
-  box-shadow: 0 8px 24px rgba(196, 101, 58, 0.25);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.25);
   transition: all var(--duration-fast);
   cursor: pointer;
 }
@@ -307,7 +307,7 @@
 .auth-btn-primary:hover {
   background: var(--accent-hover, #A94D26);
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(196, 101, 58, 0.35);
+  box-shadow: 0 12px 32px rgba(var(--accent-rgb), 0.35);
 }
 
 .auth-btn-primary:active {
@@ -471,7 +471,7 @@
   }
 
   .auth-3d-img {
-    filter: drop-shadow(0 40px 100px rgba(196, 101, 58, 0.15));
+    filter: drop-shadow(0 40px 100px rgba(var(--accent-rgb), 0.15));
   }
 
   @keyframes floatDesktop {

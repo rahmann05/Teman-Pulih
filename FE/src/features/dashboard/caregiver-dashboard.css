@@ -34,7 +34,7 @@
   width: 56px;
   height: 56px;
   border-radius: var(--radius-full);
-  background: var(--sage);
+  background: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,7 +43,7 @@
   color: #fff;
   font-family: var(--font-heading);
   flex-shrink: 0;
-  box-shadow: 0 8px 24px rgba(138, 154, 91, 0.3);
+  box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.35);
 }
 
 .cg-greeting-text {
@@ -55,7 +55,7 @@
 .cg-greeting-sub {
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--accent-medium);
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -63,7 +63,7 @@
 .cg-greeting-name {
   font-size: 28px;
   font-weight: 900;
-  color: var(--text);
+  color: var(--accent-darkest);
   font-family: var(--font-heading);
   line-height: 1.1;
   letter-spacing: -0.02em;
@@ -71,7 +71,7 @@
 
 /* ── Triage Hero Card (Rich Bento) ────────────────────────── */
 .triage-card {
-  margin: 0 var(--space-5) var(--space-6);
+  margin-bottom: var(--space-6);
   border-radius: 32px;
   overflow: hidden;
   position: relative;
@@ -106,11 +106,11 @@
 }
 
 .triage-card.safe .triage-card-overlay {
-  background: linear-gradient(to bottom, rgba(61,92,77,0.2) 0%, rgba(30,50,40,0.85) 100%);
+  background: linear-gradient(135deg, rgba(118, 156, 133, 0.3) 0%, rgba(27, 46, 36, 0.92) 100%);
 }
 
 .triage-card.alert .triage-card-overlay {
-  background: linear-gradient(to bottom, rgba(158,78,42,0.2) 0%, rgba(80,30,10,0.9) 100%);
+  background: linear-gradient(135deg, rgba(212, 131, 94, 0.35) 0%, rgba(158, 78, 42, 0.95) 100%);
 }
 
 .triage-card-body {
@@ -172,7 +172,7 @@
   font-size: clamp(24px, 4vw, 32px);
   font-weight: 800;
   font-family: var(--font-heading);
-  color: var(--text);
+  color: var(--accent-darkest);
   letter-spacing: -0.03em;
   padding: 0 var(--space-5);
   margin-bottom: var(--space-4);
@@ -183,7 +183,12 @@
 }
 
 /* ── Roster Section ───────────────────────────────────────── */
-.roster-section {
+.roster-section.bento-card {
+  padding: var(--space-6);
+  min-height: 248px; /* aligns with desktop grid */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   margin-bottom: var(--space-6);
 }
 
@@ -191,26 +196,27 @@
   width: 44px;
   height: 44px;
   border-radius: var(--radius-full);
-  border: 1px dashed rgba(0,0,0,0.15);
+  border: 1.5px dashed var(--accent-light);
   background: none;
-  color: var(--text-secondary);
+  color: var(--accent-medium);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: border-color 0.2s, color 0.2s, background-color 0.2s;
 }
 
 .add-patient-btn:hover {
-  border-color: var(--text);
-  color: var(--text);
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-tint);
 }
 
 .roster-carousel {
   display: flex;
   overflow-x: auto;
   gap: var(--space-4);
-  padding: 0 var(--space-5) var(--space-4);
+  padding: var(--space-2) 0;
   scrollbar-width: none;
 }
 
@@ -218,8 +224,8 @@
 
 .patient-card {
   min-width: 140px;
-  background: #FFFFFF;
-  border: 1px solid rgba(0,0,0,0.02);
+  background: var(--accent-tint);
+  border: 1px solid var(--accent-light);
   border-radius: 24px;
   padding: var(--space-5) var(--space-4);
   display: flex;
@@ -227,10 +233,10 @@
   align-items: center;
   gap: var(--space-3);
   flex-shrink: 0;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  box-shadow: 0 12px 30px rgba(var(--accent-rgb), 0.05);
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .patient-card::after {
@@ -240,12 +246,18 @@
   height: 6px;
 }
 
-.patient-card.status-safe::after  { background: var(--sage); }
-.patient-card.status-alert::after { background: var(--accent); }
+/* Safe Status (Sage / Green) */
+.patient-card.status-safe::after  { background: var(--accent); }
+.patient-card.status-safe  .patient-avatar { background: var(--accent-light); color: var(--accent-darkest); }
+
+/* Alert Status (Terracotta / Orange) */
+.patient-card.status-alert::after { background: var(--sage); }
+.patient-card.status-alert .patient-avatar { background: var(--sage-light); color: var(--sage-dark); }
 
 .patient-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 20px 40px rgba(var(--accent-rgb), 0.12);
+  border-color: var(--accent-medium);
 }
 
 .patient-avatar {
@@ -260,13 +272,10 @@
   font-family: var(--font-heading);
 }
 
-.patient-card.status-safe  .patient-avatar { background: var(--sage-light); color: var(--sage-dark); }
-.patient-card.status-alert .patient-avatar { background: var(--accent-light); color: var(--accent-dark); }
-
 .patient-name {
   font-weight: 800;
   font-size: 16px;
-  color: var(--text);
+  color: var(--accent-darkest);
   text-align: center;
   letter-spacing: -0.01em;
 }
@@ -297,7 +306,7 @@
   top: 16px;
   bottom: 16px;
   width: 2px;
-  background: linear-gradient(to bottom, var(--sage), rgba(0,0,0,0.02));
+  background: linear-gradient(to bottom, var(--accent), rgba(var(--accent-rgb), 0.02));
   z-index: 0;
 }
 
@@ -313,7 +322,7 @@
   width: 44px;
   font-size: 13px;
   font-weight: 800;
-  color: var(--text-secondary);
+  color: var(--accent-dark);
   padding-top: 16px;
   text-align: right;
   flex-shrink: 0;
@@ -323,12 +332,12 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: var(--sage);
+  background: var(--accent);
   margin-top: 18px;
   flex-shrink: 0;
   position: relative;
   z-index: 2;
-  box-shadow: 0 0 0 6px #FFFFFF;
+  box-shadow: 0 0 0 6px #FAF8F5;
 }
 
 .upcoming-card {
@@ -336,20 +345,27 @@
   background: #FFFFFF;
   padding: var(--space-5);
   border-radius: 24px;
-  border: 1px solid rgba(0,0,0,0.03);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--accent-light);
+  box-shadow: 0 12px 30px rgba(var(--accent-rgb), 0.04);
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.upcoming-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(var(--accent-rgb), 0.08);
 }
 
 .upcoming-patient-tag {
   align-self: flex-start;
-  background: var(--sage-light);
-  color: var(--sage-dark);
+  background: var(--accent-tint);
+  color: var(--accent-dark);
+  border: 1px solid var(--accent-light);
   font-size: 11px;
   font-weight: 800;
-  padding: 6px 12px;
+  padding: 5px 12px;
   border-radius: 999px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -358,13 +374,13 @@
 .upcoming-med-name {
   font-weight: 800;
   font-size: 18px;
-  color: var(--text);
+  color: var(--accent-darkest);
   letter-spacing: -0.01em;
 }
 
 .upcoming-med-desc {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--accent-dark);
   line-height: 1.5;
 }
 
@@ -402,12 +418,6 @@
 }
 
 @media (min-width: 1024px) {
-  .cg-dashboard-grid {
-    grid-template-columns: 1.2fr 1.1fr; /* Split layout */
-    gap: 40px;
-    padding: 40px max(5vw, 40px);
-  }
-
   .dashboard-col-left {
     display: flex;
     flex-direction: column;
@@ -424,9 +434,15 @@
     font-size: 64px;
   }
 
+  .roster-section.bento-card {
+    min-height: 444px;
+    justify-content: flex-start;
+  }
+
   .roster-carousel {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: var(--space-4);
+    padding: 0;
   }
 }
