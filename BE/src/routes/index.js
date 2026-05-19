@@ -10,5 +10,6 @@ router.use('/relations', require('./relationRoutes'));
 router.use('/emr', require('./emrRoutes'));
 router.use('/family', require('./familyRoutes'));
 router.use('/chat', require('./chatRoutes'));
+router.use('/notifications', require('./notificationRoutes'));
 
 module.exports = router;

@@ -3,6 +3,7 @@ import NextMedicationHero from '@/features/dashboard/components/NextMedicationHe
 import QuickActionGrid from '@/features/dashboard/components/QuickActionGrid';
 import MedicationTimeline from '@/features/medications/components/MedicationTimeline';
 import WeeklyMedicationCalendar from '@/features/dashboard/components/WeeklyMedicationCalendar';
+import DashboardHeader from '@/features/dashboard/components/DashboardHeader';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import EMROnboardingModal from '@/shared/layouts/EMROnboardingModal';
 import { usePatientDashboard } from '@/features/dashboard/hooks/usePatientDashboard';
@@ -43,15 +44,7 @@ const PatientDashboard = () => {
       <div className="dashboard-container" data-testid="patient-dashboard">
         
         {/* Mobile/Tablet Greeting (Hidden on Desktop, handled by TopNav) */}
-        <div className="dashboard-header">
-          <div className="header-user-info">
-            <div className="avatar-circle">{dashboardData.initials}</div>
-            <div className="greeting-text">
-              <span className="greeting-sub">Selamat pagi,</span>
-              <span className="greeting-name">{dashboardData.patientName}</span>
-            </div>
-          </div>
-        </div>
+        <DashboardHeader userName={dashboardData.patientName} initials={dashboardData.initials} />
 
         {/* Dashboard Content Grid */}
         <div className="patient-dashboard-grid">

@@ -1,7 +1,9 @@
 /* src/components/layout/TopNav.jsx */
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LuHouse, LuScanLine, LuPill, LuMessageCircle, LuUser, LuHeartPulse, LuLogOut, LuArrowLeftRight, LuUsers, LuBell } from 'react-icons/lu';
 import { useAuth } from '@/shared/hooks/useAuth';
+import api from '@/shared/services/api';
 import '@/shared/layouts/topnav.css';
 
 const NAV_ITEMS = [
@@ -16,6 +18,30 @@ const TopNav = ({ caregiverMode = false }) => {
   const { pathname } = useLocation();
   const { user, logout, switchRole } = useAuth();
   const homePath = caregiverMode ? '/caregiver/dashboard' : '/dashboard';
+
+  const [hasUnread, setHasUnread] = useState(false);
+
+  useEffect(() => {
+    const checkUnread = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await api.get('/notifications');
+        if (res.data && res.data.data) {
+          const unread = res.data.data.some(n => !n.is_read);
+          setHasUnread(unread);
+        }
+      } catch (err) {
+        console.error('[TopNav Notifications Check Error]:', err.message);
+      }
+    };
+    
+    checkUnread();
+    
+    // Poll every 10 seconds to keep the bell badge extremely real-time
+    const interval = setInterval(checkUnread, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isActive = (path) => {
     if (path === '/dashboard') return pathname === '/dashboard' || pathname === '/caregiver/dashboard';
@@ -66,9 +92,21 @@ const TopNav = ({ caregiverMode = false }) => {
                 <span>Tukar Mode</span>
               </button>
             )}
-            <button className="topnav-action-btn" title="Notifikasi">
+            <Link to="/notifications" className="topnav-action-btn" title="Notifikasi" style={{ position: 'relative' }}>
               <LuBell size={18} />
-            </button>
+              {hasUnread && (
+                <span style={{
+                  position: 'absolute',
+                  top: '6px',
+                  right: '6px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: '#ef4444',
+                  boxShadow: '0 0 6px #ef4444'
+                }} />
+              )}
+            </Link>
           </div>
 
           <div className="topnav-divider" />

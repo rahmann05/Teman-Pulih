@@ -4,6 +4,7 @@ import TriageHeroCard from '@/features/dashboard/components/TriageHeroCard';
 import PatientRoster from '@/features/dashboard/components/PatientRoster';
 import UpcomingTimeline from '@/features/dashboard/components/UpcomingTimeline';
 import WeeklyMedicationCalendar from '@/features/dashboard/components/WeeklyMedicationCalendar';
+import CaregiverDashboardHeader from '@/features/dashboard/components/CaregiverDashboardHeader';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import { useCaregiverDashboard } from '@/features/dashboard/hooks/useCaregiverDashboard';
 import '@/features/dashboard/dashboard.css';
@@ -44,15 +45,7 @@ const CaregiverDashboard = () => {
       <div className="dashboard-container" data-testid="caregiver-dashboard">
         
         {/* Mobile/Tablet Greeting (Hidden on Desktop, handled by TopNav) */}
-        <div className="dashboard-header">
-          <div className="header-user-info">
-            <div className="avatar-circle">{dashboardData.initials}</div>
-            <div className="greeting-text">
-              <span className="greeting-sub">Caregiver</span>
-              <span className="greeting-name">{dashboardData.caregiverName}</span>
-            </div>
-          </div>
-        </div>
+        <CaregiverDashboardHeader userName={dashboardData.caregiverName} initials={dashboardData.initials} />
 
         {/* Dashboard Content Grid */}
         <div className="patient-dashboard-grid">

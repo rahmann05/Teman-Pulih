@@ -4,6 +4,7 @@ const path = require('path');
 const apiRouter = require('./routes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { initCleanupTasks } = require('./tasks/cleanup');
+const { initReminderTasks } = require('./tasks/medicationReminderTask');
 
 // Fix Chroma/Transformers cache permission error
 process.env.XENOVA_CACHE_DIR = path.join(process.cwd(), '.cache');
@@ -11,6 +12,7 @@ process.env.TRANSFORMERS_CACHE = path.join(process.cwd(), '.cache');
 
 // Initialize background tasks
 initCleanupTasks();
+initReminderTasks();
 
 const app = express();
 

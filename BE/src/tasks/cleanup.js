@@ -6,9 +6,9 @@ const { supabase: serviceSupabase } = require('../config/db');
  * Runs every 2 days at midnight.
  */
 const initCleanupTasks = () => {
-    // Schedule: '0 0 */2 * *' -> Midnight every 2 days
-    cron.schedule('0 0 */2 * *', async () => {
-        console.log('[CRON] Starting periodic cleanup of OCR data...');
+    // Schedule: '0 0 * * *' -> Midnight every day
+    cron.schedule('0 0 * * *', async () => {
+        console.log('[CRON] Starting periodic cleanup...');
         
         try {
             // 1. CLEAR BUCKET: List all files and delete them
@@ -39,6 +39,16 @@ const initCleanupTasks = () => {
 
             if (dbError) throw dbError;
             console.log('[CRON] Cleared ocr_history table in database.');
+
+            // 3. CLEAR DATABASE: Delete notifications older than 1 day (created_at < 24 hours ago)
+            const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+            const { error: notifError } = await serviceSupabase
+                .from('notifications')
+                .delete()
+                .lt('created_at', oneDayAgo);
+
+            if (notifError) throw notifError;
+            console.log('[CRON] Cleared notifications older than 1 day in database.');
             
             console.log('[CRON] Cleanup completed successfully.');
         } catch (err) {
@@ -46,7 +56,7 @@ const initCleanupTasks = () => {
         }
     });
 
-    console.log('[CRON] Cleanup task scheduled for every 2 days.');
+    console.log('[CRON] Cleanup task scheduled for every day at midnight.');
 };
 
 module.exports = { initCleanupTasks };

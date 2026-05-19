@@ -222,6 +222,68 @@ const markTaken = async (user, supabase, medicationId, data) => {
         .single();
     if (error) throw error;
 
+    // Send real-time notification to caregivers if medication is successfully taken
+    if (status === 'taken') {
+        try {
+            const patientName = user.name || 'Pasien';
+            const { data: relations } = await supabase
+                .from('family_relations')
+                .select('caregiver_id')
+                .eq('patient_id', medication.user_id)
+                .eq('status', 'accepted');
+
+            if (relations && relations.length > 0) {
+                const todayStr = new Date().toLocaleDateString('en-CA');
+                const notificationService = require('./notificationService');
+                
+                for (const rel of relations) {
+                    const messageText = `${patientName} telah meminum obat ${medication.name} (${medication.dosage || ''}) untuk jadwal pukul ${time_slot || 'sekarang'}.`;
+                    
+                    await supabase
+                        .from('notifications')
+                        .insert([{
+                            user_id: rel.caregiver_id,
+                            title: `${patientName} Sudah Minum Obat`,
+                            message: messageText,
+                            type: 'caregiver_taken',
+                            schedule_id: schedule_id || null,
+                            time_slot: time_slot || null,
+                            target_date: todayStr
+                        }]);
+
+                    // Send actual WhatsApp / Email
+                    try {
+                        const dbConfig = require('../config/db');
+                        const contactRes = await dbConfig.query(`
+                            SELECT u.name, u.email, p.phone 
+                            FROM users u 
+                            LEFT JOIN profiles p ON u.id = p.user_id 
+                            WHERE u.id = $1
+                        `, [rel.caregiver_id]);
+                        
+                        const caregiverContact = contactRes?.rows?.[0];
+                        if (caregiverContact) {
+                            if (caregiverContact.phone) {
+                                await notificationService.sendWhatsApp(caregiverContact.phone, messageText);
+                            } else if (caregiverContact.email) {
+                                await notificationService.sendEmail(
+                                    caregiverContact.email,
+                                    `${patientName} Sudah Minum Obat`,
+                                    `<h3>Kabar Kepatuhan Keluarga</h3><p>${messageText}</p>`,
+                                    messageText
+                                );
+                            }
+                        }
+                    } catch (contactErr) {
+                        console.error('[Notification Caregiver Contact Error]:', contactErr.message);
+                    }
+                }
+            }
+        } catch (notifErr) {
+            console.error('[Notification Hook Error]: Failed to notify caregivers:', notifErr.message);
+        }
+    }
+
     await cacheDel(`medications:${medication.user_id}`, `emr_profile:patient_${medication.user_id}`);
     return logData;
 };
