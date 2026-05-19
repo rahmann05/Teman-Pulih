@@ -1,4 +1,5 @@
 
+import { Link } from 'react-router-dom';
 import { LuBell } from 'react-icons/lu';
 
 const CaregiverDashboardHeader = ({ userName, initials }) => (
@@ -10,7 +11,9 @@ const CaregiverDashboardHeader = ({ userName, initials }) => (
         <span className="cg-greeting-name">{userName}</span>
       </div>
     </div>
-    <LuBell className="cg-bell-icon" data-testid="cg-bell-icon" />
+    <Link to="/notifications" style={{ color: 'inherit', display: 'flex', alignItems: 'center' }}>
+      <LuBell className="cg-bell-icon" data-testid="cg-bell-icon" />
+    </Link>
   </header>
 );
 

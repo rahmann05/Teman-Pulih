@@ -62,10 +62,17 @@ const PatientDashboard = () => {
               id={dashboardData.nextMedication?.id}
               medicationId={dashboardData.nextMedication?.medicationId}
               scheduleId={dashboardData.nextMedication?.scheduleId}
-              time={dashboardData.nextMedication ? `${dashboardData.nextMedication.time} WIB` : 'Belum ada'}
+              time={
+                dashboardData.nextMedication
+                  ? (dashboardData.nextMedication.isCompletedToday
+                      ? dashboardData.nextMedication.time
+                      : `${dashboardData.nextMedication.time} WIB`)
+                  : 'Belum ada'
+              }
               medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
               instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
               onMarkTaken={dashboardData.markAsTakenAction}
+              isCompletedToday={dashboardData.nextMedication?.isCompletedToday}
             />
           </div>
 
@@ -81,7 +88,7 @@ const PatientDashboard = () => {
 
           {/* Full Width Calendar Section (At the very end) */}
           <div className="dashboard-calendar-wrapper">
-            <WeeklyMedicationCalendar />
+            <WeeklyMedicationCalendar medications={dashboardData.medications} logs={dashboardData.logs} />
           </div>
 
         </div>

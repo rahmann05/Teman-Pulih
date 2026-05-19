@@ -17,6 +17,8 @@ export const useCaregiverDashboard = () => {
     triageMessage: 'Belum ada pasien yang terhubung.',
     roster: [],
     timeline: [],
+    medications: [],
+    logs: [],
   });
 
   useEffect(() => {
@@ -66,6 +68,8 @@ export const useCaregiverDashboard = () => {
               : 'Belum ada pasien yang terhubung.',
           roster,
           timeline,
+          medications,
+          logs,
         });
       } catch (error) {
         if (cancelled) return;
@@ -79,6 +83,8 @@ export const useCaregiverDashboard = () => {
           triageMessage: 'Belum ada pasien yang terhubung.',
           roster: [],
           timeline: [],
+          medications: [],
+          logs: [],
         });
       }
     };

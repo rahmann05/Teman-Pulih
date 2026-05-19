@@ -3,6 +3,7 @@ import React from 'react';
 import TriageHeroCard from '@/features/dashboard/components/TriageHeroCard';
 import PatientRoster from '@/features/dashboard/components/PatientRoster';
 import UpcomingTimeline from '@/features/dashboard/components/UpcomingTimeline';
+import WeeklyMedicationCalendar from '@/features/dashboard/components/WeeklyMedicationCalendar';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import { useCaregiverDashboard } from '@/features/dashboard/hooks/useCaregiverDashboard';
 import '@/features/dashboard/dashboard.css';
@@ -73,6 +74,16 @@ const CaregiverDashboard = () => {
           <div className="dashboard-col-right">
             <UpcomingTimeline schedule={dashboardData.timeline} />
           </div>
+
+          {/* Full Width Calendar Section (At the very end, if a patient is connected) */}
+          {dashboardData.roster && dashboardData.roster.length > 0 && (
+            <div className="dashboard-calendar-wrapper">
+              <WeeklyMedicationCalendar 
+                medications={dashboardData.medications} 
+                logs={dashboardData.logs} 
+              />
+            </div>
+          )}
 
         </div>
       </div>

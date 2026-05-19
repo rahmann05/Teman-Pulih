@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { buildWeeklyMedicationHistory } from '@/features/dashboard/utils/dashboardHelpers';
 
 // Fungsi bantuan untuk mendapatkan 7 hari terakhir
 const getLast7Days = () => {
@@ -17,59 +18,36 @@ const getLast7Days = () => {
   return days;
 };
 
-// Data Mock Sementara
-const MOCK_WEEKLY_DATA = {
-  // Key adalah string tanggal YYYY-MM-DD
-  // Contoh menggunakan 7 hari terakhir
-};
-
-const getMockData = (days) => {
-  const data = {};
-  days.forEach((day, index) => {
-    // Buat data dummy yang bervariasi berdasarkan hari
-    if (index === 6) { // Hari ini
-      data[day.fullDate] = [
-        { id: 1, name: 'Amoxicilin', status: 'PENDING' },
-        { id: 2, name: 'Paracetamol', status: 'ON_TIME' }
-      ];
-    } else if (index === 5) { // Kemarin
-      data[day.fullDate] = [
-        { id: 1, name: 'Amoxicilin', status: 'ON_TIME' },
-        { id: 2, name: 'Paracetamol', status: 'LATE' }
-      ];
-    } else if (index === 4) { // Lusa kemarin
-      data[day.fullDate] = [
-        { id: 1, name: 'Amoxicilin', status: 'ON_TIME' },
-        { id: 2, name: 'Paracetamol', status: 'MISSED' }
-      ];
-    } else { // Hari-hari sebelumnya
-      data[day.fullDate] = [
-        { id: 1, name: 'Amoxicilin', status: 'ON_TIME' },
-        { id: 2, name: 'Paracetamol', status: 'ON_TIME' }
-      ];
-    }
-  });
-  return data;
-};
-
-const WeeklyMedicationCalendar = () => {
+const WeeklyMedicationCalendar = ({ medications = [], logs = [] }) => {
   const days = useMemo(() => getLast7Days(), []);
-  const medicationHistory = useMemo(() => getMockData(days), [days]);
+  const medicationHistory = useMemo(() => {
+    return buildWeeklyMedicationHistory(medications, logs, days);
+  }, [medications, logs, days]);
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'ON_TIME': return 'var(--success)'; // Hijau
-      case 'LATE': return 'var(--warning)'; // Kuning
-      case 'MISSED': return 'var(--danger)'; // Merah
-      case 'PENDING': return 'var(--border)'; // Abu-abu
-      default: return 'var(--border)';
+      case 'ON_TIME': return '#2E7D32'; // Hijau Tepat Waktu
+      case 'LATE': return '#F57C00'; // Kuning Terlambat
+      case 'MISSED': return '#D32F2F'; // Merah Terlewat
+      case 'PENDING': return '#9E9E9E'; // Abu-abu Belum Waktunya
+      default: return '#9E9E9E';
+    }
+  };
+
+  const getStatusLabel = (status) => {
+    switch (status) {
+      case 'ON_TIME': return 'Tepat Waktu';
+      case 'LATE': return 'Terlambat';
+      case 'MISSED': return 'Terlewat';
+      case 'PENDING': return 'Belum Waktu';
+      default: return '';
     }
   };
 
   return (
     <div className="weekly-calendar-section is-expanded" data-testid="weekly-calendar">
       <div className="section-header weekly-calendar-header">
-        <h3 className="section-title">Riwayat 7 Hari Terakhir</h3>
+        <h3 className="section-title">Riwayat Kepatuhan Obat 7 Hari Terakhir</h3>
       </div>
 
       <div className="weekly-calendar-grid">
@@ -86,12 +64,15 @@ const WeeklyMedicationCalendar = () => {
               
               <div className="calendar-meds-list">
                 {meds.map((med) => (
-                  <div key={med.id} className="calendar-med-item" title={med.status}>
+                  <div key={med.id} className="calendar-med-item" title={`${med.name} (${med.time}) - ${getStatusLabel(med.status)}`}>
                     <span 
                       className="med-status-indicator" 
                       style={{ backgroundColor: getStatusColor(med.status) }}
                     />
                     <span className="med-name-truncate">{med.name}</span>
+                    <span style={{ fontSize: '9px', color: 'var(--text-secondary)', marginLeft: 'auto' }}>
+                      {med.time}
+                    </span>
                   </div>
                 ))}
                 {meds.length === 0 && (
@@ -102,6 +83,73 @@ const WeeklyMedicationCalendar = () => {
           );
         })}
       </div>
+
+      {/* Legenda Keterangan Warna Kalender */}
+      <div className="weekly-calendar-legend">
+        <div className="legend-item">
+          <span className="legend-dot" style={{ backgroundColor: '#2E7D32' }} />
+          <span className="legend-label">Tepat Waktu (&le; 1 jam)</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-dot" style={{ backgroundColor: '#F57C00' }} />
+          <span className="legend-label">Terlambat (&gt; 1 jam)</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-dot" style={{ backgroundColor: '#D32F2F' }} />
+          <span className="legend-label">Terlewat / Lewat Batas</span>
+        </div>
+        <div className="legend-item">
+          <span className="legend-dot" style={{ backgroundColor: '#9E9E9E' }} />
+          <span className="legend-label">Belum Waktu Minum</span>
+        </div>
+      </div>
+
+      <style>{`
+        .weekly-calendar-legend {
+          display: flex;
+          flex-wrap: wrap;
+          gap: var(--space-4);
+          justify-content: center;
+          margin-top: var(--space-6);
+          padding-top: var(--space-4);
+          border-top: 1px solid var(--border);
+        }
+        .legend-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          font-size: var(--font-xs);
+          color: var(--text-secondary);
+        }
+        .legend-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+        }
+        .legend-label {
+          font-weight: 500;
+        }
+        .med-status-indicator {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          display: inline-block;
+          flex-shrink: 0;
+        }
+        .calendar-med-item {
+          display: flex;
+          align-items: center;
+          gap: var(--space-2);
+          padding: var(--space-2);
+          border-radius: var(--radius-sm);
+          font-size: var(--font-xs);
+          color: var(--text-primary);
+        }
+        .calendar-med-item:hover {
+          background-color: var(--bg-hover);
+        }
+      `}</style>
     </div>
   );
 };

@@ -89,8 +89,7 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
       }
 
       timeSlots.forEach((time) => {
-        // Jika slot ini sudah diminum hari ini, jangan masukkan ke timeline dashboard utama
-        if (takenTodaySlots.has(time)) return;
+        const isTaken = takenTodaySlots.has(time);
 
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
@@ -100,18 +99,22 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
           medName: medication.name,
           instruction: formatInstruction(medication),
           progress: `${takenTodaySlots.size}/${totalCount} diminum`,
-          state: 'upcoming',
+          state: isTaken ? 'taken' : 'upcoming',
+          isTaken,
         });
       });
     });
   });
 
-  return items
-    .sort((left, right) => toMinutes(left.time) - toMinutes(right.time))
-    .map((item, index) => ({
-      ...item,
-      state: index === 0 ? 'next' : 'upcoming',
-    }));
+  const sortedItems = items.sort((left, right) => toMinutes(left.time) - toMinutes(right.time));
+  const firstUntakenIndex = sortedItems.findIndex((item) => !item.isTaken);
+
+  return sortedItems.map((item, index) => ({
+    ...item,
+    state: item.isTaken
+      ? 'taken'
+      : (index === firstUntakenIndex ? 'next' : 'upcoming'),
+  }));
 };
 
 /**
@@ -150,11 +153,13 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
           name: medication.name,
           desc: formatInstruction(medication),
           progress: `${takenTodaySlots.size}/${totalCount} diminum`,
+          isTaken: false,
         });
         return;
       }
 
       timeSlots.forEach((time) => {
+        const isTaken = takenTodaySlots.has(time);
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
           time,
@@ -162,6 +167,7 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
           name: medication.name,
           desc: formatInstruction(medication),
           progress: `${takenTodaySlots.size}/${totalCount} diminum`,
+          isTaken,
         });
       });
     });
@@ -189,4 +195,92 @@ export const buildRoster = (relations = []) => {
         adherence: statusLabel,
       };
     });
+};
+
+export const buildWeeklyMedicationHistory = (medications = [], logs = [], days = []) => {
+  const data = {};
+
+  const now = new Date();
+  const currentTodayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD local
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  days.forEach((day) => {
+    const dayStr = day.fullDate;
+    const medsForDay = [];
+
+    medications.forEach((medication) => {
+      const schedules = medication.medication_schedules || [];
+      schedules.forEach((schedule) => {
+        // Cek apakah hari ini berada dalam rentang start_date dan end_date jadwal jika terdefinisi
+        if (schedule.start_date && dayStr < schedule.start_date) return;
+        if (schedule.end_date && dayStr > schedule.end_date) return;
+
+        const timeSlots = parseTimeSlots(schedule.time_slots);
+
+        timeSlots.forEach((time) => {
+          // Cari log yang cocok untuk obat ini, jadwal ini, waktu ini, pada hari ini
+          const matchingLogs = logs.filter((log) => {
+            const logDate = log.taken_at ? new Date(log.taken_at).toLocaleDateString('en-CA') : null;
+            return (
+              log.medication_id === medication.id &&
+              log.schedule_id === schedule.id &&
+              log.time_slot === time &&
+              logDate === dayStr
+            );
+          });
+
+          const log = matchingLogs[0];
+          let status = 'PENDING'; // Default gray
+
+          if (log) {
+            if (log.status === 'taken') {
+              if (log.taken_at) {
+                // Bandingkan jam & menit diambil dengan jam & menit jadwal
+                const takenDate = new Date(log.taken_at);
+                const actualMinutes = takenDate.getHours() * 60 + takenDate.getMinutes();
+                const expectedMinutes = toMinutes(time);
+                
+                // Selisih menit (toleransi 1 jam / 60 menit)
+                const diff = Math.abs(actualMinutes - expectedMinutes);
+                status = diff <= 60 ? 'ON_TIME' : 'LATE';
+              } else {
+                status = 'ON_TIME';
+              }
+            } else {
+              status = 'MISSED'; // missed or skipped
+            }
+          } else {
+            // Jika tidak ada log, tentukan apakah jadwalnya sudah terlewat
+            if (dayStr < currentTodayStr) {
+              // Hari kemarin atau sebelumnya -> terlewat (merah)
+              status = 'MISSED';
+            } else if (dayStr === currentTodayStr) {
+              // Hari ini -> cek apakah sudah lewat jam terjadwal + 60 menit toleransi
+              const scheduledMinutes = toMinutes(time);
+              if (scheduledMinutes + 60 < currentMinutes) {
+                status = 'MISSED';
+              } else {
+                status = 'PENDING';
+              }
+            } else {
+              // Hari esok / masa depan -> pending (abu-abu)
+              status = 'PENDING';
+            }
+          }
+
+          medsForDay.push({
+            id: `${medication.id}-${schedule.id}-${dayStr}-${time}`,
+            name: medication.name,
+            time,
+            status,
+          });
+        });
+      });
+    });
+
+    // Urutkan obat berdasarkan waktu terjadwal di hari itu
+    data[dayStr] = medsForDay.sort((left, right) => toMinutes(left.time) - toMinutes(right.time));
+  });
+
+  return data;
 };

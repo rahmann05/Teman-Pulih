@@ -15,14 +15,20 @@ export const usePatientDashboard = () => {
     initials: 'TP',
     nextMedication: null,
     timeline: [],
+    medications: [],
+    logs: [],
   });
 
   // Optimistic State
   const [optimisticTimeline, addOptimisticLog] = useOptimistic(
     dashboardData.timeline,
     (state, compositeId) => {
-      // Remove the item from the timeline once taken
-      return state.filter((item) => item.id !== compositeId);
+      // Mark the item as taken instead of filtering it out
+      return state.map((item) =>
+        item.id === compositeId
+          ? { ...item, state: 'taken', isTaken: true }
+          : item
+      );
     }
   );
 
@@ -44,8 +50,10 @@ export const usePatientDashboard = () => {
         error: '',
         patientName: profile?.name || user?.name || 'Pasien',
         initials: getInitials(profile?.name || user?.name || 'Teman Pulih'),
-        nextMedication: timeline[0] || null,
+        nextMedication: timeline.find((item) => !item.isTaken) || null,
         timeline,
+        medications,
+        logs,
         is_emr_completed: profile?.is_emr_completed ?? true // Default true if undefined to prevent blocking
       });
     } catch (error) {
@@ -56,6 +64,8 @@ export const usePatientDashboard = () => {
         initials: getInitials(user?.name || 'Teman Pulih'),
         nextMedication: null,
         timeline: [],
+        medications: [],
+        logs: [],
         is_emr_completed: true // Prevent showing modal on error
       });
     }
@@ -87,7 +97,20 @@ export const usePatientDashboard = () => {
   };
 
   // Derive nextMedication from the optimistic timeline
-  const nextMedication = optimisticTimeline[0] || null;
+  const untakenMedication = optimisticTimeline.find((item) => !item.isTaken);
+
+  let nextMedication = null;
+  if (untakenMedication) {
+    nextMedication = untakenMedication;
+  } else if (optimisticTimeline.length > 0) {
+    // All medications have been taken today!
+    nextMedication = {
+      isCompletedToday: true,
+      time: 'Selesai!',
+      medName: 'Semua obat telah diminum!',
+      instruction: 'Tetap konsisten untuk pemulihan yang optimal.'
+    };
+  }
 
   return {
     ...dashboardData,

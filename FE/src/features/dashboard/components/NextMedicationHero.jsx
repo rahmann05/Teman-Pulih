@@ -10,7 +10,8 @@ const NextMedicationHero = ({
   id,
   medicationId,
   scheduleId,
-  onMarkTaken
+  onMarkTaken,
+  isCompletedToday
 }) => {
   const containerRef = useRef(null);
   
@@ -30,7 +31,12 @@ const NextMedicationHero = ({
             <LuPill />
             <span>OBAT BERIKUTNYA</span>
           </div>
-          {medName !== 'Tidak ada obat terjadwal' && <span className="hero-status-dot"></span>}
+          {medName !== 'Tidak ada obat terjadwal' && (
+            <span 
+              className="hero-status-dot" 
+              style={{ backgroundColor: isCompletedToday ? '#2E7D32' : 'var(--accent)' }}
+            />
+          )}
         </div>
         
         <div className="hero-main-typography">
