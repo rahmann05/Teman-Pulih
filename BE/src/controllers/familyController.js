@@ -21,4 +21,64 @@ const getFamilyMembers = async (req, res, next) => {
     }
 };
 
-module.exports = { inviteFamily, getFamilyMembers };
+const createComplaint = async (req, res, next) => {
+    try {
+        const supabase = getSupabaseClient(req);
+        const result = await familyService.createComplaint(req.user, supabase, req.body);
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getComplaints = async (req, res, next) => {
+    try {
+        const supabase = getSupabaseClient(req);
+        const result = await familyService.getComplaints(req.user, supabase, req.query.patientId);
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+const createCheckin = async (req, res, next) => {
+    try {
+        const supabase = getSupabaseClient(req);
+        const result = await familyService.createCheckin(req.user, supabase, req.body);
+        res.status(201).json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getCheckins = async (req, res, next) => {
+    try {
+        const supabase = getSupabaseClient(req);
+        const limit = req.query.limit ? parseInt(req.query.limit) : 7;
+        const result = await familyService.getCheckins(req.user, supabase, req.query.patientId, limit);
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+const getTodayCheckinStatus = async (req, res, next) => {
+    try {
+        const supabase = getSupabaseClient(req);
+        const result = await familyService.getTodayCheckinStatus(req.user, supabase);
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { 
+    inviteFamily, 
+    getFamilyMembers,
+    createComplaint,
+    getComplaints,
+    createCheckin,
+    getCheckins,
+    getTodayCheckinStatus
+};
+

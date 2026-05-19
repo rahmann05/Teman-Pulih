@@ -7,6 +7,7 @@ import WeeklyMedicationCalendar from '@/features/dashboard/components/WeeklyMedi
 import CaregiverDashboardHeader from '@/features/dashboard/components/CaregiverDashboardHeader';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import { useCaregiverDashboard } from '@/features/dashboard/hooks/useCaregiverDashboard';
+import PatientCheckinMonitoringCard from '@/features/dashboard/components/PatientCheckinMonitoringCard';
 import '@/features/dashboard/dashboard.css';
 import '@/features/dashboard/caregiver-dashboard.css';
 
@@ -58,9 +59,15 @@ const CaregiverDashboard = () => {
             />
           </div>
 
-          {/* Column 1: Patient Roster */}
-          <div className="dashboard-col-left">
+          {/* Column 1: Patient Roster & Check-in Monitoring */}
+          <div className="dashboard-col-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <PatientRoster patients={dashboardData.roster} />
+            {dashboardData.patientId && (
+              <PatientCheckinMonitoringCard 
+                patientId={dashboardData.patientId} 
+                patientName={dashboardData.patientName} 
+              />
+            )}
           </div>
 
           {/* Column 2: Upcoming Timeline */}

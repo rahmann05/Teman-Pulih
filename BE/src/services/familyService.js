@@ -3,6 +3,7 @@ const { normalizePhone, phoneRegex } = require('../helpers/phone');
 const { cacheGet, cacheSet, cacheDel } = require('../helpers/cache');
 const db = require('../config/db');
 const notificationService = require('./notificationService');
+const { resolveTargetPatientId } = require('../helpers/patientAccess');
 
 
 const invite = async (user, supabase, identifier) => {
@@ -140,4 +141,196 @@ const getMembers = async (user, supabase) => {
     return rows;
 };
 
-module.exports = { invite, getMembers };
+const createComplaint = async (user, supabase, data) => {
+    const { symptoms, severity, notes } = data;
+    if (!symptoms) throw Object.assign(new Error('Gejala wajib diisi.'), { statusCode: 400 });
+    if (!severity) throw Object.assign(new Error('Tingkat keparahan wajib diisi.'), { statusCode: 400 });
+    if (!['mild', 'moderate', 'severe'].includes(severity)) {
+        throw Object.assign(new Error('Tingkat keparahan tidak valid.'), { statusCode: 400 });
+    }
+
+    // Insert complaint
+    const { data: complaint, error: insertError } = await supabase
+        .from('medical_complaints')
+        .insert([{
+            patient_id: user.id,
+            symptoms,
+            severity,
+            notes
+        }])
+        .select()
+        .single();
+
+    if (insertError) throw insertError;
+
+    // Fetch linked caregivers for the patient
+    const query = `
+        SELECT 
+            fr.caregiver_id, 
+            u.name as caregiver_name, 
+            u.email as caregiver_email,
+            p.phone as caregiver_phone
+        FROM family_relations fr
+        JOIN users u ON fr.caregiver_id = u.id
+        LEFT JOIN profiles p ON u.id = p.user_id
+        WHERE fr.patient_id = $1 AND fr.status = 'accepted'
+    `;
+    const { rows: caregivers } = await db.query(query, [user.id]);
+
+    // Send notifications to caregivers
+    for (const cg of caregivers) {
+        const symptomsText = symptoms;
+        const notesText = notes || 'Tidak ada catatan tambahan.';
+        const severityLabels = { mild: 'Ringan', moderate: 'Sedang', severe: 'Parah/Darurat' };
+        const severityLabel = severityLabels[severity] || severity;
+
+        // 1. In-app notification
+        await supabase
+            .from('notifications')
+            .insert([{
+                user_id: cg.caregiver_id,
+                title: 'Aduan Medis Darurat dari Pasien!',
+                message: `Pasien ${user.name} melaporkan gejala: ${symptomsText} (Keparahan: ${severityLabel}).`,
+                type: 'medical_complaint',
+                is_read: false
+            }]);
+
+        // 2. WhatsApp Notification
+        if (cg.caregiver_phone) {
+            const waMessage = `🚨 *PEMBERITAHUAN DARURAT TEMANPULIH* 🚨\n\nPasien Anda, *${user.name}*, baru saja melaporkan keluhan medis mendadak!\n\n*Gejala:* ${symptomsText}\n*Tingkat Keparahan:* ${severityLabel}\n*Catatan:* ${notesText}\n\nMohon segera hubungi pasien atau lakukan tindakan medis yang diperlukan.`;
+            try {
+                await notificationService.sendWhatsApp(cg.caregiver_phone, waMessage);
+            } catch (waErr) {
+                console.error('[WhatsApp Alert Error]:', waErr.message);
+            }
+        }
+
+        // 3. Email Notification
+        if (cg.caregiver_email) {
+            const emailSubject = `🚨 DARURAT: Keluhan Medis Mendadak dari Pasien ${user.name}`;
+            const emailHtml = `
+                <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ffcdd2; background-color: #ffebee; border-radius: 8px; max-width: 600px;">
+                    <h2 style="color: #c62828; margin-top: 0;">⚠️ Pemberitahuan Keluhan Medis TemanPulih</h2>
+                    <p>Halo <strong>${cg.caregiver_name}</strong>,</p>
+                    <p>Pasien Anda, <strong>${user.name}</strong>, baru saja melaporkan keluhan medis mendadak:</p>
+                    <table style="width: 100%; border-collapse: collapse; margin: 15px 0;">
+                        <tr>
+                            <td style="padding: 8px; font-weight: bold; width: 150px; border-bottom: 1px solid #ef9a9a;">Gejala:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ef9a9a;">${symptomsText}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #ef9a9a;">Keparahan:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ef9a9a; color: #c62828; font-weight: bold;">${severityLabel}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #ef9a9a;">Catatan:</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ef9a9a;">${notesText}</td>
+                        </tr>
+                    </table>
+                    <p style="font-weight: bold; color: #c62828;">Mohon segera menghubungi pasien untuk memberikan bantuan medis yang diperlukan.</p>
+                    <hr style="border: none; border-top: 1px solid #ef9a9a; margin: 20px 0;" />
+                    <p style="font-size: 12px; color: #757575; margin-bottom: 0;">Email ini dikirimkan otomatis oleh sistem darurat TemanPulih.</p>
+                </div>
+            `;
+            const emailText = `Pemberitahuan Keluhan Medis TemanPulih\n\nPasien Anda, ${user.name}, baru saja melaporkan keluhan medis mendadak:\n- Gejala: ${symptomsText}\n- Tingkat Keparahan: ${severityLabel}\n- Catatan: ${notesText}\n\nMohon segera hubungi pasien untuk tindakan lebih lanjut.`;
+            try {
+                await notificationService.sendEmail(cg.caregiver_email, emailSubject, emailHtml, emailText);
+            } catch (emailErr) {
+                console.error('[Email Alert Error]:', emailErr.message);
+            }
+        }
+    }
+
+    return complaint;
+};
+
+const getComplaints = async (user, supabase, patientId) => {
+    let targetPatientId = user.id;
+    if (patientId) {
+        const { patientId: resolvedId, error } = await resolveTargetPatientId(user, patientId);
+        if (error) throw Object.assign(new Error(error), { statusCode: 403 });
+        targetPatientId = resolvedId;
+    }
+
+    const { data, error: fetchError } = await supabase
+        .from('medical_complaints')
+        .select(`
+            *,
+            patient:users!medical_complaints_patient_id_fkey(name, email)
+        `)
+        .eq('patient_id', targetPatientId)
+        .order('created_at', { ascending: false });
+
+    if (fetchError) throw fetchError;
+    return data;
+};
+
+const createCheckin = async (user, supabase, data) => {
+    const { condition_rating, symptoms_felt, notes } = data;
+    if (!condition_rating || condition_rating < 1 || condition_rating > 5) {
+        throw Object.assign(new Error('Rating kondisi (1-5) wajib diisi.'), { statusCode: 400 });
+    }
+
+    const todayStr = new Date().toLocaleDateString('en-CA');
+
+    const { data: checkin, error } = await supabase
+        .from('daily_checkins')
+        .upsert({
+            patient_id: user.id,
+            condition_rating,
+            symptoms_felt,
+            notes,
+            checkin_date: todayStr,
+            created_at: new Date().toISOString()
+        }, { onConflict: 'patient_id, checkin_date' })
+        .select()
+        .single();
+
+    if (error) throw error;
+    return checkin;
+};
+
+const getCheckins = async (user, supabase, patientId, limit = 7) => {
+    let targetPatientId = user.id;
+    if (patientId) {
+        const { patientId: resolvedId, error } = await resolveTargetPatientId(user, patientId);
+        if (error) throw Object.assign(new Error(error), { statusCode: 403 });
+        targetPatientId = resolvedId;
+    }
+
+    const { data, error: fetchError } = await supabase
+        .from('daily_checkins')
+        .select(`
+            *,
+            patient:users!daily_checkins_patient_id_fkey(name, email)
+        `)
+        .eq('patient_id', targetPatientId)
+        .order('checkin_date', { ascending: false })
+        .limit(limit);
+
+    if (fetchError) throw fetchError;
+    return data;
+};
+
+const getTodayCheckinStatus = async (user, supabase) => {
+    const todayStr = new Date().toLocaleDateString('en-CA');
+    const { data, error } = await supabase
+        .from('daily_checkins')
+        .select('*')
+        .eq('patient_id', user.id)
+        .eq('checkin_date', todayStr)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data || null;
+};
+
+module.exports = { 
+    invite, 
+    getMembers,
+    createComplaint,
+    getComplaints,
+    createCheckin,
+    getCheckins,
+    getTodayCheckinStatus
+};

@@ -922,3 +922,80 @@
     box-shadow: var(--shadow-sm);
   }
 }
+
+/* ── Daily Check-in Card (Bento Style & Transitions) ── */
+.checkin-submit-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 100px;
+  background: #E29E57;
+  color: #FFF;
+  border: none;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(226, 158, 87, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkin-submit-btn:hover {
+  background: #d48d45;
+  box-shadow: 0 8px 24px rgba(226, 158, 87, 0.45);
+}
+
+.checkin-submit-btn:active {
+  opacity: 0.9;
+}
+
+.checkin-symptom-tag {
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  background: #FAF8F5;
+  color: var(--text-secondary);
+  border: 1px solid rgba(0,0,0,0.03);
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checkin-symptom-tag:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.checkin-symptom-tag.active {
+  background: #2E7D32;
+  color: #FFF;
+  border-color: #2E7D32;
+}
+
+.checkin-symptom-tag.active:hover {
+  background: #1b5e20;
+}
+
+/* Mood buttons styling & hover feedback */
+.checkin-mood-btn {
+  padding: 16px 8px;
+  border-radius: 20px;
+  background: #FAF8F5;
+  border: 1px solid rgba(0,0,0,0.03);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.checkin-mood-btn:hover {
+  background: rgba(226, 158, 87, 0.04);
+}
+
+.checkin-mood-btn.selected {
+  background: rgba(226, 158, 87, 0.06);
+  border: 2px solid #E29E57;
+}
+

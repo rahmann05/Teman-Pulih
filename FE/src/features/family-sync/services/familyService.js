@@ -14,3 +14,19 @@ export const approveRequest = (relationId, status, verificationCode) =>
 
 export const getPendingRequests = () =>
   api.get('/relations/pending');
+
+export const createComplaint = (data) =>
+  api.post('/family/complaints', data);
+
+export const getComplaints = (patientId) =>
+  api.get('/family/complaints', { params: { patientId } });
+
+export const createCheckin = (data) =>
+  api.post('/family/checkins', data);
+
+export const getCheckins = (patientId, limit) =>
+  api.get('/family/checkins', { params: { patientId, limit } });
+
+export const getTodayCheckinStatus = () =>
+  api.get('/family/checkins/today');
+

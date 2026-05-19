@@ -7,6 +7,8 @@ import FamilyHeader from '@/features/family-sync/components/FamilyHeader';
 import FamilySyncProvider from '@/features/family-sync/context/FamilySyncProvider';
 import { useFamilySyncContext } from '@/features/family-sync/hooks/useFamilySyncContext';
 import VerificationModal from '@/features/family-sync/components/VerificationModal';
+import FamilyComplaintsSection from '@/features/family-sync/components/FamilyComplaintsSection';
+import FamilyCheckinsHistorySection from '@/features/family-sync/components/FamilyCheckinsHistorySection';
 import '@/features/family-sync/family-sync.css';
 
 
@@ -79,23 +81,25 @@ const FamilySyncContent = () => {
             status={inviteStatus}
             buttonLabel={inviteCopy.buttonLabel}
           />
-        </div>
-
-        <div className="family-col-right">
-          <FamilyPendingSection
-            title={sectionTitles.pending}
-            requests={pendingCards}
-            onApprove={handleApprove}
-            onReject={handleReject}
-            processingRequestId={processingRequestId}
-          />
-
-
+          {pendingCards.length > 0 && (
+            <FamilyPendingSection
+              title={sectionTitles.pending}
+              requests={pendingCards}
+              onApprove={handleApprove}
+              onReject={handleReject}
+              processingRequestId={processingRequestId}
+            />
+          )}
           <FamilyMemberList
             title={sectionTitles.members}
             members={memberCards}
             emptyMessage={emptyStateMessage}
           />
+        </div>
+
+        <div className="family-col-right">
+          <FamilyCheckinsHistorySection caregiverMode={caregiverMode} members={memberCards} />
+          <FamilyComplaintsSection caregiverMode={caregiverMode} members={memberCards} />
         </div>
       </div>
 

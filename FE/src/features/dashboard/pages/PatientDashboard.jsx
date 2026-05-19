@@ -7,6 +7,7 @@ import DashboardHeader from '@/features/dashboard/components/DashboardHeader';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import EMROnboardingModal from '@/shared/layouts/EMROnboardingModal';
 import { usePatientDashboard } from '@/features/dashboard/hooks/usePatientDashboard';
+import DailyCheckinCard from '@/features/dashboard/components/DailyCheckinCard';
 import '@/features/dashboard/dashboard.css';
 
 const PatientDashboard = () => {
@@ -70,13 +71,18 @@ const PatientDashboard = () => {
           </div>
 
           {/* Column 1: Quick Actions */}
-          <div className="dashboard-col-left">
+          <div className="dashboard-col-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <QuickActionGrid />
           </div>
 
           {/* Column 2: Timeline */}
           <div className="dashboard-col-right">
             <MedicationTimeline schedule={dashboardData.timeline} />
+          </div>
+
+          {/* Daily Check-in Card (Spans 2 columns before the calendar) */}
+          <div className="dashboard-hero-wrapper" style={{ marginTop: '24px' }}>
+            <DailyCheckinCard />
           </div>
 
           {/* Full Width Calendar Section (At the very end) */}

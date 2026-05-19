@@ -31,6 +31,20 @@
   width: 100%;
 }
 
+.family-grid-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6);
+  align-items: stretch;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .family-grid-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 /* ── Page Header ─────────────────────────────────────────── */
 .family-header {
   display: flex;
@@ -957,3 +971,9 @@
     font-size: var(--text-3xl);
   }
 }
+
+/* Override utility to hide top border gradient on specific cards */
+.family-no-gradient::before {
+  display: none !important;
+}
+

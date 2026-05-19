@@ -15,35 +15,39 @@ const FamilyInviteCard = ({
   buttonLabel,
 }) => (
   <section className="family-invite-card">
-    <div className="family-invite-title">
-      <div className="family-invite-icon-wrapper">
-        <LuUserPlus size={22} className="family-invite-title-icon" />
+    <div>
+      <div className="family-invite-title">
+        <div className="family-invite-icon-wrapper">
+          <LuUserPlus size={22} className="family-invite-title-icon" />
+        </div>
+        <span className="family-invite-title-text">{title}</span>
       </div>
-      <span className="family-invite-title-text">{title}</span>
-    </div>
-    <p className="family-invite-desc">{description}</p>
-
-    <div className="family-invite-row">
-      <FamilyInviteInput
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        hasError={Boolean(error)}
-      />
-      <FamilyInviteButton
-        label={buttonLabel}
-        onClick={onSend}
-        disabled={isSending}
-      />
+      <p className="family-invite-desc">{description}</p>
     </div>
 
-    {error && <div className="family-invite-error">{error}</div>}
-    {status?.type === 'success' && (
-      <div className="family-invite-success">{status.message}</div>
-    )}
-    {status?.type === 'error' && !error && (
-      <div className="family-invite-error">{status.message}</div>
-    )}
+    <div>
+      <div className="family-invite-row">
+        <FamilyInviteInput
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          hasError={Boolean(error)}
+        />
+        <FamilyInviteButton
+          label={buttonLabel}
+          onClick={onSend}
+          disabled={isSending}
+        />
+      </div>
+
+      {error && <div className="family-invite-error">{error}</div>}
+      {status?.type === 'success' && (
+        <div className="family-invite-success">{status.message}</div>
+      )}
+      {status?.type === 'error' && !error && (
+        <div className="family-invite-error">{status.message}</div>
+      )}
+    </div>
   </section>
 );
 

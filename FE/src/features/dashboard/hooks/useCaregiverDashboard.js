@@ -70,6 +70,8 @@ export const useCaregiverDashboard = () => {
           timeline,
           medications,
           logs,
+          patientId,
+          patientName: primaryPatient?.name || ''
         });
       } catch (error) {
         if (cancelled) return;
@@ -85,6 +87,8 @@ export const useCaregiverDashboard = () => {
           timeline: [],
           medications: [],
           logs: [],
+          patientId: null,
+          patientName: ''
         });
       }
     };
