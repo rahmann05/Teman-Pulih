@@ -80,6 +80,7 @@ export const useMedications = (patientId) => {
   const today = new Date().toISOString().split('T')[0];
 
   const filteredMedications = medications.filter((med) => {
+    if (med.deleted_at) return false;
     if (activeFilter === 'all') return true;
     if (activeFilter === 'today') {
       return med.medication_schedules?.some((s) => {

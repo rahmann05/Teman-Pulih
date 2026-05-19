@@ -1,14 +1,35 @@
 import { LuPill, LuChevronRight } from 'react-icons/lu';
 import MedicationProgressBar from '@/features/medications/components/MedicationProgressBar';
 
+const parseTimeSlots = (rawSlots) => {
+  if (!rawSlots) return [];
+  if (Array.isArray(rawSlots)) return rawSlots.map(s => String(s).trim());
+  
+  let str = String(rawSlots).trim();
+  
+  if (str.startsWith('[') && str.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(str);
+      if (Array.isArray(parsed)) {
+        return parsed.map(s => String(s).trim());
+      }
+    } catch (e) {
+      // fallback
+    }
+  }
+  
+  return str
+    .split(',')
+    .map(item => item.replace(/[\[\]"'\s]/g, '').trim())
+    .filter(Boolean);
+};
+
 /**
  * Compute how many unique time slots a medication has in total.
  */
 const getTotalSlots = (schedules = []) => {
   return schedules.reduce((sum, s) => {
-    const slots = s.time_slots
-      ? (typeof s.time_slots === 'string' ? s.time_slots.split(',') : s.time_slots)
-      : [];
+    const slots = parseTimeSlots(s.time_slots);
     return sum + slots.length;
   }, 0);
 };

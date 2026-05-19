@@ -75,6 +75,7 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
       const totalCount = Math.max(timeSlots.length, 1);
 
       if (timeSlots.length === 0) {
+        if (medication.deleted_at) return;
         items.push({
           id: `${medication.id}-${schedule.id}`,
           medicationId: medication.id,
@@ -90,6 +91,10 @@ export const buildPatientTimeline = (medications = [], logs = []) => {
 
       timeSlots.forEach((time) => {
         const isTaken = takenTodaySlots.has(time);
+
+        if (medication.deleted_at && !isTaken) {
+          return;
+        }
 
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
@@ -146,6 +151,7 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
       const totalCount = Math.max(timeSlots.length, 1);
 
       if (timeSlots.length === 0) {
+        if (medication.deleted_at) return;
         items.push({
           id: `${medication.id}-${schedule.id}`,
           time: 'Belum dijadwalkan',
@@ -160,6 +166,11 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
 
       timeSlots.forEach((time) => {
         const isTaken = takenTodaySlots.has(time);
+        
+        if (medication.deleted_at && !isTaken) {
+          return;
+        }
+
         items.push({
           id: `${medication.id}-${schedule.id}-${time}`,
           time,
@@ -230,6 +241,15 @@ export const buildWeeklyMedicationHistory = (medications = [], logs = [], days =
           });
 
           const log = matchingLogs[0];
+
+          if (medication.deleted_at) {
+            if (dayStr > currentTodayStr) return;
+            if (dayStr === currentTodayStr) {
+              const isTaken = log && log.status === 'taken';
+              if (!isTaken) return;
+            }
+          }
+
           let status = 'PENDING'; // Default gray
 
           if (log) {

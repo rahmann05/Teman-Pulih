@@ -1,5 +1,29 @@
 import MedicationDoseItem from '@/features/medications/components/MedicationDoseItem';
 
+const parseTimeSlots = (rawSlots) => {
+  if (!rawSlots) return [];
+  if (Array.isArray(rawSlots)) return rawSlots.map(s => String(s).trim());
+  
+  let str = String(rawSlots).trim();
+  
+  if (str.startsWith('[') && str.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(str);
+      if (Array.isArray(parsed)) {
+        return parsed.map(s => String(s).trim());
+      }
+    } catch (e) {
+      // fallback
+    }
+  }
+  
+  return str
+    .split(',')
+    .map(item => item.replace(/[\[\]"']/g, '').trim())
+    .filter(Boolean);
+};
+
+
 /**
  * Determine status of a time slot based on today's logs.
  */
@@ -29,11 +53,7 @@ const MedicationDoseTimeline = ({ medication, logs = [], onLog }) => {
 
   // Collect all time slots across all schedules
   const slots = medication.medication_schedules.flatMap((schedule) => {
-    const times = schedule.time_slots
-      ? (typeof schedule.time_slots === 'string'
-          ? schedule.time_slots.split(',').map((t) => t.trim())
-          : schedule.time_slots)
-      : [];
+    const times = parseTimeSlots(schedule.time_slots);
     return times.map((time) => ({ time, scheduleId: schedule.id }));
   });
 

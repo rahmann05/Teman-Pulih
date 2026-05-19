@@ -172,7 +172,10 @@ const remove = async (user, supabase, medicationId) => {
     const { error: accessError } = await resolveTargetPatientId(user, medication.user_id);
     if (accessError) throw Object.assign(new Error(accessError), { statusCode: 403 });
 
-    const { error } = await supabase.from('medications').delete().eq('id', medication.id);
+    const { error } = await supabase
+        .from('medications')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', medication.id);
     if (error) throw error;
 
     await cacheDel(`medications:${medication.user_id}`, `emr_profile:patient_${medication.user_id}`);

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   LuArrowLeft, 
   LuPencil, 
@@ -21,6 +22,7 @@ import EditMedicationModal from '@/features/medications/pages/EditMedicationModa
 import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { useMedications } from '@/features/medications/hooks/useMedications';
 import { useAuth } from '@/shared/hooks/useAuth';
+import heroImg from '@/assets/images/feature-medication.png';
 import '@/features/medications/medications.css';
 
 /**
@@ -155,6 +157,29 @@ const formatRupiahPremium = (rawText) => {
   return text;
 };
 
+const parseTimeSlots = (rawSlots) => {
+  if (!rawSlots) return [];
+  if (Array.isArray(rawSlots)) return rawSlots.map(s => String(s).trim());
+  
+  let str = String(rawSlots).trim();
+  
+  if (str.startsWith('[') && str.endsWith(']')) {
+    try {
+      const parsed = JSON.parse(str);
+      if (Array.isArray(parsed)) {
+        return parsed.map(s => String(s).trim());
+      }
+    } catch (e) {
+      // fallback
+    }
+  }
+  
+  return str
+    .split(',')
+    .map(item => item.replace(/[\[\]"'\s]/g, '').trim())
+    .filter(Boolean);
+};
+
 /**
  * MedicationDetailPage — /medications/:id
  */
@@ -180,6 +205,13 @@ const MedicationDetailPage = () => {
 
   const medication = medications.find((m) => String(m.id) === String(id));
   const schedule   = medication?.medication_schedules?.[0];
+
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ['start end', 'end start']
+  });
+  const imgY = useTransform(scrollYProgress, [0, 1], ['-20%', '20%']);
 
   const handleDelete = async () => {
     await removeMedication(id);
@@ -249,40 +281,39 @@ const MedicationDetailPage = () => {
         </header>
 
         {/* SECTION 1: HERO MEDICATION CARD */}
-        <div className="med-hero-card">
-          <div className="med-hero-left">
-            <div className="med-hero-avatar-wrapper">
-              <LuActivity size={28} />
+        <div ref={containerRef} className="med-hero-card split-layout">
+          <div className="med-hero-left-content">
+            <div className="med-hero-identity">
+              <div className="med-hero-title-area">
+                {medication.medicinal_insight?.kategori && (
+                  <span className="med-hero-category-tag">
+                    {medication.medicinal_insight.kategori}
+                  </span>
+                )}
+                <h2 className="med-hero-name">{medication.name}</h2>
+                <p className="med-hero-subtext">
+                  Dosis Utama: <strong>{medication.dosage || '—'}</strong> | {medication.instructions || '—'}
+                </p>
+              </div>
             </div>
-            <div className="med-hero-title-area">
-              {medication.medicinal_insight?.kategori && (
-                <span className="med-hero-category-tag">
-                  {medication.medicinal_insight.kategori}
-                </span>
-              )}
-              <h2 className="med-hero-name">{medication.name}</h2>
-              <p className="med-hero-subtext">
-                Dosis Utama: <strong>{medication.dosage || '—'}</strong> | {medication.instructions || '—'}
-              </p>
+            <div className="med-hero-actions">
+              <button
+                className="med-hero-delete-btn"
+                type="button"
+                onClick={() => setShowConfirm(true)}
+                aria-label="Hapus obat"
+              >
+                <LuTrash2 size={16} /> Hapus
+              </button>
             </div>
           </div>
-          <div className="med-hero-actions">
-            <button
-              className="med-hero-edit-btn"
-              type="button"
-              onClick={() => setShowEdit(true)}
-              aria-label="Edit obat"
-            >
-              <LuPencil size={16} /> Edit
-            </button>
-            <button
-              className="med-hero-delete-btn"
-              type="button"
-              onClick={() => setShowConfirm(true)}
-              aria-label="Hapus obat"
-            >
-              <LuTrash2 size={16} /> Hapus
-            </button>
+          <div className="med-hero-image-slot">
+            <motion.img 
+              style={{ y: imgY, scale: 1.35 }} 
+              src={heroImg} 
+              alt="Medication Illustration" 
+              className="med-hero-img-parallax" 
+            />
           </div>
         </div>
 
@@ -302,9 +333,9 @@ const MedicationDetailPage = () => {
               
               <div className="med-clinical-row">
                 <span className="med-clinical-label">Waktu Minum</span>
-                <div className="med-clinical-time-slots">
+                <div className="med-clinical-time-slots" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                   {schedule?.time_slots ? (
-                    (Array.isArray(schedule.time_slots) ? schedule.time_slots : [schedule.time_slots]).map((slot, idx) => (
+                    parseTimeSlots(schedule.time_slots).map((slot, idx) => (
                       <span key={idx} className="med-clinical-time-badge">
                         <LuClock size={12} /> {slot}
                       </span>

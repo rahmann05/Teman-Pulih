@@ -54,6 +54,7 @@ const initReminderTasks = () => {
                 JOIN users u ON m.user_id = u.id
                 WHERE (ms.start_date IS NULL OR ms.start_date <= $1)
                   AND (ms.end_date IS NULL OR ms.end_date >= $1)
+                  AND m.deleted_at IS NULL
             `;
             const { rows: schedules } = await db.query(query, [todayStr]);
 
@@ -182,17 +183,20 @@ const initReminderTasks = () => {
 
                     // --- Condition D: Late by > 15 Minutes ---
                     if (diffMinutes >= 15) {
-                        // Check if patient has logged it as taken
-                        const { data: takenLog, error: logErr } = await serviceSupabase
+                        // Check if patient has logged it as taken today
+                        const { data: takenLogs, error: logErr } = await serviceSupabase
                             .from('medication_logs')
-                            .select('id')
+                            .select('id, taken_at')
                             .eq('schedule_id', schedule_id)
                             .eq('time_slot', slot)
-                            .eq('status', 'taken')
-                            .gte('taken_at', todayStart.toISOString())
-                            .lte('taken_at', todayEnd.toISOString());
+                            .eq('status', 'taken');
 
-                        if (!logErr && (!takenLog || takenLog.length === 0)) {
+                        const hasBeenTakenToday = !logErr && takenLogs && takenLogs.some(l => {
+                            const logDate = l.taken_at ? new Date(l.taken_at).toLocaleDateString('en-CA') : null;
+                            return logDate === todayStr;
+                        });
+
+                        if (!logErr && !hasBeenTakenToday) {
                             // Patient is LATE!
                             // Check if caregiver_late has already been notified
                             const { data: existingNotif } = await serviceSupabase
