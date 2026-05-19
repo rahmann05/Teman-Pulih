@@ -1,6 +1,19 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { LuArrowLeft, LuPencil, LuTrash2, LuSparkles } from 'react-icons/lu';
+import { 
+  LuArrowLeft, 
+  LuPencil, 
+  LuTrash2, 
+  LuSparkles,
+  LuClipboardList,
+  LuActivity,
+  LuInfo,
+  LuTriangleAlert,
+  LuCalendar,
+  LuClock,
+  LuCoins,
+  LuShield
+} from 'react-icons/lu';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import MedicationDoseTimeline from '@/features/medications/components/MedicationDoseTimeline';
 import MedicationEmptyState from '@/features/medications/components/MedicationEmptyState';
@@ -96,8 +109,6 @@ const formatRupiahPremium = (rawText) => {
   if (!rawText) return '—';
 
   let text = rawText.trim();
-  
-  // Replace standard 'Rp.' or 'Rp ' with 'Rp'
   text = text.replace(/^rp\.?\s*/i, 'Rp');
   
   const formatSingleNumber = (numStr) => {
@@ -222,192 +233,262 @@ const MedicationDetailPage = () => {
     <DashboardLayout caregiverMode={isCaregiver}>
       <div className="med-detail-container" data-testid="medication-detail-page">
 
-        {/* Header */}
-        <header className="med-list-header">
+        {/* Top Sticky Header */}
+        <header className="med-detail-top-nav">
           <button
-            className="scan-back-btn"
+            className="notifications-back-btn"
             onClick={() => navigate('/medications')}
             aria-label="Kembali ke daftar obat"
           >
             <LuArrowLeft size={20} />
           </button>
-          <h1 className="med-list-title">{medication.name}</h1>
+          <div className="med-detail-nav-title-group">
+            <span className="med-detail-nav-tag">Detail Informasi Obat</span>
+            <h1 className="med-detail-nav-title">{medication.name}</h1>
+          </div>
         </header>
 
-        {/* Detail Grid (Desktop Split Layout) */}
-        <div className="med-detail-grid">
-          {/* Info Grid (Left Side) */}
-          <section className="med-detail-info" aria-label="Informasi obat">
-            <div className="med-detail-field">
-              <span className="med-detail-label">Dosis</span>
-              <span className="med-detail-value">{medication.dosage || '—'}</span>
+        {/* SECTION 1: HERO MEDICATION CARD */}
+        <div className="med-hero-card">
+          <div className="med-hero-left">
+            <div className="med-hero-avatar-wrapper">
+              <LuActivity size={28} />
             </div>
-            <div className="med-detail-field">
-              <span className="med-detail-label">Instruksi</span>
-              <span className="med-detail-value">{medication.instructions || '—'}</span>
+            <div className="med-hero-title-area">
+              {medication.medicinal_insight?.kategori && (
+                <span className="med-hero-category-tag">
+                  {medication.medicinal_insight.kategori}
+                </span>
+              )}
+              <h2 className="med-hero-name">{medication.name}</h2>
+              <p className="med-hero-subtext">
+                Dosis Utama: <strong>{medication.dosage || '—'}</strong> | {medication.instructions || '—'}
+              </p>
             </div>
-            {schedule && (
-              <>
-                <div className="med-detail-field">
-                  <span className="med-detail-label">Frekuensi</span>
-                  <span className="med-detail-value">{schedule.frequency || '—'}</span>
-                </div>
-                <div className="med-detail-field">
-                  <span className="med-detail-label">Waktu</span>
-                  <span className="med-detail-value">
-                    {Array.isArray(schedule.time_slots)
-                      ? schedule.time_slots.join(', ')
-                      : schedule.time_slots || '—'}
-                  </span>
-                </div>
-                <div className="med-detail-field">
-                  <span className="med-detail-label">Periode</span>
-                  <span className="med-detail-value">
-                    {formatDate(schedule.start_date)} – {formatDate(schedule.end_date)}
-                  </span>
-                </div>
-              </>
-            )}
-          </section>
+          </div>
+          <div className="med-hero-actions">
+            <button
+              className="med-hero-edit-btn"
+              type="button"
+              onClick={() => setShowEdit(true)}
+              aria-label="Edit obat"
+            >
+              <LuPencil size={16} /> Edit
+            </button>
+            <button
+              className="med-hero-delete-btn"
+              type="button"
+              onClick={() => setShowConfirm(true)}
+              aria-label="Hapus obat"
+            >
+              <LuTrash2 size={16} /> Hapus
+            </button>
+          </div>
+        </div>
 
-          {/* Right Side */}
-          <div className="med-detail-right">
-            {/* Today's Dose Timeline */}
-            <MedicationDoseTimeline
-              medication={medication}
-              logs={logs}
-              onLog={logDose}
-            />
+        {/* SECTION 2: SCHEDULE & TIMELINE PROGRESS */}
+        <div className="med-schedule-timeline-grid">
+          {/* Card A: Rincian Jadwal Konsumsi */}
+          <div className="med-clinical-card">
+            <div className="med-clinical-card-header">
+              <span className="med-clinical-icon"><LuCalendar size={18} /></span>
+              <h3 className="med-clinical-card-title">Jadwal Penggunaan Obat</h3>
+            </div>
+            <div className="med-clinical-list">
+              <div className="med-clinical-row">
+                <span className="med-clinical-label">Frekuensi Konsumsi</span>
+                <span className="med-clinical-value bold">{schedule?.frequency || '—'}</span>
+              </div>
+              
+              <div className="med-clinical-row">
+                <span className="med-clinical-label">Waktu Minum</span>
+                <div className="med-clinical-time-slots">
+                  {schedule?.time_slots ? (
+                    (Array.isArray(schedule.time_slots) ? schedule.time_slots : [schedule.time_slots]).map((slot, idx) => (
+                      <span key={idx} className="med-clinical-time-badge">
+                        <LuClock size={12} /> {slot}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="med-clinical-value">—</span>
+                  )}
+                </div>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="med-detail-actions">
-              <button
-                className="med-edit-btn"
-                type="button"
-                onClick={() => setShowEdit(true)}
-                aria-label="Edit obat"
-              >
-                <LuPencil size={16} /> Edit
-              </button>
-              <button
-                className="med-delete-btn"
-                type="button"
-                onClick={() => setShowConfirm(true)}
-                aria-label="Hapus obat"
-              >
-                <LuTrash2 size={16} /> Hapus
-              </button>
+              <div className="med-clinical-row">
+                <span className="med-clinical-label">Instruksi Dokter</span>
+                <span className="med-clinical-value">{medication.instructions || '—'}</span>
+              </div>
+
+              <div className="med-clinical-row">
+                <span className="med-clinical-label">Periode Pengobatan</span>
+                <span className="med-clinical-value duration">
+                  {schedule ? `${formatDate(schedule.start_date)} – ${formatDate(schedule.end_date)}` : '—'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Card B: Timeline Konsumsi Hari Ini */}
+          <div className="med-clinical-card">
+            <div className="med-clinical-card-header">
+              <span className="med-clinical-icon"><LuActivity size={18} /></span>
+              <h3 className="med-clinical-card-title">Progres & Kepatuhan Hari Ini</h3>
+            </div>
+            <div className="med-clinical-timeline-wrapper">
+              <MedicationDoseTimeline
+                medication={medication}
+                logs={logs}
+                onLog={logDose}
+              />
             </div>
           </div>
         </div>
 
-        {/* Medicinal Insight Bento Card */}
+        {/* SECTION 3: AI MEDICINAL INSIGHT (Consolidated Medical Leaflet) */}
         {medication.medicinal_insight && (
-          <section className="med-detail-insight-section" aria-label="Analisis & Informasi Medis">
-            <h2 className="med-detail-section-title">
-              <span className="med-info-sparkle"><LuSparkles size={18} /></span>
-              AI Medicinal Insight
-            </h2>
-            <div className="med-detail-insight-bento">
-              {medication.medicinal_insight.kategori && (
-                <div className="med-bento-card">
-                  <span className="med-bento-label">Kategori Obat</span>
-                  <span className="med-bento-value highlighted">{medication.medicinal_insight.kategori}</span>
+          <div className="med-clinical-leaflet-wrapper">
+            <div className="med-leaflet-header">
+              <div className="med-leaflet-header-title">
+                <span className="med-leaflet-sparkle"><LuSparkles size={20} /></span>
+                <div>
+                  <h3 className="med-leaflet-title">AI Medicinal Insight Leaflet</h3>
+                  <p className="med-leaflet-subtitle">Analisis klinis & informasi farmakologi obat terverifikasi</p>
                 </div>
-              )}
-              {medication.medicinal_insight.indikasi && (
-                <div className="med-bento-card">
-                  <span className="med-bento-label">Indikasi Utama</span>
-                  <span className="med-bento-value">{medication.medicinal_insight.indikasi}</span>
+              </div>
+              <div className="med-leaflet-badge-verified">
+                <LuShield size={14} style={{ marginRight: 4 }} /> AI Verified
+              </div>
+            </div>
+
+            <div className="med-leaflet-grid-layout">
+              {/* Left Column: Ringkasan & Klasifikasi */}
+              <div className="med-leaflet-col">
+                <h4 className="med-leaflet-section-heading">
+                  <LuClipboardList size={15} style={{ marginRight: 6 }} /> Ringkasan Medis
+                </h4>
+                
+                <div className="med-leaflet-field-box">
+                  <span className="med-leaflet-label">Indikasi Utama</span>
+                  <p className="med-leaflet-value text-bold">
+                    {medication.medicinal_insight.indikasi || '—'}
+                  </p>
                 </div>
-              )}
-              {medication.medicinal_insight.komposisi && (
-                <div className="med-bento-card composition">
-                  <span className="med-bento-label">Komposisi Aktif</span>
-                  <span className="med-bento-value">{medication.medicinal_insight.komposisi}</span>
+
+                <div className="med-leaflet-field-box">
+                  <span className="med-leaflet-label">Komposisi Aktif</span>
+                  <p className="med-leaflet-value">
+                    {medication.medicinal_insight.komposisi || '—'}
+                  </p>
                 </div>
-              )}
-              {(medication.medicinal_insight.dosis_rekomendasi || medication.medicinal_insight.dosis) && (() => {
-                const rawDosis = medication.medicinal_insight.dosis_rekomendasi || medication.medicinal_insight.dosis;
-                return (
-                  <div className="med-bento-card span-two">
-                    <span className="med-bento-label">Rekomendasi Dosis</span>
-                    {rawDosis.includes('|') ? (
-                      <div className="med-info-split-list">
-                        {rawDosis.split('|').map((item, idx) => (
-                          <div key={idx} className="med-info-split-item">
-                            <span className="med-info-split-bullet">•</span>
-                            <span className="med-bento-value" style={{ margin: 0 }}>{item.trim()}</span>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="med-bento-value">{rawDosis}</span>
-                    )}
-                  </div>
-                );
-              })()}
-              
-              {medication.medicinal_insight.aturan_pakai && (
-                <div className="med-bento-card span-two">
-                  <span className="med-bento-label">Aturan Pakai</span>
-                  {medication.medicinal_insight.aturan_pakai.includes('|') ? (
-                    <div className="med-info-split-list">
-                      {medication.medicinal_insight.aturan_pakai.split('|').map((item, idx) => (
-                        <div key={idx} className="med-info-split-item">
-                          <span className="med-info-split-bullet">•</span>
-                          <span className="med-bento-value" style={{ margin: 0 }}>{item.trim()}</span>
-                        </div>
-                      ))}
+
+                {medication.medicinal_insight.efek_samping && (() => {
+                  const parsedES = parseEfekSampingDetails(medication.medicinal_insight.efek_samping);
+                  if (!parsedES.harga) return null;
+                  return (
+                    <div className="med-leaflet-field-box price-highlight">
+                      <span className="med-leaflet-label text-emerald">Estimasi Harga Pasar</span>
+                      <p className="med-leaflet-value price-text">
+                        <LuCoins size={14} style={{ marginRight: 4, verticalAlign: 'middle' }} />
+                        {formatRupiahPremium(parsedES.harga)}
+                      </p>
                     </div>
+                  );
+                })()}
+              </div>
+
+              {/* Middle Column: Petunjuk Penggunaan */}
+              <div className="med-leaflet-col">
+                <h4 className="med-leaflet-section-heading">
+                  <LuInfo size={15} style={{ marginRight: 6 }} /> Petunjuk Penggunaan
+                </h4>
+
+                <div className="med-leaflet-field-box">
+                  <span className="med-leaflet-label">Rekomendasi Dosis AI</span>
+                  {(() => {
+                    const rawDosis = medication.medicinal_insight.dosis_rekomendasi || medication.medicinal_insight.dosis;
+                    if (!rawDosis) return <p className="med-leaflet-value">—</p>;
+                    return rawDosis.includes('|') ? (
+                      <ul className="med-leaflet-bullet-list">
+                        {rawDosis.split('|').map((item, idx) => (
+                          <li key={idx}>{item.trim()}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="med-leaflet-value">{rawDosis}</p>
+                    );
+                  })()}
+                </div>
+
+                <div className="med-leaflet-field-box">
+                  <span className="med-leaflet-label">Aturan Pakai Klinis</span>
+                  {medication.medicinal_insight.aturan_pakai ? (
+                    medication.medicinal_insight.aturan_pakai.includes('|') ? (
+                      <ul className="med-leaflet-bullet-list">
+                        {medication.medicinal_insight.aturan_pakai.split('|').map((item, idx) => (
+                          <li key={idx}>{item.trim()}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="med-leaflet-value">{medication.medicinal_insight.aturan_pakai}</p>
+                    )
                   ) : (
-                    <span className="med-bento-value">{medication.medicinal_insight.aturan_pakai}</span>
+                    <p className="med-leaflet-value">—</p>
                   )}
                 </div>
-              )}
-              {medication.medicinal_insight.efek_samping && (() => {
-                const parsedES = parseEfekSampingDetails(medication.medicinal_insight.efek_samping);
-                return (
-                  <>
-                    {parsedES.efekSamping && (
-                      <div className="med-bento-card danger effects span-two">
-                        <span className="med-bento-label error">Efek Samping</span>
-                        <span className="med-bento-value error">{parsedES.efekSamping}</span>
-                      </div>
-                    )}
-                    
-                    {parsedES.kontraindikasi && (
-                      <div className="med-bento-card danger warning-card span-two">
-                        <span className="med-bento-label text-orange">Kontraindikasi</span>
-                        <span className="med-bento-value text-orange">{parsedES.kontraindikasi}</span>
-                      </div>
-                    )}
-                    
-                    {parsedES.interaksi && (
-                      <div className="med-bento-card info-card span-two">
-                        <span className="med-bento-label text-blue">Interaksi Obat</span>
-                        <span className="med-bento-value text-blue">{parsedES.interaksi}</span>
-                      </div>
-                    )}
+              </div>
 
-                    {parsedES.jangkaWaktu && (
-                      <div className="med-bento-card duration-card span-two">
-                        <span className="med-bento-label text-teal">Jangka Waktu Penggunaan</span>
-                        <span className="med-bento-value text-teal">{parsedES.jangkaWaktu}</span>
-                      </div>
-                    )}
-                    
-                    {parsedES.harga && (
-                      <div className="med-bento-card price-card">
-                        <span className="med-bento-label text-emerald">Estimasi Harga</span>
-                        <span className="med-bento-value price-val">{formatRupiahPremium(parsedES.harga)}</span>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
+              {/* Right Column: Keamanan & Peringatan */}
+              <div className="med-leaflet-col">
+                <h4 className="med-leaflet-section-heading">
+                  <LuTriangleAlert size={15} style={{ marginRight: 6 }} /> Keamanan & Peringatan
+                </h4>
+
+                {medication.medicinal_insight.efek_samping && (() => {
+                  const parsedES = parseEfekSampingDetails(medication.medicinal_insight.efek_samping);
+                  return (
+                    <div className="med-leaflet-warnings-list">
+                      {parsedES.efekSamping && (
+                        <div className="med-leaflet-warning-card danger">
+                          <span className="med-leaflet-warning-title text-red">
+                            <LuTriangleAlert size={14} style={{ marginRight: 4 }} /> Efek Samping
+                          </span>
+                          <p className="med-leaflet-warning-desc">{parsedES.efekSamping}</p>
+                        </div>
+                      )}
+
+                      {parsedES.kontraindikasi && (
+                        <div className="med-leaflet-warning-card warning">
+                          <span className="med-leaflet-warning-title text-orange">
+                            <LuTriangleAlert size={14} style={{ marginRight: 4 }} /> Kontraindikasi
+                          </span>
+                          <p className="med-leaflet-warning-desc">{parsedES.kontraindikasi}</p>
+                        </div>
+                      )}
+
+                      {parsedES.interaksi && (
+                        <div className="med-leaflet-warning-card info">
+                          <span className="med-leaflet-warning-title text-blue">
+                            <LuInfo size={14} style={{ marginRight: 4 }} /> Interaksi Obat
+                          </span>
+                          <p className="med-leaflet-warning-desc">{parsedES.interaksi}</p>
+                        </div>
+                      )}
+
+                      {parsedES.jangkaWaktu && (
+                        <div className="med-leaflet-warning-card duration">
+                          <span className="med-leaflet-warning-title text-teal">
+                            <LuCalendar size={14} style={{ marginRight: 4 }} /> Batas Penggunaan
+                          </span>
+                          <p className="med-leaflet-warning-desc">{parsedES.jangkaWaktu}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
-          </section>
+          </div>
         )}
       </div>
 

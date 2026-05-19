@@ -26,5 +26,12 @@
     "recipient": "rahman@gmail.com",
     "subject": "Pengingat Minum Obat - 10 Menit Lagi",
     "content": "Halo, rahman! Jadwal minum obat Bodrex Flu Batuk PE Anda adalah pukul 21:53 (10 menit lagi)."
+  },
+  {
+    "timestamp": "2026-05-19T14:53:03.360Z",
+    "type": "email",
+    "recipient": "rahman@gmail.com",
+    "subject": "Waktunya Minum Obat Sekarang!",
+    "content": "Halo, rahman! Saatnya meminum obat Bodrex Flu Batuk PE Anda sekarang (jadwal: 21:53)."
   }
 ]

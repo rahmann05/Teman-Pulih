@@ -1617,7 +1617,7 @@
 /* Premium Large Information Bento Card */
 .med-large-info-card {
   height: 100%;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 248, 245, 0.7) 100%);
+  background: #ffffff;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(var(--accent-rgb), 0.15);
@@ -1944,7 +1944,7 @@
 }
 
 .med-bento-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 248, 245, 0.75) 100%);
+  background: #ffffff;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(var(--accent-rgb), 0.12);
@@ -1958,7 +1958,7 @@
 }
 
 .med-bento-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 245, 0.85) 100%);
+  background: #ffffff;
   border-color: rgba(var(--accent-rgb), 0.22);
   transform: translateY(-2px);
   box-shadow: 0 16px 40px rgba(var(--accent-rgb), 0.08);
@@ -2060,14 +2060,14 @@
 .med-bento-card.duration-card,
 .med-bento-card.price-card {
   border: 1px solid rgba(var(--accent-rgb), 0.12) !important;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 248, 245, 0.75) 100%) !important;
+  background: #ffffff !important;
 }
 
 .med-bento-card.danger.warning-card:hover,
 .med-bento-card.info-card:hover,
 .med-bento-card.duration-card:hover,
 .med-bento-card.price-card:hover {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 248, 245, 0.85) 100%) !important;
+  background: #ffffff !important;
   border-color: rgba(var(--accent-rgb), 0.22) !important;
 }
 
@@ -2163,5 +2163,519 @@
   color: #ffffff;
   box-shadow: 0 6px 16px rgba(var(--accent-rgb), 0.18);
 }
+
+
+/* ── Premium Medication Detail Leaflet Layout ────────────────── */
+
+.med-detail-top-nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 1rem);
+  padding: var(--space-4, 1rem) 0;
+  margin-bottom: var(--space-6, 1.5rem);
+  border-bottom: 1px solid var(--border-light, #e2e8f0);
+}
+
+.med-detail-nav-title-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.med-detail-nav-tag {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent, #c4653a);
+}
+
+.med-detail-nav-title {
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-2xl, 1.5rem);
+  font-weight: 800;
+  color: var(--text, #0f172a);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* Hero Medication Card */
+.med-hero-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 28px;
+  padding: var(--space-6, 1.5rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 1.25rem);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+  margin-bottom: var(--space-6, 1.5rem);
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .med-hero-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.med-hero-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5, 1.25rem);
+}
+
+.med-hero-avatar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: rgba(196, 101, 58, 0.08);
+  color: var(--accent, #c4653a);
+  flex-shrink: 0;
+  border: 1px solid rgba(196, 101, 58, 0.15);
+}
+
+.med-hero-title-area {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.med-hero-category-tag {
+  align-self: flex-start;
+  font-size: 9.5px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--bg-muted, #f8fafc);
+  color: var(--text-secondary, #64748b);
+  border: 1px solid var(--border-light, #e2e8f0);
+  padding: 3px 10px;
+  border-radius: var(--radius-full, 9999px);
+}
+
+.med-hero-name {
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-3xl, 1.875rem);
+  font-weight: 850;
+  color: var(--text, #0f172a);
+  margin: 0;
+  letter-spacing: -0.03em;
+}
+
+.med-hero-subtext {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary, #64748b);
+  margin: 0;
+}
+
+.med-hero-actions {
+  display: flex;
+  gap: var(--space-3, 0.75rem);
+}
+
+.med-hero-edit-btn,
+.med-hero-delete-btn {
+  padding: 10px 20px;
+  border-radius: var(--radius-full, 9999px);
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: auto;
+}
+
+.med-hero-edit-btn {
+  background: #ffffff;
+  border: 1.5px solid var(--border-light, #e2e8f0);
+  color: var(--text-secondary, #64748b);
+}
+
+.med-hero-edit-btn:hover {
+  background: var(--bg-muted, #f8fafc);
+  color: var(--text, #0f172a);
+  border-color: var(--border, #cbd5e1);
+}
+
+.med-hero-delete-btn {
+  background: #ffffff;
+  border: 1.5px solid #fee2e2;
+  color: #ef4444;
+}
+
+.med-hero-delete-btn:hover {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+/* Schedule & Timeline Grid */
+.med-schedule-timeline-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6, 1.5rem);
+  margin-bottom: var(--space-6, 1.5rem);
+}
+
+@media (min-width: 992px) {
+  .med-schedule-timeline-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.med-clinical-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 28px;
+  padding: var(--space-6, 1.5rem);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 1.25rem);
+}
+
+.med-clinical-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1.5px solid var(--bg-muted, #f8fafc);
+  padding-bottom: 12px;
+}
+
+.med-clinical-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: rgba(196, 101, 58, 0.06);
+  color: var(--accent, #c4653a);
+}
+
+.med-clinical-card-title {
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-base, 1rem);
+  font-weight: 800;
+  color: var(--text, #0f172a);
+  margin: 0;
+  letter-spacing: -0.015em;
+}
+
+.med-clinical-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.med-clinical-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: var(--space-3, 0.75rem);
+  border-bottom: 1px dashed var(--border-light, #e2e8f0);
+}
+
+.med-clinical-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.med-clinical-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.med-clinical-value {
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 600;
+  color: var(--text, #0f172a);
+}
+
+.med-clinical-value.bold {
+  font-weight: 800;
+  color: var(--accent, #c4653a);
+}
+
+.med-clinical-value.duration {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-secondary, #64748b);
+}
+
+.med-clinical-time-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.med-clinical-time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 750;
+  color: var(--text, #0f172a);
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+.med-clinical-timeline-wrapper {
+  margin-top: 4px;
+}
+
+/* Consolidated Clinical Leaflet */
+.med-clinical-leaflet-wrapper {
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 32px;
+  padding: var(--space-6, 1.5rem) var(--space-6, 1.5rem) var(--space-8, 2rem);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.03);
+  margin-top: var(--space-6, 1.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.med-clinical-leaflet-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, var(--accent, #c4653a), var(--copper, #9e4e2a), var(--sage, #769c85));
+}
+
+.med-leaflet-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 2px solid var(--bg-muted, #f8fafc);
+  padding-bottom: var(--space-5, 1.25rem);
+  margin-bottom: var(--space-6, 1.5rem);
+}
+
+@media (min-width: 768px) {
+  .med-leaflet-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.med-leaflet-header-title {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3, 0.75rem);
+}
+
+.med-leaflet-sparkle {
+  color: var(--accent, #c4653a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.med-leaflet-title {
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-xl, 1.25rem);
+  font-weight: 850;
+  color: var(--text, #0f172a);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.med-leaflet-subtitle {
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--text-muted, #94a3b8);
+  margin: 2px 0 0 0;
+}
+
+.med-leaflet-badge-verified {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #059669;
+  background: rgba(5, 150, 105, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  padding: 4px 12px;
+  border-radius: var(--radius-full, 9999px);
+  align-self: flex-start;
+}
+
+.med-leaflet-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-6, 1.5rem);
+}
+
+@media (min-width: 992px) {
+  .med-leaflet-grid-layout {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8, 2rem);
+  }
+  
+  .med-leaflet-col {
+    border-right: 1.5px solid var(--bg-muted, #f8fafc);
+    padding-right: var(--space-6, 1.5rem);
+  }
+  
+  .med-leaflet-col:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
+}
+
+.med-leaflet-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5, 1.25rem);
+}
+
+.med-leaflet-section-heading {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-sm, 0.875rem);
+  font-weight: 850;
+  color: var(--text, #0f172a);
+  margin: 0 0 var(--space-2, 0.5rem) 0;
+  letter-spacing: -0.01em;
+  border-bottom: 1.5px solid var(--bg-muted, #f8fafc);
+  padding-bottom: 8px;
+}
+
+.med-leaflet-field-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--bg-muted, #f8fafc);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 18px;
+  padding: var(--space-4, 1rem);
+}
+
+.med-leaflet-field-box.price-highlight {
+  background: rgba(5, 150, 105, 0.02);
+  border-color: rgba(5, 150, 105, 0.12);
+}
+
+.med-leaflet-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.med-leaflet-value {
+  font-size: var(--text-sm, 0.875rem);
+  line-height: 1.5;
+  color: var(--text-secondary, #64748b);
+  margin: 0;
+  font-weight: 600;
+}
+
+.med-leaflet-value.text-bold {
+  color: var(--text, #0f172a);
+  font-weight: 800;
+  font-size: var(--text-sm, 0.875rem);
+}
+
+.med-leaflet-value.price-text {
+  font-family: var(--font-heading, inherit);
+  font-size: var(--text-base, 1rem);
+  font-weight: 850;
+  color: #059669 !important;
+}
+
+.med-leaflet-bullet-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.med-leaflet-bullet-list li {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--text-secondary, #64748b);
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.med-leaflet-warnings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4, 1rem);
+}
+
+.med-leaflet-warning-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-4, 1rem);
+  background: #ffffff;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.01);
+}
+
+.med-leaflet-warning-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+}
+
+.med-leaflet-warning-card.danger::before { background: #ef4444; }
+.med-leaflet-warning-card.warning::before { background: #f59e0b; }
+.med-leaflet-warning-card.info::before { background: #3b82f6; }
+.med-leaflet-warning-card.duration::before { background: #0d9488; }
+
+.med-leaflet-warning-title {
+  display: flex;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.med-leaflet-warning-desc {
+  font-size: var(--text-xs, 0.75rem);
+  line-height: 1.5;
+  color: var(--text-secondary, #64748b);
+  margin: 0;
+  font-weight: 600;
+  padding-left: 4px;
+}
+
+.text-red { color: #ef4444 !important; }
+.text-orange { color: #f59e0b !important; }
+.text-blue { color: #3b82f6 !important; }
+.text-teal { color: #0d9488 !important; }
 
 
