@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import { getDirectMessages, sendDirectMessage } from '../services/chatService';
+import { getFamilyMembers } from '@/features/family-sync/services/familyService';
 import { supabase } from '@/shared/config/supabaseClient';
 
 import '../chat.css';
@@ -15,7 +16,24 @@ const DirectChatPage = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [recipient, setRecipient] = useState(null);
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    const fetchRecipient = async () => {
+      try {
+        const response = await getFamilyMembers();
+        const members = response.data?.members || [];
+        const found = members.find(m => m.userId === parseInt(userId, 10));
+        if (found) {
+          setRecipient(found);
+        }
+      } catch (err) {
+        console.error('Gagal memuat info penerima:', err);
+      }
+    };
+    fetchRecipient();
+  }, [userId]);
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -77,12 +95,18 @@ const DirectChatPage = () => {
     <DashboardLayout>
       <div className="direct-chat-container">
         <div className="direct-chat-header">
-          <button className="back-btn" onClick={() => navigate(-1)}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-          </button>
-          <div className="header-info">
-            <h2 className="header-title">Chat</h2>
-            <span className="header-status">Koneksi Aktif</span>
+          <div className="chat-header-left">
+            <button className="back-btn" onClick={() => navigate(-1)} aria-label="Kembali">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+            </button>
+            <div className="chat-header-avatar-direct">
+              {recipient?.initials || '?'}
+            </div>
+            <div className="chat-header-info">
+              <span className="chat-header-eyebrow">{recipient?.roleLine || 'Koneksi'}</span>
+              <h1 className="chat-header-name">{recipient?.name || 'Pengguna'}</h1>
+              <span className="chat-header-status online">Koneksi Aktif</span>
+            </div>
           </div>
         </div>
 
