@@ -7,14 +7,24 @@ const { supabase } = require('../config/db');
 const getNotifications = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const role = req.user.role; // 'patient' or 'caregiver'
         
-        // Fetch notifications using db pool to ensure fast, reliable sorting
-        const query = `
+        let query = `
             SELECT * FROM notifications 
             WHERE user_id = $1 
-            ORDER BY created_at DESC
         `;
-        const { rows } = await db.query(query, [userId]);
+        
+        const params = [userId];
+        
+        if (role === 'caregiver') {
+            query += ` AND type IN ('caregiver_late', 'caregiver_taken', 'medical_complaint') `;
+        } else {
+            query += ` AND type IN ('reminder_10m', 'reminder_exact', 'patient_late') `;
+        }
+        
+        query += ` ORDER BY created_at DESC `;
+        
+        const { rows } = await db.query(query, params);
         
         res.status(200).json({ data: rows });
     } catch (err) {
@@ -28,14 +38,23 @@ const getNotifications = async (req, res, next) => {
 const markAllAsRead = async (req, res, next) => {
     try {
         const userId = req.user.id;
+        const role = req.user.role;
         
-        const query = `
+        let query = `
             UPDATE notifications 
             SET is_read = true 
             WHERE user_id = $1
-            RETURNING *
         `;
-        await db.query(query, [userId]);
+        
+        const params = [userId];
+        
+        if (role === 'caregiver') {
+            query += ` AND type IN ('caregiver_late', 'caregiver_taken', 'medical_complaint') `;
+        } else {
+            query += ` AND type IN ('reminder_10m', 'reminder_exact', 'patient_late') `;
+        }
+        
+        await db.query(query, params);
         
         res.status(200).json({ message: 'Semua notifikasi ditandai telah dibaca' });
     } catch (err) {

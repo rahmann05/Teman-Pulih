@@ -1,7 +1,7 @@
 /* src/features/dashboard/pages/CaregiverDashboard.jsx */
 import React from 'react';
 import TriageHeroCard from '@/features/dashboard/components/TriageHeroCard';
-import PatientRoster from '@/features/dashboard/components/PatientRoster';
+import PatientMedicalProfileCard from '@/features/dashboard/components/PatientMedicalProfileCard';
 import UpcomingTimeline from '@/features/dashboard/components/UpcomingTimeline';
 import WeeklyMedicationCalendar from '@/features/dashboard/components/WeeklyMedicationCalendar';
 import CaregiverDashboardHeader from '@/features/dashboard/components/CaregiverDashboardHeader';
@@ -56,32 +56,80 @@ const CaregiverDashboard = () => {
             <TriageHeroCard
               status={dashboardData.triageStatus}
               message={dashboardData.triageMessage}
+              acceptedPatients={dashboardData.acceptedPatients}
+              activePatientId={dashboardData.activePatientId}
+              activePatientName={dashboardData.activePatientName}
+              activePatientProfile={dashboardData.activePatientProfile}
+              switchPatient={dashboardData.switchPatient}
             />
           </div>
 
-          {/* Column 1: Patient Roster & Check-in Monitoring */}
-          <div className="dashboard-col-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-            <PatientRoster patients={dashboardData.roster} />
-            {dashboardData.patientId && (
-              <PatientCheckinMonitoringCard 
-                patientId={dashboardData.patientId} 
-                patientName={dashboardData.patientName} 
-              />
-            )}
-          </div>
+          {dashboardData.activePatientId ? (
+            <>
+              {/* Detail Pasien (Left Column) */}
+              <div className="dashboard-col-left">
+                <PatientMedicalProfileCard 
+                  activePatientProfile={dashboardData.activePatientProfile}
+                  activePatientName={dashboardData.activePatientName}
+                  loading={dashboardData.loadingPatientData}
+                />
+              </div>
 
-          {/* Column 2: Upcoming Timeline */}
-          <div className="dashboard-col-right">
-            <UpcomingTimeline schedule={dashboardData.timeline} />
-          </div>
+              {/* Jadwal Pemantauan / Timeline (Right Column) */}
+              <div className="dashboard-col-right">
+                <UpcomingTimeline schedule={dashboardData.timeline} />
+              </div>
 
-          {/* Full Width Calendar Section (At the very end, if a patient is connected) */}
-          {dashboardData.roster && dashboardData.roster.length > 0 && (
-            <div className="dashboard-calendar-wrapper">
-              <WeeklyMedicationCalendar 
-                medications={dashboardData.medications} 
-                logs={dashboardData.logs} 
-              />
+              {/* Monitoring Check-in Harian (Full Width Row) */}
+              <div className="dashboard-hero-wrapper">
+                <PatientCheckinMonitoringCard 
+                  patientId={dashboardData.activePatientId} 
+                  patientName={dashboardData.activePatientName} 
+                />
+              </div>
+
+              {/* Kalender Kepatuhan Mingguan (Full Width Row) */}
+              <div className="dashboard-calendar-wrapper">
+                <WeeklyMedicationCalendar 
+                  medications={dashboardData.medications} 
+                  logs={dashboardData.logs} 
+                />
+              </div>
+            </>
+          ) : (
+            /* Beautiful Centered Empty State when no patient is active/connected */
+            <div className="dashboard-hero-wrapper">
+              <div className="bento-card" style={{ 
+                textAlign: 'center', 
+                padding: '64px var(--space-6)', 
+                background: '#FFFFFF',
+                borderRadius: '32px',
+                border: '1px dashed var(--accent-light)',
+                boxShadow: '0 20px 50px rgba(0, 0, 0, 0.02)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px'
+              }}>
+                <p style={{ 
+                  color: 'var(--text-secondary)', 
+                  fontSize: '16px', 
+                  fontWeight: 700, 
+                  margin: 0 
+                }}>
+                  Belum ada pasien aktif yang terhubung.
+                </p>
+                <p style={{ 
+                  color: 'var(--text-muted)', 
+                  fontSize: '14px', 
+                  margin: 0,
+                  maxWidth: '360px',
+                  lineHeight: 1.5
+                }}>
+                  Silakan undang keluarga Anda menggunakan menu Hubungkan Keluarga agar dapat memantau aktivitas pemulihan mereka di sini.
+                </p>
+              </div>
             </div>
           )}
 

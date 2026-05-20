@@ -38,7 +38,7 @@ const PatientCheckinMonitoringCard = ({ patientId, patientName }) => {
     return null;
   }
 
-  const todayStr = new Date().toLocaleDateString('en-CA');
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
   const todayCheckin = history.find((c) => c.checkin_date === todayStr);
 
   return (

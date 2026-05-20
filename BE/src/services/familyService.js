@@ -44,6 +44,12 @@ const invite = async (user, supabase, identifier) => {
     const patientId = isSelfPatient ? user.id : invitedUser.id;
     const caregiverId = isSelfPatient ? invitedUser.id : user.id;
 
+    // Automatically delete expired pending relations from the database
+    await db.query(`
+        DELETE FROM family_relations 
+        WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'
+    `);
+
     // Check for existing relationship
     const { data: existingRelation } = await supabase
         .from('family_relations')
@@ -100,6 +106,12 @@ const invite = async (user, supabase, identifier) => {
 };
 
 const getMembers = async (user, supabase) => {
+    // Automatically delete expired pending relations from the database
+    await db.query(`
+        DELETE FROM family_relations 
+        WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'
+    `);
+
     const cacheKey = `family_relations:${user.id}`;
     const cached = await cacheGet(cacheKey);
     if (cached) {
@@ -271,7 +283,7 @@ const createCheckin = async (user, supabase, data) => {
         throw Object.assign(new Error('Rating kondisi (1-5) wajib diisi.'), { statusCode: 400 });
     }
 
-    const todayStr = new Date().toLocaleDateString('en-CA');
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
 
     const { data: checkin, error } = await supabase
         .from('daily_checkins')
@@ -313,7 +325,7 @@ const getCheckins = async (user, supabase, patientId, limit = 7) => {
 };
 
 const getTodayCheckinStatus = async (user, supabase) => {
-    const todayStr = new Date().toLocaleDateString('en-CA');
+    const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
     const { data, error } = await supabase
         .from('daily_checkins')
         .select('*')

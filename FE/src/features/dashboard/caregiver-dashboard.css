@@ -446,3 +446,256 @@
     padding: 0;
   }
 }
+
+/* ============================================================
+   INTERACTIVE SWITChER & MEDICAL PROFILE STYLES (PREMIUM GLASS)
+   ============================================================ */
+
+.patient-switcher-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  margin: var(--space-4) 0;
+}
+
+.switcher-btn-circular {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--text);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.switcher-btn-circular:hover {
+  background: rgba(var(--accent-rgb), 0.08);
+  border-color: rgba(var(--accent-rgb), 0.15);
+  color: var(--accent);
+  transform: scale(1.08);
+}
+
+.switcher-btn-circular:active {
+  transform: scale(0.95);
+}
+
+.patient-info-display {
+  text-align: center;
+  flex: 1;
+}
+
+.patient-name-title {
+  font-size: clamp(28px, 5vw, 44px) !important;
+  margin: 0 !important;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #fff;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.patient-subtitle-vitals {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.triage-status-desc-box {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: var(--space-4) var(--space-5);
+  backdrop-filter: blur(8px);
+  margin-top: var(--space-2);
+}
+
+.triage-status-desc {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.push-alert-btn {
+  background: #fff !important;
+  color: var(--accent-darkest) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* ── Medical Profile Card Bento ───────────────────────────── */
+.medical-profile-card {
+  padding: var(--space-6);
+  min-height: auto;
+  transition: all 0.3s ease;
+}
+
+.medical-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.medical-bento-item {
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 20px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.01);
+  transition: all 0.3s ease;
+}
+
+.medical-bento-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--accent-rgb), 0.15);
+  box-shadow: 0 10px 25px rgba(var(--accent-rgb), 0.04);
+}
+
+.full-width-item {
+  grid-column: span 2;
+}
+
+.bento-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Color palettes for bento icons */
+.bento-icon-wrapper.blood {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.bento-icon-wrapper.pressure {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+.bento-icon-wrapper.scale {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+.bento-icon-wrapper.allergies {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+}
+.bento-icon-wrapper.chronic {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+.bento-icon-wrapper.emergency {
+  background: rgba(236, 72, 153, 0.1);
+  color: #ec4899;
+}
+
+.bento-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.bento-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bento-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--accent-darkest);
+}
+
+.text-accent { color: #ef4444 !important; }
+.text-warning { color: #d97706 !important; }
+.text-danger { color: #b91c1c !important; }
+
+/* Emergency Call Quick Button */
+.emergency-item {
+  border: 1.5px solid rgba(236, 72, 153, 0.2);
+  background: rgba(236, 72, 153, 0.02);
+}
+
+.emergency-item:hover {
+  background: rgba(236, 72, 153, 0.05);
+  border-color: rgba(236, 72, 153, 0.4);
+}
+
+.emergency-details {
+  display: flex;
+  flex-direction: row !important;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.call-emergency-btn {
+  background: #ec4899;
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+}
+
+.call-emergency-btn:hover {
+  background: #db2777;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4);
+}
+
+.call-emergency-btn:active {
+  transform: translateY(0);
+}
+
+.empty-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  background: rgba(250, 248, 245, 0.4);
+  border: 1px dashed var(--accent-light);
+  border-radius: 24px;
+}
+
+/* Animations for seamless active patient transitions */
+.triage-card, .bento-card, .upcoming-card {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

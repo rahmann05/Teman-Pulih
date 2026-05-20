@@ -6,6 +6,23 @@ const { supabase: serviceSupabase } = require('../config/db');
  * Runs every 2 days at midnight.
  */
 const initCleanupTasks = () => {
+    // Run cleanup once immediately on startup to delete any leftover expired pending relations
+    (async () => {
+        console.log('[STARTUP] Running immediate cleanup of expired pending family relations...');
+        try {
+            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+            const { error } = await serviceSupabase
+                .from('family_relations')
+                .delete()
+                .eq('status', 'pending')
+                .lt('created_at', tenMinutesAgo);
+            if (error) throw error;
+            console.log('[STARTUP] Successfully cleared expired pending family relations.');
+        } catch (err) {
+            console.error('[STARTUP] Failed to clear expired pending family relations:', err.message);
+        }
+    })();
+
     // Schedule: '0 0 * * *' -> Midnight every day
     cron.schedule('0 0 * * *', async () => {
         console.log('[CRON] Starting periodic cleanup...');
@@ -49,6 +66,17 @@ const initCleanupTasks = () => {
 
             if (notifError) throw notifError;
             console.log('[CRON] Cleared notifications older than 1 day in database.');
+            
+            // 4. CLEAR DATABASE: Delete expired family relations (status = 'pending' and created_at < 10 minutes ago)
+            const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+            const { error: relationError } = await serviceSupabase
+                .from('family_relations')
+                .delete()
+                .eq('status', 'pending')
+                .lt('created_at', tenMinutesAgo);
+
+            if (relationError) throw relationError;
+            console.log('[CRON] Cleared expired pending family relations.');
             
             console.log('[CRON] Cleanup completed successfully.');
         } catch (err) {

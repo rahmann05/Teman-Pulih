@@ -27,6 +27,12 @@ const requestAccess = async (caregiverId, supabase, identifier) => {
         throw Object.assign(new Error('Anda tidak bisa menambahkan diri sendiri sebagai pasien.'), { statusCode: 400 });
     }
 
+    // Automatically delete expired pending relations from the database
+    await db.query(`
+        DELETE FROM family_relations 
+        WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'
+    `);
+
     const { data: existingRelation } = await supabase
         .from('family_relations').select('*').eq('caregiver_id', caregiverId).eq('patient_id', patientId).maybeSingle();
 
@@ -104,6 +110,8 @@ const approveAccess = async (userId, supabase, relation_id, status, verification
     const now = new Date();
     const diffMinutes = (now - createdAt) / (1000 * 60);
     if (diffMinutes >= 10) {
+        // Automatically delete the expired pending relation from DB
+        await supabase.from('family_relations').delete().eq('id', relation_id);
         throw Object.assign(new Error('Permintaan verifikasi telah kedaluwarsa (batas waktu 10 menit). Silakan minta pengiriman ulang.'), { statusCode: 400 });
     }
 
@@ -143,6 +151,12 @@ const approveAccess = async (userId, supabase, relation_id, status, verification
 };
 
 const getPendingRequests = async (userId, supabase) => {
+    // Automatically delete expired pending relations from the database
+    await db.query(`
+        DELETE FROM family_relations 
+        WHERE status = 'pending' AND created_at < NOW() - INTERVAL '10 minutes'
+    `);
+
     const query = `
         SELECT 
             fr.id, fr.created_at, fr.initiated_by,

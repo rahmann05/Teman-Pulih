@@ -1,5 +1,5 @@
 /* src/hooks/useCaregiverDashboard.js */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getProfile } from '@/features/profile/services/profileService';
 import { getFamilyMembers } from '@/features/family-sync/services/familyService';
 import { getMedications, getMedicationLogs } from '@/features/medications/services/medicationService';
@@ -8,97 +8,163 @@ import { getInitials, buildRoster, buildCaregiverTimeline as buildTimeline } fro
 
 export const useCaregiverDashboard = () => {
   const { user } = useAuth();
-  const [dashboardData, setDashboardData] = useState({
-    loading: true,
-    error: '',
-    caregiverName: 'Caregiver',
-    initials: 'CG',
-    triageStatus: 'safe',
-    triageMessage: 'Belum ada pasien yang terhubung.',
-    roster: [],
-    timeline: [],
-    medications: [],
-    logs: [],
-  });
+  
+  // Dashboard overall shell states
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [caregiverName, setCaregiverName] = useState('Caregiver');
+  const [initials, setInitials] = useState('CG');
+  
+  // Patient list / switcher states
+  const [relations, setRelations] = useState([]);
+  const [roster, setRoster] = useState([]);
+  const [acceptedPatients, setAcceptedPatients] = useState([]);
+  const [activePatientId, setActivePatientId] = useState(null);
+  
+  // Active patient data states
+  const [loadingPatientData, setLoadingPatientData] = useState(false);
+  const [activePatientProfile, setActivePatientProfile] = useState(null);
+  const [medications, setMedications] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [timeline, setTimeline] = useState([]);
+  
+  // Triage status for active patient
+  const [triageStatus, setTriageStatus] = useState('safe');
+  const [triageMessage, setTriageMessage] = useState('Belum ada pasien yang terhubung.');
 
+  // Load baseline caregiver details and list of family relations on mount
   useEffect(() => {
     let cancelled = false;
 
-    const loadDashboard = async () => {
+    const loadBaseDashboard = async () => {
       try {
+        setLoading(true);
         const [profileResponse, membersResponse] = await Promise.all([
           getProfile(),
           getFamilyMembers(),
         ]);
 
-        const relations = membersResponse.data?.members || [];
-        const roster = buildRoster(relations);
-        const primaryRelation = relations.find((relation) => relation.status === 'accepted') || relations[0];
-        const primaryPatient = primaryRelation?.patient;
-        const patientId = primaryPatient?.id;
+        if (cancelled) return;
 
-        let medications = [];
-        let logs = [];
+        const caregiverProfile = profileResponse.data?.profile || {};
+        const name = profileResponse.data?.name || caregiverProfile.name || user?.name || 'Caregiver';
+        setCaregiverName(name);
+        setInitials(getInitials(name));
 
-        if (patientId) {
-          const [medicationsResponse, logsResponse] = await Promise.all([
-            getMedications(patientId),
-            getMedicationLogs(patientId),
-          ]);
+        const allRelations = membersResponse.data?.members || [];
+        setRelations(allRelations);
+        
+        const rosterData = buildRoster(allRelations);
+        setRoster(rosterData);
 
-          medications = medicationsResponse.data?.data || [];
-          logs = logsResponse.data?.data || [];
+        // Filter for accepted patients
+        const activeRels = allRelations.filter(r => r.status === 'accepted');
+        const patients = activeRels.map(r => r.patient).filter(Boolean);
+        setAcceptedPatients(patients);
+
+        // Set initial active patient if available
+        if (patients.length > 0) {
+          setActivePatientId(patients[0].id);
+        } else {
+          setLoading(false);
         }
-
+      } catch (err) {
         if (cancelled) return;
-
-        const timeline = buildTimeline(medications, logs, primaryPatient?.name || 'Pasien');
-        const latestMissedLog = logs.find((log) => log.status === 'missed');
-
-        setDashboardData({
-          loading: false,
-          error: '',
-          caregiverName: profileResponse.data?.profile?.name || user?.name || 'Caregiver',
-          initials: getInitials(profileResponse.data?.profile?.name || user?.name || 'Teman Pulih'),
-          triageStatus: latestMissedLog ? 'alert' : 'safe',
-          triageMessage: latestMissedLog
-            ? `${primaryPatient?.name || 'Pasien'} belum meminum ${latestMissedLog.medications?.name || 'obat'}${latestMissedLog.taken_at ? ` (${new Date(latestMissedLog.taken_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })})` : ''}`
-            : primaryPatient
-              ? `Semua jadwal ${primaryPatient.name} terpantau aman`
-              : 'Belum ada pasien yang terhubung.',
-          roster,
-          timeline,
-          medications,
-          logs,
-          patientId,
-          patientName: primaryPatient?.name || ''
-        });
-      } catch (error) {
-        if (cancelled) return;
-
-        setDashboardData({
-          loading: false,
-          error: error.response?.data?.error || 'Gagal memuat dashboard caregiver.',
-          caregiverName: user?.name || 'Caregiver',
-          initials: getInitials(user?.name || 'Teman Pulih'),
-          triageStatus: 'safe',
-          triageMessage: 'Belum ada pasien yang terhubung.',
-          roster: [],
-          timeline: [],
-          medications: [],
-          logs: [],
-          patientId: null,
-          patientName: ''
-        });
+        console.error('[CaregiverDashboard] Error loading base data:', err);
+        setError(err.response?.data?.error || 'Gagal memuat data dashboard.');
+        setLoading(false);
       }
     };
 
-    loadDashboard();
+    loadBaseDashboard();
 
     return () => {
       cancelled = true;
     };
   }, [user?.name]);
 
-  return dashboardData;
+  // Load patient-specific detailed info dynamically whenever activePatientId changes
+  useEffect(() => {
+    if (!activePatientId) return;
+
+    let cancelled = false;
+
+    const loadPatientData = async () => {
+      try {
+        setLoadingPatientData(true);
+        
+        // Fetch detailed profile, medications, and logs in parallel
+        const [profileRes, medsRes, logsRes] = await Promise.all([
+          getProfile(activePatientId),
+          getMedications(activePatientId),
+          getMedicationLogs(activePatientId),
+        ]);
+
+        if (cancelled) return;
+
+        const activePatient = acceptedPatients.find(p => p.id === activePatientId) || {};
+        const activeName = activePatient.name || 'Pasien';
+
+        const patientProfile = profileRes.data || {};
+        setActivePatientProfile(patientProfile);
+
+        const medsList = medsRes.data?.data || [];
+        const logsList = logsRes.data?.data || [];
+        setMedications(medsList);
+        setLogs(logsList);
+
+        // Compute timeline & triage
+        const computedTimeline = buildTimeline(medsList, logsList, activeName);
+        setTimeline(computedTimeline);
+
+        const latestMissedLog = logsList.find((log) => log.status === 'missed');
+        setTriageStatus(latestMissedLog ? 'alert' : 'safe');
+        setTriageMessage(
+          latestMissedLog
+            ? `${activeName} belum meminum ${latestMissedLog.medications?.name || 'obat'}${latestMissedLog.taken_at ? ` (${new Date(latestMissedLog.taken_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })})` : ''}`
+            : `Semua jadwal ${activeName} terpantau aman`
+        );
+
+        setLoadingPatientData(false);
+        setLoading(false);
+      } catch (err) {
+        if (cancelled) return;
+        console.error(`[CaregiverDashboard] Error loading patient data for ${activePatientId}:`, err);
+        setLoadingPatientData(false);
+        setLoading(false);
+      }
+    };
+
+    loadPatientData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activePatientId, acceptedPatients]);
+
+  // Expose function to switch patient
+  const switchPatient = useCallback((patientId) => {
+    setActivePatientId(patientId);
+  }, []);
+
+  const activePatientName = acceptedPatients.find(p => p.id === activePatientId)?.name || '';
+
+  return {
+    loading,
+    error,
+    caregiverName,
+    initials,
+    roster,
+    acceptedPatients,
+    activePatientId,
+    activePatientName,
+    activePatientProfile,
+    loadingPatientData,
+    medications,
+    logs,
+    timeline,
+    triageStatus,
+    triageMessage,
+    switchPatient,
+  };
 };

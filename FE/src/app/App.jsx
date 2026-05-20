@@ -109,7 +109,7 @@ const AnimatedRoutes = () => {
           <Route
             path="/chatbot"
             element={
-              <ProtectedRoute allowedRoles={['patient']}>
+              <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
                 <PageTransition><ChatbotPage /></PageTransition>
               </ProtectedRoute>
             }

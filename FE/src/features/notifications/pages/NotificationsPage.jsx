@@ -136,7 +136,11 @@ const NotificationsPage = () => {
         <header className="notifications-header">
           <div className="notifications-title-area">
             <h1 className="notifications-page-title">Notifikasi</h1>
-            <p className="notifications-page-subtitle">Informasi pengingat obat dan aktivitas terkini Anda</p>
+            <p className="notifications-page-subtitle">
+              {caregiverMode 
+                ? 'Informasi pengingat obat dan aktivitas terkini pasien Anda' 
+                : 'Informasi pengingat obat dan aktivitas terkini Anda'}
+            </p>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

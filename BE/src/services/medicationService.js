@@ -236,7 +236,7 @@ const markTaken = async (user, supabase, medicationId, data) => {
                 .eq('status', 'accepted');
 
             if (relations && relations.length > 0) {
-                const todayStr = new Date().toLocaleDateString('en-CA');
+                const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
                 const notificationService = require('./notificationService');
                 
                 for (const rel of relations) {
