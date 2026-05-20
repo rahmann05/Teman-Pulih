@@ -3,7 +3,7 @@ import { LuCircleCheck } from 'react-icons/lu';
 import ChipSelector from './ChipSelector';
 import { STEP_LABELS, ALLERGY_PRESETS, CHRONIC_PRESETS, PAST_ILLNESS_PRESETS } from '../constants/emrPresets';
 
-const EMRForm = ({ formData, handleChange, handleSubmit, loading }) => {
+const EMRForm = ({ formData, handleChange, handleSubmit, loading, uploader, error }) => {
   const [step, setStep] = useState(0);
 
   // Array states for chip selectors — derived from formData arrays or parsed from text
@@ -45,18 +45,22 @@ const EMRForm = ({ formData, handleChange, handleSubmit, loading }) => {
 
   return (
     <form onSubmit={handleFinalSubmit} className="emr-wizard-form">
-      {/* Progress Steps */}
-      <div className="emr-wizard-progress">
-        {STEP_LABELS.map((label, i) => (
-          <div key={i} className={`emr-wizard-step-indicator${i === step ? ' active' : ''}${i < step ? ' done' : ''}`}>
-            <div className="emr-step-bubble">{i < step ? '✓' : i + 1}</div>
-            <span className="emr-step-label">{label}</span>
+      <div className="emr-wizard-body">
+        {uploader}
+        {error && <div className="alert-error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
+
+        {/* Progress Steps */}
+        <div className="emr-wizard-progress">
+          {STEP_LABELS.map((label, i) => (
+            <div key={i} className={`emr-wizard-step-indicator${i === step ? ' active' : ''}${i < step ? ' done' : ''}`}>
+              <div className="emr-step-bubble">{i < step ? '✓' : i + 1}</div>
+              <span className="emr-step-label">{label}</span>
+            </div>
+          ))}
+          <div className="emr-progress-bar">
+            <div className="emr-progress-fill" style={{ width: `${(step / 2) * 100}%` }} />
           </div>
-        ))}
-        <div className="emr-progress-bar">
-          <div className="emr-progress-fill" style={{ width: `${(step / 2) * 100}%` }} />
         </div>
-      </div>
 
       {/* ── STEP 1: Data Fisik ── */}
       {step === 0 && (
@@ -238,6 +242,7 @@ const EMRForm = ({ formData, handleChange, handleSubmit, loading }) => {
           </div>
         </div>
       )}
+      </div>
 
       {/* Navigation Buttons */}
       <div className="emr-wizard-nav">

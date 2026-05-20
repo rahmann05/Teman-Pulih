@@ -31,18 +31,13 @@ const EMROnboardingModal = ({ isOpen, onSuccess, onClose, initialData }) => {
             </button>
           )}
         </div>
-        
-        <div style={{ padding: '0 var(--space-6)' }}>
-          <EMRDocumentUploader onDataParsed={handleAutoFill} />
-        </div>
-
-        {error && <div className="alert-error" style={{ margin: '0 var(--space-6)' }}>{error}</div>}
-
         <EMRForm 
           formData={formData} 
           handleChange={handleChange} 
           handleSubmit={handleSubmit} 
           loading={loading} 
+          uploader={<EMRDocumentUploader onDataParsed={handleAutoFill} />}
+          error={error}
         />
       </div>
     </div>

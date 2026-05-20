@@ -178,25 +178,27 @@ const ProfilePage = () => {
 
           {/* Column 2: EMR & Family */}
           <div className="profile-col-right">
-            {/* EMR Section (Bento Card style) */}
-            <div className="bento-card profile-emr-section">
-              <div className="profile-emr-header">
-                <span className="profile-section-title-icon">
-                  <FiClipboard />
-                </span>
-                <h3 className="profile-section-title">Rekam Medis Elektronik</h3>
+            {/* EMR Section (Bento Card style) - only for patients, not caregiver */}
+            {!caregiverMode && (
+              <div className="bento-card profile-emr-section">
+                <div className="profile-emr-header">
+                  <span className="profile-section-title-icon">
+                    <FiClipboard />
+                  </span>
+                  <h3 className="profile-section-title">Rekam Medis Elektronik</h3>
+                </div>
+                <p className="profile-emr-text">
+                  Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
+                </p>
+                <button
+                  type="button"
+                  className="profile-emr-btn"
+                  onClick={() => setIsEMRModalOpen(true)}
+                >
+                  Buka Rekam Medis
+                </button>
               </div>
-              <p className="profile-emr-text">
-                Lihat atau perbarui riwayat penyakit, alergi, dan data medis Anda.
-              </p>
-              <button
-                type="button"
-                className="profile-emr-btn"
-                onClick={() => setIsEMRModalOpen(true)}
-              >
-                Buka Rekam Medis
-              </button>
-            </div>
+            )}
 
             <div className="bento-card">
               <ProfileFamilySection

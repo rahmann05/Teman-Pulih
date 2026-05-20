@@ -809,21 +809,19 @@
   background: var(--bg);
   border-radius: var(--radius-2xl);
   width: 100%;
-  max-width: 800px;
-  max-height: 90vh;
-  overflow-y: auto;
+  max-width: 950px;
+  max-height: 85vh;
+  overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   display: flex;
   flex-direction: column;
 }
 
 .emr-modal-header {
-  padding: var(--space-6);
+  padding: var(--space-5) var(--space-8);
   border-bottom: 1px solid var(--border-light);
   background: var(--bg-card);
-  position: sticky;
-  top: 0;
-  z-index: 10;
+  flex-shrink: 0;
   border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
 }
 
@@ -955,10 +953,21 @@
   }
   .emr-modal-header {
     border-radius: 0;
+    padding: var(--space-4) var(--space-4);
   }
   .emr-form .form-row {
     flex-direction: column;
     gap: var(--space-4);
+  }
+  .emr-wizard-body {
+    padding: var(--space-4) !important;
+  }
+  .emr-wizard-nav {
+    padding: var(--space-4) var(--space-4) !important;
+  }
+  .emr-btn-primary, .emr-btn-secondary {
+    flex: 1 !important;
+    min-width: auto !important;
   }
 }
 
@@ -969,7 +978,45 @@
 .emr-wizard-form {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  flex: 1;
+  overflow: hidden;
+  gap: 0;
+}
+
+.emr-wizard-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6) var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Custom scrollbar styling for scrolling window */
+.emr-wizard-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.emr-wizard-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.emr-wizard-body::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 99px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.emr-wizard-body::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.emr-wizard-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-light) transparent;
 }
 
 /* ── Progress Indicator ─── */
@@ -1340,13 +1387,16 @@
 /* ── Wizard Navigation ─── */
 .emr-wizard-nav {
   display: flex;
+  justify-content: flex-end;
   gap: var(--space-3);
-  margin-top: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0;
 }
 
 .emr-btn-primary {
-  flex: 1;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-6);
   border-radius: var(--radius-full);
   background: var(--accent);
   color: #fff;
@@ -1355,7 +1405,8 @@
   font-size: var(--text-base);
   font-weight: 800;
   cursor: pointer;
-  min-height: 52px;
+  min-height: 48px;
+  min-width: 140px;
   transition: all 0.2s;
   box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
 }
@@ -1371,7 +1422,7 @@
 }
 
 .emr-btn-secondary {
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-full);
   background: transparent;
   color: var(--text-secondary);
@@ -1380,7 +1431,8 @@
   font-size: var(--text-base);
   font-weight: 700;
   cursor: pointer;
-  min-height: 52px;
+  min-height: 48px;
+  min-width: 140px;
   transition: all 0.2s;
 }
 
