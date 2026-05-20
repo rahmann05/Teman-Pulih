@@ -1,7 +1,7 @@
 /* src/hooks/useCaregiverDashboard.js */
 import { useState, useEffect, useCallback } from 'react';
 import { getProfile } from '@/features/profile/services/profileService';
-import { getFamilyMembers } from '@/features/family-sync/services/familyService';
+import { getFamilyMembers, getIllnessHistory } from '@/features/family-sync/services/familyService';
 import { getMedications, getMedicationLogs } from '@/features/medications/services/medicationService';
 import { useAuth } from '@/shared/hooks/useAuth';
 import { getInitials, buildRoster, buildCaregiverTimeline as buildTimeline } from '@/features/dashboard/utils/dashboardHelpers';
@@ -27,6 +27,7 @@ export const useCaregiverDashboard = () => {
   const [medications, setMedications] = useState([]);
   const [logs, setLogs] = useState([]);
   const [timeline, setTimeline] = useState([]);
+  const [activeIllnesses, setActiveIllnesses] = useState([]);
   
   // Triage status for active patient
   const [triageStatus, setTriageStatus] = useState('safe');
@@ -93,11 +94,12 @@ export const useCaregiverDashboard = () => {
       try {
         setLoadingPatientData(true);
         
-        // Fetch detailed profile, medications, and logs in parallel
-        const [profileRes, medsRes, logsRes] = await Promise.all([
+        // Fetch detailed profile, medications, logs, and illness history in parallel
+        const [profileRes, medsRes, logsRes, illnessRes] = await Promise.all([
           getProfile(activePatientId),
           getMedications(activePatientId),
           getMedicationLogs(activePatientId),
+          getIllnessHistory(activePatientId).catch(() => ({ data: [] })),
         ]);
 
         if (cancelled) return;
@@ -112,6 +114,9 @@ export const useCaregiverDashboard = () => {
         const logsList = logsRes.data?.data || [];
         setMedications(medsList);
         setLogs(logsList);
+
+        const illnessList = illnessRes.data || [];
+        setActiveIllnesses(illnessList.filter(i => i.is_active));
 
         // Compute timeline & triage
         const computedTimeline = buildTimeline(medsList, logsList, activeName);
@@ -165,6 +170,7 @@ export const useCaregiverDashboard = () => {
     timeline,
     triageStatus,
     triageMessage,
+    activeIllnesses,
     switchPatient,
   };
 };

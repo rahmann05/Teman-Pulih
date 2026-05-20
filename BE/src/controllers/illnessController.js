@@ -36,4 +36,14 @@ const markRecovered = async (req, res, next) => {
     }
 };
 
-module.exports = { getIllnessHistory, addIllness, markRecovered };
+const searchIllness = async (req, res, next) => {
+    try {
+        const q = req.query.q || '';
+        const suggestions = await illnessService.searchIllness(q);
+        res.status(200).json({ data: suggestions });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { getIllnessHistory, addIllness, markRecovered, searchIllness };

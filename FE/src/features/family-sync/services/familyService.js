@@ -39,3 +39,6 @@ export const addIllness = (data) =>
 
 export const markIllnessRecovered = (id) =>
   api.patch(`/illness/${id}/recover`);
+
+export const searchIllness = (q) =>
+  api.get('/illness/search', { params: { q } });

@@ -94,40 +94,7 @@ const PatientCheckinMonitoringCard = ({ patientId, patientName }) => {
         ) : (
           <div className="monitoring-content-scroll">
             
-            {/* ── SECTION 1: Penyakit Saat Ini ── */}
-            <div style={sectionStyle}>
-              <h4 style={sectionTitleStyle}>
-                <LuActivity size={14} style={{ color: 'var(--accent)' }} /> Penyakit Saat Ini
-              </h4>
-              {activeIllnesses.length === 0 ? (
-                <div style={{
-                  padding: '12px 16px', background: 'rgba(91,123,106,0.04)',
-                  borderRadius: '14px', border: '1px solid rgba(91,123,106,0.1)',
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  fontSize: '13px', fontWeight: '700', color: 'var(--sage-dark)'
-                }}>
-                  <LuCircleCheck size={16} style={{ flexShrink: 0 }} />
-                  Pasien sedang tidak menderita penyakit apapun
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {activeIllnesses.map((ill) => (
-                    <div key={ill.id} style={{
-                      padding: '10px 14px', background: 'rgba(196,101,58,0.04)',
-                      borderRadius: '12px', border: '1px solid rgba(196,101,58,0.08)',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    }}>
-                      <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)' }}>{ill.illness_name}</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-                        sejak {new Date(ill.started_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* ── SECTION 2: Check-in Hari Ini & Riwayat 7 Hari ── */}
+            {/* ── SECTION 1: Check-in Hari Ini & Riwayat 7 Hari ── */}
             <div style={{ ...sectionStyle, borderBottom: complaints.length > 0 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
               <h4 style={sectionTitleStyle}>
                 <LuCalendar size={14} style={{ color: 'var(--accent)' }} /> Check-in Harian

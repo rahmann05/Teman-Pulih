@@ -5,6 +5,7 @@ const { requireAuth } = require('../middleware/authMiddleware');
 
 router.use(requireAuth);
 
+router.get('/search', illnessController.searchIllness);
 router.get('/', illnessController.getIllnessHistory);
 router.post('/', illnessController.addIllness);
 router.patch('/:id/recover', illnessController.markRecovered);

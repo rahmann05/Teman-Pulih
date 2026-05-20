@@ -13,6 +13,7 @@ import '@/features/dashboard/caregiver-dashboard.css';
 
 const CaregiverDashboard = () => {
   const dashboardData = useCaregiverDashboard();
+  const { activeIllnesses = [] } = dashboardData;
 
   if (dashboardData.loading) {
     return (
@@ -61,6 +62,7 @@ const CaregiverDashboard = () => {
               activePatientName={dashboardData.activePatientName}
               activePatientProfile={dashboardData.activePatientProfile}
               switchPatient={dashboardData.switchPatient}
+              activeIllnesses={activeIllnesses}
             />
           </div>
 

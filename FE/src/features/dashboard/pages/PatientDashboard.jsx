@@ -51,29 +51,27 @@ const PatientDashboard = () => {
         {/* Dashboard Content Grid */}
         <div className="patient-dashboard-grid">
           
-          {/* Split-Bento Hero Section (Spans full width of the grid on desktop) */}
+          {/* Hero + Illness Row — satu kesatuan visual */}
           <div className="dashboard-hero-wrapper">
-            <NextMedicationHero
-              id={dashboardData.nextMedication?.id}
-              medicationId={dashboardData.nextMedication?.medicationId}
-              scheduleId={dashboardData.nextMedication?.scheduleId}
-              time={
-                dashboardData.nextMedication
-                  ? (dashboardData.nextMedication.isCompletedToday
-                      ? dashboardData.nextMedication.time
-                      : `${dashboardData.nextMedication.time} WIB`)
-                  : 'Belum ada'
-              }
-              medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
-              instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
-              onMarkTaken={dashboardData.markAsTakenAction}
-              isCompletedToday={dashboardData.nextMedication?.isCompletedToday}
-            />
-          </div>
-
-          {/* Penyakit Hari Ini (Full Width Row - spans left to right) */}
-          <div className="dashboard-hero-wrapper">
-            <CurrentIllnessCard />
+            <div className="hero-with-illness">
+              <NextMedicationHero
+                id={dashboardData.nextMedication?.id}
+                medicationId={dashboardData.nextMedication?.medicationId}
+                scheduleId={dashboardData.nextMedication?.scheduleId}
+                time={
+                  dashboardData.nextMedication
+                    ? (dashboardData.nextMedication.isCompletedToday
+                        ? dashboardData.nextMedication.time
+                        : `${dashboardData.nextMedication.time} WIB`)
+                    : 'Belum ada'
+                }
+                medName={dashboardData.nextMedication?.medName || 'Tidak ada obat terjadwal'}
+                instruction={dashboardData.nextMedication?.instruction || 'Data jadwal belum tersedia'}
+                onMarkTaken={dashboardData.markAsTakenAction}
+                isCompletedToday={dashboardData.nextMedication?.isCompletedToday}
+              />
+              <CurrentIllnessCard />
+            </div>
           </div>
 
           {/* Column 1: Quick Actions */}

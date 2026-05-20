@@ -999,3 +999,256 @@
   border: 2px solid #E29E57;
 }
 
+/* ══════════════════════════════════════════════════════════
+   ILLNESS ROW CARD — Patient Dashboard
+   ══════════════════════════════════════════════════════════ */
+
+.hero-with-illness {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-with-illness .split-bento-hero {
+  border-radius: 32px 32px 0 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.illness-row-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.04);
+  border-top: 1.5px solid rgba(0,0,0,0.05);
+  border-radius: 0 0 32px 32px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+/* Minimized Bar */
+.illness-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 20px;
+  gap: 12px;
+}
+
+.illness-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.illness-bar-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.illness-bar-icon.active { background: rgba(196,101,58,0.1); color: var(--accent); }
+.illness-bar-icon.healthy { background: rgba(91,123,106,0.1); color: var(--sage-dark); }
+
+.illness-bar-info { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+
+.illness-bar-title {
+  font-size: 14px; font-weight: 800; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.illness-bar-title.healthy { color: var(--sage-dark); }
+.illness-bar-sub { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+.illness-bar-loading {
+  display: block; width: 110px; height: 13px; border-radius: 6px;
+  background: linear-gradient(90deg, var(--bg-muted) 25%, var(--border-light) 50%, var(--bg-muted) 75%);
+  background-size: 200% 100%; animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.illness-bar-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 9px; border-radius: 100px;
+  background: rgba(176,137,104,0.08); color: #8C6239;
+  font-size: 11px; font-weight: 700;
+  border: 1px solid rgba(176,137,104,0.15); white-space: nowrap; flex-shrink: 0;
+}
+
+.illness-bar-actions { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+
+.illness-bar-btn-add {
+  display: flex; align-items: center; gap: 5px;
+  padding: 6px 12px; border-radius: 100px;
+  background: rgba(var(--accent-rgb), 0.08); color: var(--accent);
+  border: none; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer;
+  transition: background 0.2s;
+}
+.illness-bar-btn-add:hover { background: rgba(var(--accent-rgb), 0.15); }
+
+.illness-bar-btn-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 9px;
+  background: rgba(0,0,0,0.03); color: var(--text-secondary);
+  border: none; cursor: pointer; transition: all 0.2s;
+}
+.illness-bar-btn-toggle:hover { background: rgba(0,0,0,0.07); color: var(--text); }
+
+/* Expanded Panel */
+.illness-expanded {
+  border-top: 1px solid rgba(0,0,0,0.04);
+  padding: 14px 18px;
+  display: flex; flex-direction: column; gap: 12px;
+  animation: illness-expand 0.2s cubic-bezier(0.16,1,0.3,1);
+}
+
+@keyframes illness-expand {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.illness-error-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 13px; background: rgba(196,101,58,0.06);
+  border: 1px solid rgba(196,101,58,0.15); border-radius: 12px;
+  font-size: 12px; font-weight: 700; color: var(--accent);
+}
+
+.illness-list { display: flex; flex-direction: column; gap: 6px; }
+.illness-item { display: flex; flex-direction: column; gap: 4px; }
+
+.illness-badge-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 13px;
+  background: rgba(196,101,58,0.03); border: 1px solid rgba(196,101,58,0.08);
+  border-radius: 13px; flex-wrap: wrap;
+}
+.illness-badge-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0;
+}
+.illness-badge-name { font-size: 13px; font-weight: 800; color: var(--text); flex: 1; min-width: 0; }
+.illness-badge-meta { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+.illness-badge-recover {
+  display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 100px;
+  background: rgba(91,123,106,0.07); color: var(--sage-dark);
+  border: 1px solid rgba(91,123,106,0.12);
+  font-size: 11px; font-weight: 700; font-family: inherit; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.illness-badge-recover:hover { background: rgba(91,123,106,0.14); }
+.illness-badge-recover:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.illness-detail-toggle {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  background: none; border: none; cursor: pointer; padding: 0 4px;
+  font-family: inherit; text-decoration: underline; text-underline-offset: 2px; align-self: flex-start;
+}
+
+.illness-info-detail {
+  display: flex; flex-direction: column; gap: 5px;
+  padding: 11px 13px; background: #FAF8F5;
+  border-radius: 12px; border: 1px solid rgba(0,0,0,0.04);
+  animation: illness-expand 0.15s ease;
+}
+
+.illness-info-row {
+  display: flex; align-items: flex-start; gap: 7px;
+  font-size: 11px; color: var(--text-secondary); line-height: 1.4;
+}
+.illness-info-icon { flex-shrink: 0; margin-top: 2px; color: var(--sage-dark); }
+.illness-info-row.illness-info-warning .illness-info-icon { color: var(--accent); }
+.illness-info-row.illness-info-warning { color: var(--accent-dark); }
+
+.illness-empty-expanded {
+  display: flex; align-items: center; gap: 10px; padding: 13px;
+  background: rgba(91,123,106,0.04); border: 1px solid rgba(91,123,106,0.1);
+  border-radius: 13px; font-size: 13px; font-weight: 700; color: var(--sage-dark);
+}
+
+/* Add Form */
+.illness-form {
+  background: rgba(var(--accent-rgb), 0.03); border: 1px solid rgba(var(--accent-rgb), 0.1);
+  border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 11px;
+  animation: illness-expand 0.18s ease;
+}
+.illness-form-header {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 13px; font-weight: 800; color: var(--text);
+}
+.illness-form-header button {
+  display: flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 7px;
+  background: rgba(0,0,0,0.05); color: var(--text-secondary); border: none; cursor: pointer;
+}
+.illness-form-hint { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin: 0; }
+
+.illness-preset-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.illness-preset-chip {
+  padding: 5px 11px; border-radius: 100px; font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.18s;
+  background: #FAF8F5; color: var(--text-secondary); border: 1.5px solid var(--border); font-family: inherit;
+}
+.illness-preset-chip.selected,
+.illness-preset-chip:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.illness-search-wrapper { position: relative; display: flex; align-items: center; }
+.illness-search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+.illness-search-input {
+  width: 100%; padding: 9px 34px 9px 34px; border-radius: 13px;
+  border: 1.5px solid var(--border); font-size: 13px; font-family: inherit;
+  outline: none; background: #fff; transition: border-color 0.2s;
+}
+.illness-search-input:focus { border-color: rgba(var(--accent-rgb), 0.4); }
+.illness-search-clear {
+  position: absolute; right: 9px; display: flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(0,0,0,0.06); color: var(--text-muted); border: none; cursor: pointer;
+}
+
+.illness-dropdown {
+  background: #fff; border: 1px solid rgba(0,0,0,0.07); border-radius: 15px;
+  overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  display: flex; flex-direction: column; animation: illness-expand 0.15s ease;
+}
+.illness-dropdown-loading { padding: 12px 15px; font-size: 12px; color: var(--text-muted); font-weight: 600; }
+.illness-dropdown-item {
+  width: 100%; text-align: left; padding: 10px 15px;
+  border: none; background: none; cursor: pointer;
+  border-bottom: 1px solid rgba(0,0,0,0.04); transition: background 0.15s; font-family: inherit;
+}
+.illness-dropdown-item:last-child { border-bottom: none; }
+.illness-dropdown-item:hover { background: rgba(var(--accent-rgb), 0.04); }
+.illness-dropdown-name { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.illness-dropdown-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+
+.illness-selected-preview {
+  background: rgba(var(--accent-rgb), 0.03); border: 1px solid rgba(var(--accent-rgb), 0.1);
+  border-radius: 14px; padding: 11px 13px; display: flex; flex-direction: column; gap: 7px;
+  animation: illness-expand 0.15s ease;
+}
+.illness-selected-title {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 12px; font-weight: 800; color: var(--accent);
+}
+
+.illness-form-footer { display: flex; justify-content: flex-end; }
+.illness-form-submit {
+  padding: 9px 20px; border-radius: 100px; background: var(--accent); color: #fff;
+  border: none; font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; transition: opacity 0.2s;
+}
+.illness-form-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.illness-add-trigger {
+  display: flex; align-items: center; gap: 7px; padding: 10px 15px; border-radius: 13px;
+  background: rgba(var(--accent-rgb), 0.04); border: 1.5px dashed rgba(var(--accent-rgb), 0.2);
+  color: var(--accent); font-size: 13px; font-weight: 700; font-family: inherit;
+  cursor: pointer; transition: all 0.2s; width: 100%; justify-content: center;
+}
+.illness-add-trigger:hover { background: rgba(var(--accent-rgb), 0.09); }
+
+.illness-emergency-link {
+  font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer;
+  font-weight: 700; text-decoration: underline; text-underline-offset: 2px;
+  text-align: left; padding: 0; font-family: inherit; opacity: 0.75;
+}
+.illness-emergency-link:hover { opacity: 1; }

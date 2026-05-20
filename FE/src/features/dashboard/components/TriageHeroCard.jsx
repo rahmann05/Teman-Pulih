@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { LuTriangleAlert, LuCircleCheck, LuChevronLeft, LuChevronRight } from 'react-icons/lu';
+import {
+  LuTriangleAlert, LuCircleCheck, LuChevronLeft, LuChevronRight,
+  LuActivity, LuPill, LuInfo,
+} from 'react-icons/lu';
 import heroImg from '@/assets/images/hero-recovery.png';
 import '@/features/dashboard/dashboard.css';
 import '@/features/dashboard/caregiver-dashboard.css';
@@ -13,6 +16,7 @@ const TriageHeroCard = ({
   activePatientName,
   activePatientProfile,
   switchPatient,
+  activeIllnesses = [],
 }) => {
   const isAlert = status === 'alert';
   const containerRef = useRef(null);
@@ -24,7 +28,6 @@ const TriageHeroCard = ({
 
   const imgY = useTransform(scrollYProgress, [0, 1], ['-22%', '22%']);
 
-  // Handle switching to the previous patient
   const handlePrev = (e) => {
     e.stopPropagation();
     if (acceptedPatients.length <= 1) return;
@@ -33,7 +36,6 @@ const TriageHeroCard = ({
     switchPatient(acceptedPatients[prevIndex].id);
   };
 
-  // Handle switching to the next patient
   const handleNext = (e) => {
     e.stopPropagation();
     if (acceptedPatients.length <= 1) return;
@@ -42,20 +44,16 @@ const TriageHeroCard = ({
     switchPatient(acceptedPatients[nextIndex].id);
   };
 
-  // Compute patient age from birth date
   const getAge = (birthDateStr) => {
     if (!birthDateStr) return '';
     const birthDate = new Date(birthDateStr);
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const m = today.getMonth() - birthDate.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
     return `${age} Tahun`;
   };
 
-  // Resolve gender label
   const getGenderLabel = (gender) => {
     if (!gender) return '';
     const val = gender.toLowerCase();
@@ -67,9 +65,10 @@ const TriageHeroCard = ({
   const profileData = activePatientProfile?.profile || {};
   const age = getAge(profileData.birth_date);
   const gender = getGenderLabel(profileData.gender);
-  
   const subtitleParts = [age, gender].filter(Boolean);
   const subtitle = subtitleParts.join(' • ') || 'Detail profil belum lengkap';
+
+  const hasIllnesses = activeIllnesses.length > 0;
 
   return (
     <div ref={containerRef} className="split-bento-hero" data-testid="triage-hero-card">
@@ -184,14 +183,76 @@ const TriageHeroCard = ({
         )}
       </div>
 
-      {/* Right Image Pane with smooth Framer Motion Parallax */}
-      <div className="hero-image-pane">
+      {/* Right Pane — Illness Info Panel (overlay on image background) */}
+      <div className="hero-image-pane triage-illness-pane">
+        {/* Background image */}
         <motion.img 
           style={{ y: imgY, scale: 1.35 }} 
           src={heroImg} 
           alt="Illustration" 
           className="hero-bento-img" 
         />
+        
+        {/* Overlay panel */}
+        <div className={`triage-illness-overlay ${hasIllnesses ? 'has-illness' : 'healthy'}`}>
+          <div className="triage-illness-header">
+            <div className="triage-illness-badge">
+              <LuActivity size={13} />
+              KONDISI TERKINI
+            </div>
+          </div>
+
+          {!hasIllnesses ? (
+            <div className="triage-illness-healthy">
+              <LuCircleCheck size={28} />
+              <span>Tidak ada penyakit aktif</span>
+            </div>
+          ) : (
+            <div className="triage-illness-list">
+              {activeIllnesses.slice(0, 2).map((ill) => {
+                const info = ill.illness_info;
+                return (
+                  <div key={ill.id} className="triage-illness-item">
+                    <div className="triage-illness-name">{ill.illness_name}</div>
+                    {info && (
+                      <div className="triage-illness-info-rows">
+                        {info.indikasi && (
+                          <div className="triage-illness-info-row">
+                            <LuInfo size={11} />
+                            <span>{info.indikasi.substring(0, 80)}{info.indikasi.length > 80 ? '…' : ''}</span>
+                          </div>
+                        )}
+                        {info.penanganan && (
+                          <div className="triage-illness-info-row">
+                            <LuCircleCheck size={11} />
+                            <span>{info.penanganan.substring(0, 80)}{info.penanganan.length > 80 ? '…' : ''}</span>
+                          </div>
+                        )}
+                        {info.obat_terkait && (
+                          <div className="triage-illness-info-row accent">
+                            <LuPill size={11} />
+                            <span>Obat: {info.obat_terkait.split(',')[0].trim()}</span>
+                          </div>
+                        )}
+                        {info.peringatan && (
+                          <div className="triage-illness-info-row warning">
+                            <LuTriangleAlert size={11} />
+                            <span>{info.peringatan.substring(0, 70)}{info.peringatan.length > 70 ? '…' : ''}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {activeIllnesses.length > 2 && (
+                <div className="triage-illness-more">
+                  +{activeIllnesses.length - 2} penyakit lainnya
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

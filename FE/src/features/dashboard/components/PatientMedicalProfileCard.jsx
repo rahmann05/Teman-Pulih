@@ -158,42 +158,6 @@ const PatientMedicalProfileCard = ({ activePatientProfile, activePatientName, lo
             </div>
           </div>
 
-          {/* Bento Item 8: Penyakit Saat Ini (dari illness_history) */}
-          <div className="medical-bento-item half-width-desktop-item" style={{ borderColor: 'rgba(196,101,58,0.25)', background: 'rgba(196,101,58,0.03)', alignItems: 'flex-start' }}>
-            <div className="bento-icon-wrapper" style={{ background: 'rgba(196,101,58,0.12)', color: 'var(--accent)', flexShrink: 0, marginTop: '2px' }}>
-              <LuActivity size={20} />
-            </div>
-            <div className="bento-details" style={{ flex: 1 }}>
-              <span className="bento-label">Penyakit Saat Ini</span>
-              {illnessLoading ? (
-                <span className="bento-value" style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Memuat...</span>
-              ) : activeIllnesses.length === 0 ? (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14px', fontWeight: 700, color: 'var(--sage-dark)' }}>
-                  <LuCircleCheck size={15} style={{ flexShrink: 0 }} />
-                  Pasien sedang tidak menderita penyakit apapun
-                </span>
-              ) : (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
-                  {activeIllnesses.map(ill => (
-                    <span
-                      key={ill.id}
-                      style={{
-                        fontSize: '12px', fontWeight: 700,
-                        padding: '3px 10px', borderRadius: '100px',
-                        background: 'rgba(196,101,58,0.1)',
-                        color: 'var(--accent-dark)',
-                        border: '1px solid rgba(196,101,58,0.2)',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      {ill.illness_name}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
           {/* Bento Item 9: Kontak Darurat */}
           {profileData.emergency_contact_name && (
             <div className="medical-bento-item half-width-desktop-item emergency-item" style={{ borderColor: 'rgba(91,123,106,0.25)', background: 'rgba(91,123,106,0.02)' }}>
