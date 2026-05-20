@@ -175,6 +175,17 @@ const createComplaint = async (user, supabase, data) => {
 
     if (insertError) throw insertError;
 
+    // Fetch patient EMR for enriched notifications
+    const { rows: emrRows } = await db.query(
+        'SELECT chronic_conditions, allergies FROM profiles WHERE user_id = $1',
+        [user.id]
+    );
+    const patientEmr = emrRows[0] || {};
+    const chronicInfo = patientEmr.chronic_conditions ? `Penyakit Kronis: ${patientEmr.chronic_conditions}` : null;
+    const allergyInfo = patientEmr.allergies ? `Alergi: ${patientEmr.allergies}` : null;
+    const emrSummaryLines = [chronicInfo, allergyInfo].filter(Boolean);
+    const emrSummary = emrSummaryLines.length > 0 ? emrSummaryLines.join('\n') : 'Tidak ada catatan medis.';
+
     // Fetch linked caregivers for the patient
     const query = `
         SELECT 
@@ -207,9 +218,9 @@ const createComplaint = async (user, supabase, data) => {
                 is_read: false
             }]);
 
-        // 2. WhatsApp Notification
+        // 2. WhatsApp Notification (dengan konteks EMR)
         if (cg.caregiver_phone) {
-            const waMessage = `🚨 *PEMBERITAHUAN DARURAT TEMANPULIH* 🚨\n\nPasien Anda, *${user.name}*, baru saja melaporkan keluhan medis mendadak!\n\n*Gejala:* ${symptomsText}\n*Tingkat Keparahan:* ${severityLabel}\n*Catatan:* ${notesText}\n\nMohon segera hubungi pasien atau lakukan tindakan medis yang diperlukan.`;
+            const waMessage = `🚨 *PEMBERITAHUAN DARURAT TEMANPULIH* 🚨\n\nPasien Anda, *${user.name}*, baru saja melaporkan keluhan medis mendadak!\n\n*Gejala:* ${symptomsText}\n*Tingkat Keparahan:* ${severityLabel}\n*Catatan:* ${notesText}\n\n📋 *Riwayat Medis Relevan:*\n${emrSummary}\n\nMohon segera hubungi pasien atau lakukan tindakan medis yang diperlukan.`;
             try {
                 await notificationService.sendWhatsApp(cg.caregiver_phone, waMessage);
             } catch (waErr) {
@@ -217,9 +228,12 @@ const createComplaint = async (user, supabase, data) => {
             }
         }
 
-        // 3. Email Notification
+        // 3. Email Notification (dengan konteks EMR)
         if (cg.caregiver_email) {
             const emailSubject = `🚨 DARURAT: Keluhan Medis Mendadak dari Pasien ${user.name}`;
+            const emrRowsHtml = emrSummaryLines.map(line =>
+                `<tr><td style="padding:8px;border-bottom:1px solid #ef9a9a;">${line}</td></tr>`
+            ).join('') || '<tr><td style="padding:8px;color:#999;">Tidak ada catatan medis.</td></tr>';
             const emailHtml = `
                 <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ffcdd2; background-color: #ffebee; border-radius: 8px; max-width: 600px;">
                     <h2 style="color: #c62828; margin-top: 0;">⚠️ Pemberitahuan Keluhan Medis TemanPulih</h2>
@@ -239,12 +253,14 @@ const createComplaint = async (user, supabase, data) => {
                             <td style="padding: 8px; border-bottom: 1px solid #ef9a9a;">${notesText}</td>
                         </tr>
                     </table>
-                    <p style="font-weight: bold; color: #c62828;">Mohon segera menghubungi pasien untuk memberikan bantuan medis yang diperlukan.</p>
+                    <h4 style="color: #b71c1c; margin: 16px 0 8px;">📋 Riwayat Medis Relevan Pasien:</h4>
+                    <table style="width:100%;border-collapse:collapse;background:#fff;border-radius:6px;overflow:hidden;">${emrRowsHtml}</table>
+                    <p style="font-weight: bold; color: #c62828; margin-top: 16px;">Mohon segera menghubungi pasien untuk memberikan bantuan medis yang diperlukan.</p>
                     <hr style="border: none; border-top: 1px solid #ef9a9a; margin: 20px 0;" />
                     <p style="font-size: 12px; color: #757575; margin-bottom: 0;">Email ini dikirimkan otomatis oleh sistem darurat TemanPulih.</p>
                 </div>
             `;
-            const emailText = `Pemberitahuan Keluhan Medis TemanPulih\n\nPasien Anda, ${user.name}, baru saja melaporkan keluhan medis mendadak:\n- Gejala: ${symptomsText}\n- Tingkat Keparahan: ${severityLabel}\n- Catatan: ${notesText}\n\nMohon segera hubungi pasien untuk tindakan lebih lanjut.`;
+            const emailText = `Pemberitahuan Keluhan Medis TemanPulih\n\nPasien Anda, ${user.name}, baru saja melaporkan keluhan medis mendadak:\n- Gejala: ${symptomsText}\n- Tingkat Keparahan: ${severityLabel}\n- Catatan: ${notesText}\n\nRiwayat Medis Relevan:\n${emrSummary}\n\nMohon segera hubungi pasien untuk tindakan lebih lanjut.`;
             try {
                 await notificationService.sendEmail(cg.caregiver_email, emailSubject, emailHtml, emailText);
             } catch (emailErr) {

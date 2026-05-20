@@ -961,3 +961,430 @@
     gap: var(--space-4);
   }
 }
+
+/* ============================================================
+   EMR WIZARD FORM — 3-Step with Chip Selectors
+   ============================================================ */
+
+.emr-wizard-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ── Progress Indicator ─── */
+.emr-wizard-progress {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0;
+  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.emr-progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--border-light);
+  border-radius: 99px;
+}
+
+.emr-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.emr-wizard-step-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  opacity: 0.4;
+  transition: opacity 0.3s;
+}
+
+.emr-wizard-step-indicator.active,
+.emr-wizard-step-indicator.done {
+  opacity: 1;
+}
+
+.emr-step-bubble {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--border-light);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 800;
+  transition: all 0.3s;
+}
+
+.emr-wizard-step-indicator.active .emr-step-bubble {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.35);
+}
+
+.emr-wizard-step-indicator.done .emr-step-bubble {
+  background: var(--sage);
+  color: #fff;
+}
+
+.emr-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.emr-wizard-step-indicator.active .emr-step-label {
+  color: var(--accent);
+}
+
+.emr-wizard-step-indicator.done .emr-step-label {
+  color: var(--sage-dark);
+}
+
+/* ── Step Content ─── */
+.emr-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  animation: emrStepIn 0.3s var(--ease-out-expo);
+}
+
+@keyframes emrStepIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.emr-step-desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(var(--accent-rgb), 0.04);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--accent);
+}
+
+/* ── Form Group ─── */
+.emr-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.emr-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.emr-label {
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.emr-optional {
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* ── Text Input ─── */
+.emr-input {
+  padding: var(--space-3) var(--space-4);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 48px;
+  width: 100%;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.emr-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.12);
+}
+
+.emr-input-unit {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.emr-input-unit .emr-input {
+  padding-right: 44px;
+}
+
+.emr-unit {
+  position: absolute;
+  right: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* ── Chip Selector ─── */
+.emr-chip-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.emr-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.emr-chip {
+  padding: 8px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  line-height: 1;
+  font-family: var(--font-body);
+}
+
+.emr-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.emr-chip.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(var(--accent-rgb), 0.3);
+}
+
+.emr-chip.large {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.emr-chip.tensi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 18px;
+  flex: 1;
+}
+
+.emr-chip.tensi small {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.emr-chip-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  margin-left: 6px;
+  font-size: 16px;
+  line-height: 1;
+  opacity: 0.7;
+  padding: 0;
+}
+
+.emr-chip-remove:hover { opacity: 1; }
+
+/* Selected chips display */
+.emr-chips-selected {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-2) var(--space-3);
+  background: rgba(var(--accent-rgb), 0.04);
+  border-radius: var(--radius-lg);
+  border: 1px dashed rgba(var(--accent-rgb), 0.2);
+}
+
+/* Custom input row */
+.emr-chip-custom-row {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.emr-chip-custom-input {
+  flex: 1;
+  padding: 8px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 40px;
+}
+
+.emr-chip-custom-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.emr-chip-add-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--accent);
+  background: rgba(var(--accent-rgb), 0.08);
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.emr-chip-add-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Checkbox ─── */
+.emr-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.emr-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.emr-checkbox-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ── Summary Box (Step 3) ─── */
+.emr-summary-box {
+  background: rgba(var(--accent-rgb), 0.04);
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
+}
+
+.emr-summary-title {
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--accent);
+  margin: 0 0 var(--space-3);
+}
+
+.emr-summary-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.emr-summary-list li {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.emr-summary-list li strong {
+  color: var(--text);
+}
+
+/* ── Wizard Navigation ─── */
+.emr-wizard-nav {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.emr-btn-primary {
+  flex: 1;
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 52px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(var(--accent-rgb), 0.3);
+}
+
+.emr-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.4);
+}
+
+.emr-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.emr-btn-secondary {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1.5px solid var(--border);
+  font-family: var(--font-heading);
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 52px;
+  transition: all 0.2s;
+}
+
+.emr-btn-secondary:hover {
+  background: var(--bg-muted);
+  border-color: var(--text-muted);
+}

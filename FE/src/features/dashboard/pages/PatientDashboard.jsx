@@ -8,6 +8,7 @@ import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import EMROnboardingModal from '@/shared/layouts/EMROnboardingModal';
 import { usePatientDashboard } from '@/features/dashboard/hooks/usePatientDashboard';
 import DailyCheckinCard from '@/features/dashboard/components/DailyCheckinCard';
+import CurrentIllnessCard from '@/features/dashboard/components/CurrentIllnessCard';
 import '@/features/dashboard/dashboard.css';
 
 const PatientDashboard = () => {
@@ -68,6 +69,11 @@ const PatientDashboard = () => {
               onMarkTaken={dashboardData.markAsTakenAction}
               isCompletedToday={dashboardData.nextMedication?.isCompletedToday}
             />
+          </div>
+
+          {/* Penyakit Hari Ini (Full Width Row - spans left to right) */}
+          <div className="dashboard-hero-wrapper">
+            <CurrentIllnessCard />
           </div>
 
           {/* Column 1: Quick Actions */}

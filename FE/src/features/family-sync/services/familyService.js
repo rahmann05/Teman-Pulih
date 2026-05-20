@@ -30,3 +30,12 @@ export const getCheckins = (patientId, limit) =>
 export const getTodayCheckinStatus = () =>
   api.get('/family/checkins/today');
 
+// Illness History
+export const getIllnessHistory = (patientId) =>
+  api.get('/illness', { params: { patientId } });
+
+export const addIllness = (data) =>
+  api.post('/illness', data);
+
+export const markIllnessRecovered = (id) =>
+  api.patch(`/illness/${id}/recover`);

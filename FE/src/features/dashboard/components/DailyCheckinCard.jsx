@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   LuCircleCheck, 
   LuActivity, 
@@ -7,11 +8,13 @@ import {
   LuAngry, 
   LuFrown, 
   LuMeh, 
-  LuLaugh 
+  LuLaugh,
+  LuTriangleAlert
 } from 'react-icons/lu';
 import { getTodayCheckinStatus, createCheckin } from '@/features/family-sync/services/familyService';
 
 const DailyCheckinCard = () => {
+  const navigate = useNavigate();
   const [rating, setRating] = useState(0);
   const [selectedSymptoms, setSelectedSymptoms] = useState([]);
   const [notes, setNotes] = useState('');
@@ -20,6 +23,7 @@ const DailyCheckinCard = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showLowRatingCTA, setShowLowRatingCTA] = useState(false);
 
   const symptomsList = [
     'Sehat & Fit',
@@ -98,6 +102,8 @@ const DailyCheckinCard = () => {
       if (data) {
         setCheckedIn(true);
         setTodayData(data);
+        // Show CTA if condition is bad (1 or 2)
+        if (rating <= 2) setShowLowRatingCTA(true);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Gagal menyimpan check-in.');
@@ -182,6 +188,50 @@ const DailyCheckinCard = () => {
             lineHeight: '1.6'
           }}>
             "{todayData.notes}"
+          </div>
+        )}
+
+        {/* Low-rating CTA banner */}
+        {showLowRatingCTA && (
+          <div style={{
+            background: 'rgba(196,101,58,0.06)',
+            border: '1px solid rgba(196,101,58,0.15)',
+            borderRadius: '20px',
+            padding: '16px 20px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <LuTriangleAlert size={18} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+              <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text)' }}>
+                Kondisi Anda terdeteksi tidak baik. Ingin langsung lapor ke Caregiver?
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => navigate('/family-sync')}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: '14px',
+                  background: 'var(--accent)', color: '#fff',
+                  border: 'none', fontWeight: '700', cursor: 'pointer',
+                  fontSize: '13px', fontFamily: 'inherit',
+                }}
+              >
+                Ya, Laporkan Sekarang
+              </button>
+              <button
+                onClick={() => setShowLowRatingCTA(false)}
+                style={{
+                  padding: '10px 16px', borderRadius: '14px',
+                  background: 'transparent', color: 'var(--text-secondary)',
+                  border: '1px solid var(--border)', cursor: 'pointer',
+                  fontSize: '13px', fontFamily: 'inherit',
+                }}
+              >
+                Tidak
+              </button>
+            </div>
           </div>
         )}
       </div>

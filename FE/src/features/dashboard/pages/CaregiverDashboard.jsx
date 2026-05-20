@@ -66,12 +66,11 @@ const CaregiverDashboard = () => {
 
           {dashboardData.activePatientId ? (
             <>
-              {/* Detail Pasien (Left Column) */}
+              {/* Pemantauan Kondisi Pasien (Left Column) */}
               <div className="dashboard-col-left">
-                <PatientMedicalProfileCard 
-                  activePatientProfile={dashboardData.activePatientProfile}
-                  activePatientName={dashboardData.activePatientName}
-                  loading={dashboardData.loadingPatientData}
+                <PatientCheckinMonitoringCard 
+                  patientId={dashboardData.activePatientId} 
+                  patientName={dashboardData.activePatientName}
                 />
               </div>
 
@@ -80,11 +79,12 @@ const CaregiverDashboard = () => {
                 <UpcomingTimeline schedule={dashboardData.timeline} />
               </div>
 
-              {/* Monitoring Check-in Harian (Full Width Row) */}
+              {/* Detail Pasien (Full Width Row - spans left to right, placed above calendar) */}
               <div className="dashboard-hero-wrapper">
-                <PatientCheckinMonitoringCard 
-                  patientId={dashboardData.activePatientId} 
-                  patientName={dashboardData.activePatientName} 
+                <PatientMedicalProfileCard 
+                  activePatientProfile={dashboardData.activePatientProfile}
+                  activePatientName={dashboardData.activePatientName}
+                  loading={dashboardData.loadingPatientData}
                 />
               </div>
 

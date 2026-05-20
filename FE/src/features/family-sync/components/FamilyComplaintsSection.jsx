@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { LuTriangleAlert, LuActivity, LuInfo, LuCalendar } from 'react-icons/lu';
+import { LuTriangleAlert, LuActivity, LuInfo, LuCalendar, LuStethoscope } from 'react-icons/lu';
 import { createComplaint, getComplaints } from '@/features/family-sync/services/familyService';
+import api from '@/shared/services/api';
 
 const FamilyComplaintsSection = ({ caregiverMode, members }) => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [patientEmr, setPatientEmr] = useState(null);
   
   // Patient Form States
   const [symptoms, setSymptoms] = useState('');
@@ -18,6 +20,15 @@ const FamilyComplaintsSection = ({ caregiverMode, members }) => {
 
   useEffect(() => {
     loadComplaints();
+    // Fetch EMR context for patient (to show banner)
+    if (!caregiverMode) {
+      api.get('/profile').then(res => {
+        const p = res.data?.profile || {};
+        if (p.chronic_conditions || p.allergies) {
+          setPatientEmr({ chronic: p.chronic_conditions, allergy: p.allergies });
+        }
+      }).catch(() => {});
+    }
   }, [caregiverMode, members]);
 
   const loadComplaints = async () => {
@@ -151,6 +162,37 @@ const FamilyComplaintsSection = ({ caregiverMode, members }) => {
             borderRadius: '24px',
             flexShrink: 0
           }}>
+            {/* EMR Context Banner */}
+            {patientEmr && (
+              <div style={{
+                background: 'rgba(196,101,58,0.05)',
+                border: '1px solid rgba(196,101,58,0.12)',
+                borderRadius: '14px',
+                padding: '12px 14px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <LuStethoscope size={14} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                  <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Catatan Medis Anda
+                  </span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingLeft: '22px' }}>
+                  {patientEmr.chronic && (
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                      🫀 {patientEmr.chronic}
+                    </span>
+                  )}
+                  {patientEmr.allergy && (
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                      ⚠️ Alergi: {patientEmr.allergy}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
             <div>
               <span style={{ fontSize: '13px', fontWeight: '800', color: 'var(--text)', display: 'block', marginBottom: '8px' }}>
                 Pilih Gejala Mendadak yang Dirasakan:

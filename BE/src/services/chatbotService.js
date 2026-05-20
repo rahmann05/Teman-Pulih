@@ -92,11 +92,46 @@ const getEmrContext = async (supabase, user) => {
         .from('medications').select('name, dosage, instructions').eq('user_id', targetPatientId);
 
     if (patientMedications && patientMedications.length > 0) {
-        privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---
-\n(Informasi ini terenkripsi dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
+        privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---\n\n(Informasi ini terenkripsi dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
         privateContext += patientMedications.map(m => `- ${m.name} (${m.dosage}): ${m.instructions}`).join('\n');
         routineMedicationsForSearch += ' ' + patientMedications.map(m => m.name).join(' ');
     }
+
+    // Penyakit aktif terkini (illness_history)
+    try {
+        const { data: activeIllnesses } = await supabase
+            .from('illness_history')
+            .select('illness_name, started_at, notes')
+            .eq('patient_id', targetPatientId)
+            .eq('is_active', true)
+            .order('started_at', { ascending: false })
+            .limit(5);
+
+        if (activeIllnesses && activeIllnesses.length > 0) {
+            const illnessList = activeIllnesses
+                .map(i => `- ${i.illness_name} (sejak ${i.started_at})${i.notes ? ': ' + i.notes : ''}`)
+                .join('\n');
+            emrContext += `\n[PENYAKIT AKTIF SAAT INI]\n${illnessList}\n`;
+        }
+    } catch (_) { /* tabel mungkin belum ada, abaikan */ }
+
+    // 3 check-in kondisi harian terakhir
+    try {
+        const { data: recentCheckins } = await supabase
+            .from('daily_checkins')
+            .select('checkin_date, condition_rating, symptoms_felt')
+            .eq('patient_id', targetPatientId)
+            .order('checkin_date', { ascending: false })
+            .limit(3);
+
+        if (recentCheckins && recentCheckins.length > 0) {
+            const ratingLabels = ['', 'Sangat Buruk', 'Buruk', 'Cukup', 'Baik', 'Sangat Baik'];
+            const checkinList = recentCheckins
+                .map(c => `- ${c.checkin_date}: Kondisi ${ratingLabels[c.condition_rating] || c.condition_rating}/5, Gejala: ${c.symptoms_felt || 'tidak ada'}`)
+                .join('\n');
+            emrContext += `\n[CHECK-IN KONDISI TERBARU]\n${checkinList}\n`;
+        }
+    } catch (_) { /* tabel mungkin belum ada, abaikan */ }
 
     const result = { emrContext, routineMedicationsForSearch, privateContext, targetPatientId };
     await cacheSet(cacheKey, result, 21600);
