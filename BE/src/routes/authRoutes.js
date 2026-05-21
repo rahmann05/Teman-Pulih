@@ -9,7 +9,8 @@ router.post('/login', authController.login);
 router.post('/oauth-login', authController.oauthLogin);
 router.post('/refresh', authController.refreshToken);
 
-// Contoh endpoint yang diproteksi JWT
+// Endpoint proteksi JWT
+router.post('/logout', requireAuth, authController.logout);
 router.get('/me', requireAuth, authController.getMe); 
 
 module.exports = router;

@@ -29,9 +29,11 @@ const sendMessage = async (req, res) => {
                     const gatekeeperModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite', generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
                     const gatekeeperPrompt = `Klasifikasikan pesan di dalam tag <pesan>.
 Kategori:
-1. MEDIS: Penyakit, gejala, obat.
-2. SAPAAN: "halo", "pagi", "terima kasih".
-3. LUAR_MEDIS: Di luar ranah kesehatan.
+1. MEDIS: Penyakit, gejala (demam, batuk, pusing, mual, dll), obat, kesehatan, keluhan fisik/mental, kondisi medis, terminologi medis.
+2. SAPAAN: Salam, ucapan terima kasih, perkenalan, salam penutup.
+3. LUAR_MEDIS: Topik di luar kesehatan sama sekali (politik, hiburan, olahraga non-kesehatan, dll).
+
+PERHATIAN: Jika ada keraguan antara MEDIS dan LUAR_MEDIS, pilih MEDIS.
 
 <pesan>${message}</pesan>
 Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
@@ -79,12 +81,19 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
         try {
             const { genAI } = chatbotService;
             const expansionModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite', generationConfig: { temperature: 0.1 } });
-            const expandPrompt = `Ekstrak maksimal 3 kata kunci medis/gejala utama dari pesan ini: "${message}". Pisahkan dengan koma. (Contoh: dispepsia, mual). Jika tidak jelas, kosongkan.`;
+            // Minta keyword dalam 2 bahasa: Indonesia dan istilah medis (yang sering dalam bahasa Inggris/Latin)
+            const expandPrompt = `Ekstrak maksimal 4 kata kunci medis dari pesan ini: "${message}".
+Aturan:
+- Sertakan istilah dalam Bahasa Indonesia DAN istilah medis/Inggrisnya jika berbeda (contoh: "demam" dan "febris", "maag" dan "dispepsia", "darah tinggi" dan "hipertensi")
+- Pisahkan dengan koma
+- Hanya kata kunci medis, tidak perlu kalimat
+- Jika tidak ada istilah medis yang jelas, kosongkan
+Contoh output: demam, febris, batuk, cough`;
             const expandResult = await expansionModel.generateContent({ contents: [{ role: 'user', parts: [{ text: expandPrompt }] }], signal: abortController.signal });
-            const expandedKeywords = expandResult.response.text().split(',').map(s => s.trim()).filter(s => s);
+            const expandedKeywords = expandResult.response.text().split(',').map(s => s.trim()).filter(s => s && s.length >= 2);
             if (expandedKeywords.length > 0) {
                 searchTerms = [message, ...expandedKeywords];
-                console.log('[RAG] Query Medis:', searchTerms);
+                console.log('[RAG] Query Medis (bilingual):', searchTerms);
             }
         } catch (e) { console.warn('[RAG] Query Expansion gagal, menggunakan input asli.'); }
 
@@ -95,7 +104,8 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
                 routineMedicationsForSearch,
                 req.user,
                 supabase,
-                targetPatientId
+                targetPatientId,
+                message  // pass rawMessage untuk L2 fallback
             );
         } catch (e) { console.error('[RAG] Error ChromaDB Initialization:', e.message); }
 
@@ -106,14 +116,14 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
 
 ATURAN KEAMANAN KLINIS (WAJIB):
 1. NO DIAGNOSIS PASTI: Gunakan frasa "Kemungkinan ini adalah..."
-2. ATURAN OBAT KETAT: Kamu HANYA BOLEH menyarankan obat bebas (OTC) yang TERCANTUM di [REFERENSI OBAT]. Jangan mengarang obat! 
-3. PROTOKOL KONTRAINDIKASI (PENTING): Cek [REKAM MEDIS]. Jika obat saranmu bertentangan dengan Alergi atau Obat Rutin, BERI PERINGATAN KERAS dan larang konsumsi!
+2. ATURAN OBAT KETAT: Kamu BOLEH menyebutkan nama obat yang TERCANTUM di [REFERENSI OBAT]. Jangan mengarang obat! JANGAN PERNAH menyebutkan dosis, HANYA sebutkan namanya saja.
+3. PROTOKOL KONTRAINDIKASI (PENTING): Cek [REKAM MEDIS] dan [PENYAKIT AKTIF SAAT INI]. Jika obat saranmu bertentangan dengan Alergi, Obat Rutin, atau Penyakit Terdahulu/Saat Ini, BERI PERINGATAN KERAS dan larang konsumsi!
 4. JANGAN ulangi keluhan user.
 
 STRUKTUR JAWABAN:
-- Analisis awal yang empatik.
+- Analisis awal yang empatik (termasuk mempertimbangkan [PENYAKIT AKTIF SAAT INI]).
 - Saran perawatan (Non-farmakologi).
-- Saran Obat (Farmakologi) BERDASARKAN REFERENSI (Sertakan peringatan jika ada kontraindikasi dengan EMR).
+- Saran Obat (Farmakologi) BERDASARKAN REFERENSI (Hanya sebutkan nama, dilarang sebut dosis. Sertakan peringatan jika ada kontraindikasi dengan EMR/Penyakit).
 - Kapan harus ke dokter.`;
 
         if (!ragContextFormatted) {

@@ -1,7 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const { chromaClient } = require('../config/chroma.js');
 const { cacheGet, cacheSet } = require('../helpers/cache');
-const medicationService = require('./medicationService');
+const { buildRagContext } = require('./ragService');
+
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
 
@@ -138,74 +138,8 @@ const getEmrContext = async (supabase, user) => {
     return result;
 };
 
-const buildRagContext = async (searchTerms, routineMedications, user = null, supabase = null, targetPatientId = null) => {
-    const primaryQuery = (searchTerms && searchTerms.length > 0) ? searchTerms[0] : '';
-    if (primaryQuery) {
-        try {
-            const chromaResult = await medicationService.searchChroma(primaryQuery, user, supabase, targetPatientId);
-            if (chromaResult) {
-                const obatItems = chromaResult.obat || [];
-                const kondisiItems = chromaResult.kondisi || [];
 
-                let ragContext = '';
-                if (kondisiItems.length > 0) {
-                    const kondisiText = kondisiItems.slice(0, 3).map((k) => k.content).filter(Boolean).join('\n---\n');
-                    if (kondisiText) ragContext += `=== REFERENSI KONDISI MEDIS ===\n${kondisiText}\n\n`;
-                }
+// buildRagContext is handled by ragService.js and exported below
 
-                if (obatItems.length > 0) {
-                    const obatText = obatItems.slice(0, 5).map((o) => {
-                        const parts = [
-                            `Informasi Obat: ${o.nama_obat}`,
-                            o.kategori ? `Kategori: ${o.kategori}` : '',
-                            o.indikasi ? `Indikasi: ${o.indikasi}` : '',
-                            o.komposisi ? `Komposisi: ${o.komposisi}` : '',
-                            o.dosis ? `Dosis: ${o.dosis}` : '',
-                            o.aturan_pakai ? `Aturan Pakai: ${o.aturan_pakai}` : '',
-                            o.efek_samping ? `Efek Samping: ${o.efek_samping}` : ''
-                        ].filter(Boolean);
-                        return parts.join('\n');
-                    }).join('\n---\n');
-                    if (obatText) ragContext += `=== REFERENSI OBAT & INTERAKSI ===\n${obatText}\n\n`;
-                }
-
-                if (ragContext) {
-                    console.log(`[RAG] Referensi dari searchChroma: ${obatItems.length} Obat, ${kondisiItems.length} Kondisi.`);
-                    return ragContext;
-                }
-            }
-        } catch (e) {
-            console.warn('[RAG] Fallback ke query langsung ChromaDB:', e.message);
-        }
-    }
-
-    const [penyakitCol, obatCol] = await Promise.all([
-        chromaClient.getCollection({ name: process.env.CHROMA_DATABASE || 'RAG-TemanPulih' }),
-        chromaClient.getCollection({ name: process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat' }),
-    ]);
-
-    const obatQueries = [...searchTerms];
-    if (routineMedications && routineMedications.length > 2) obatQueries.push(routineMedications);
-
-    const [hasilPenyakit, hasilObat] = await Promise.allSettled([
-        penyakitCol.query({ queryTexts: searchTerms, nResults: 2 }),
-        obatCol.query({ queryTexts: obatQueries, nResults: 3 }),
-    ]);
-
-    const extractDocs = (r) => {
-        if (r.status !== 'fulfilled' || !r.value?.documents) return [];
-        return [...new Set(r.value.documents.flat().filter(d => d))];
-    };
-
-    const docsPenyakit = extractDocs(hasilPenyakit).slice(0, 2);
-    const docsObat = extractDocs(hasilObat).slice(0, 3);
-
-    let ragContextFormatted = '';
-    if (docsPenyakit.length > 0) ragContextFormatted += `=== REFERENSI KONDISI MEDIS ===\n${docsPenyakit.join('\n---\n')}\n\n`;
-    if (docsObat.length > 0) ragContextFormatted += `=== REFERENSI OBAT & INTERAKSI ===\n${docsObat.join('\n---\n')}\n\n`;
-    if (ragContextFormatted) console.log(`[RAG] Referensi paralel berhasil: ${docsPenyakit.length} Penyakit, ${docsObat.length} Obat.`);
-
-    return ragContextFormatted;
-};
 
 module.exports = { sanitizeInput, normalizeHistory, getHistory, clearHistory, getEmrContext, buildRagContext, genAI };

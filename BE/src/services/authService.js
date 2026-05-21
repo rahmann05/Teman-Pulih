@@ -180,8 +180,27 @@ const getMe = async (user) => {
 const refreshToken = async (refresh_token) => {
     if (!refresh_token) throw Object.assign(new Error('Refresh token wajib disertakan.'), { statusCode: 400 });
     const { data, error } = await supabase.auth.refreshSession({ refresh_token });
-    if (error) throw error;
+    if (error) {
+        // If refresh fails, it could mean the token is invalid or expired.
+        // It's hard to clear chat history here without userId, but the frontend should ideally call /logout.
+        throw Object.assign(new Error('Sesi kedaluwarsa, silakan login kembali.'), { statusCode: 401 });
+    }
     return { token: data.session.access_token, refresh_token: data.session.refresh_token };
 };
 
-module.exports = { register, login, oauthLogin, getMe, refreshToken };
+const logout = async (user) => {
+    if (!user || !user.id) return;
+    
+    // Hapus chat history di database
+    try {
+        await supabase.from('chat_history').delete().eq('user_id', user.id);
+        console.log(`[DB] Chat history cleared on logout for user ID: ${user.id}`);
+    } catch (err) {
+        console.error('[DB] Gagal membersihkan riwayat chat saat logout:', err.message);
+    }
+    
+    // (Opsional) Supabase sign out
+    // await supabase.auth.admin.signOut(user.auth_id); // membutuhkan service role, kita skip saja yang penting history bersih
+};
+
+module.exports = { register, login, oauthLogin, getMe, refreshToken, logout };

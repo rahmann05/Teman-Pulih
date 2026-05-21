@@ -52,4 +52,13 @@ const refreshToken = async (req, res, next) => {
     }
 };
 
-module.exports = { register, login, oauthLogin, getMe, refreshToken };
+const logout = async (req, res, next) => {
+    try {
+        await authService.logout(req.user);
+        res.status(200).json({ message: 'Berhasil logout dan chat history dibersihkan.' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { register, login, oauthLogin, getMe, refreshToken, logout };
