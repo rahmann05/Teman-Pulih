@@ -1,4 +1,5 @@
 const chatbotService = require('../services/chatbotService');
+const { buildChatbotContext } = require('../services/ragService');
 const { getSupabaseClient } = require('../helpers/supabase');
 
 const sendMessage = async (req, res) => {
@@ -97,17 +98,23 @@ Contoh output: demam, febris, batuk, cough`;
             }
         } catch (e) { console.warn('[RAG] Query Expansion gagal, menggunakan input asli.'); }
 
+        // Classify the primary keyword as OBAT or PENYAKIT
+        let classification = 'PENYAKIT';
+        const primaryKeyword = searchTerms[0] || message;
+        try {
+            const { genAI } = chatbotService;
+            const classifyModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite', generationConfig: { temperature: 0.0, maxOutputTokens: 5 } });
+            const classifyPrompt = `Dari kata kunci medis berikut: "${primaryKeyword}". Apakah ini tentang OBAT atau PENYAKIT/GEJALA? Balas HANYA satu kata: OBAT atau PENYAKIT.`;
+            const classifyResult = await classifyModel.generateContent({ contents: [{ role: 'user', parts: [{ text: classifyPrompt }] }], signal: abortController.signal });
+            const classifyText = classifyResult.response.text().trim().toUpperCase();
+            if (classifyText.includes('OBAT')) classification = 'OBAT';
+            console.log(`[RAG] Keyword "${primaryKeyword}" classified as: ${classification}`);
+        } catch (e) { console.warn('[RAG] Classification gagal, default PENYAKIT.'); }
+
         let ragContextFormatted = '';
         try {
-            ragContextFormatted = await chatbotService.buildRagContext(
-                searchTerms,
-                routineMedicationsForSearch,
-                req.user,
-                supabase,
-                targetPatientId,
-                message  // pass rawMessage untuk L2 fallback
-            );
-        } catch (e) { console.error('[RAG] Error ChromaDB Initialization:', e.message); }
+            ragContextFormatted = await buildChatbotContext(classification, primaryKeyword, null);
+        } catch (e) { console.error('[RAG] Error buildChatbotContext:', e.message); }
 
         const modelConfig = { temperature: 0.2, maxOutputTokens: 2048 };
         const safetySettings = [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }];

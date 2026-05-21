@@ -1,17 +1,32 @@
+/**
+ * illnessService.js — Illness history & RAG-based illness search
+ *
+ * Responsibilities:
+ * - getIllnessHistory  : Fetch patient illness records from Supabase
+ * - addIllness         : Insert new illness + fetch illness_info from ChromaDB
+ * - markRecovered      : Mark an illness as recovered
+ * - searchIllness      : Search ChromaDB for illness suggestions (metadata-first)
+ * - fetchIllnessInfoFromChroma : Fetch full illness info by name from ChromaDB
+ */
+
 const { cacheGet, cacheSet, cacheDel } = require('../helpers/cache');
 const { resolveTargetPatientId } = require('../helpers/patientAccess');
-const { chromaClient } = require('../config/chroma.js');
 const {
-    buildQueryList,
-    extractIllnessName,
+    getChromaCollection,
+    getDiseaseNames,
+    getDrugNames,
+    fuzzyMatchName,
+    getDocsByDiseaseName,
+    getDocsByDrugName,
+} = require('../helpers/chromaHelper');
+const {
     parseIllnessContent,
     parseDrugContent,
-    softScore,
-    isSoftRelevant,
+    buildQueryList,
     normalizeText,
-    getFullConditionContent,
-    getFullDrugContent,
 } = require('../helpers/ragUtils');
+
+// ─── ILLNESS HISTORY ──────────────────────────────────────────────────────────
 
 /**
  * Ambil riwayat penyakit pasien (aktif dan sudah sembuh)
@@ -42,15 +57,16 @@ const getIllnessHistory = async (user, supabase, patientId) => {
     return data;
 };
 
+// ─── ADD ILLNESS ──────────────────────────────────────────────────────────────
+
 /**
- * Tambah penyakit baru
+ * Tambah penyakit baru. Otomatis ambil illness_info dari ChromaDB jika tidak disediakan.
  */
 const addIllness = async (user, supabase, { illness_name, started_at, notes, illness_info }) => {
     if (!illness_name || !illness_name.trim()) {
         throw Object.assign(new Error('Nama penyakit wajib diisi.'), { statusCode: 400 });
     }
 
-    // Jika illness_info tidak diberikan, coba ambil dari Chroma (dengan chunk merging)
     let resolvedInfo = illness_info || null;
     if (!resolvedInfo) {
         try {
@@ -75,7 +91,7 @@ const addIllness = async (user, supabase, { illness_name, started_at, notes, ill
 
     if (error) throw error;
 
-    // Update field last_illness di profiles agar RAG / EMR tetap sinkron
+    // Update last_illness di profiles untuk sinkronisasi EMR / chatbot
     await supabase
         .from('profiles')
         .update({ last_illness: illness_name.trim() })
@@ -91,201 +107,60 @@ const addIllness = async (user, supabase, { illness_name, started_at, notes, ill
     return data;
 };
 
-/**
- * Ambil obat-obatan relevan dari RAG-TemanPulih-Obat untuk suatu penyakit.
- *
- * Strategi dua lapis:
- * 1. Semantic search dengan nama penyakit → temukan obat yang indikasinya relevan
- * 2. Lookup nama obat yang disebutkan eksplisit di konten kondisi ("Obat Terkait:")
- *
- * @param {object} drugCol     - ChromaDB drug collection
- * @param {string} illnessName - Nama penyakit sebagai query semantik
- * @param {string} condContent - Konten kondisi (untuk extract "Obat Terkait:")
- * @returns {{ nama_obat, indikasi, dosis, aturan_pakai, efek_samping }[]}
- */
-const fetchDrugsForCondition = async (drugCol, illnessName, condContent = '') => {
-    if (!drugCol) return [];
-    const drugs = [];
-    const seenDrugs = new Set();
-
-    try {
-        // Layer 1: Semantic search — nama penyakit ke drug collection
-        // Drug docs punya field "Indikasi" yang menyebut penyakit → vector search akan match
-        const queries = buildQueryList(illnessName).slice(0, 4);
-        const semResult = await drugCol.query({ queryTexts: queries, nResults: 6 });
-        const semDocs  = semResult?.documents?.flat().filter(Boolean) || [];
-        const semMetas = semResult?.metadatas?.flat() || [];
-        const semDists = semResult?.distances?.flat() || [];
-
-        for (let i = 0; i < semDocs.length; i++) {
-            const doc  = semDocs[i];
-            const meta = semMetas[i] || {};
-            const dist = semDists[i] ?? null;
-
-            const parsed = parseDrugContent(doc);
-            const nameToUse = meta.nama_obat || parsed.nama_obat;
-            if (!nameToUse) continue;
-
-            const key = normalizeText(nameToUse);
-            if (seenDrugs.has(key)) continue;
-
-            // Soft relevance: pastikan setidaknya ada kaitan semantik
-            const score = softScore(illnessName, doc, dist, queries);
-            if (!isSoftRelevant(score, dist)) continue;
-
-            seenDrugs.add(key);
-
-            // Fetch semua chunk obat ini untuk info lengkap
-            let fullContent = doc;
-            if (meta.source_id) {
-                fullContent = await getFullDrugContent(drugCol, meta.source_id, doc);
-            }
-            const fullParsed = parseDrugContent(fullContent);
-
-            drugs.push({
-                nama_obat:   meta.nama_obat || fullParsed.nama_obat || nameToUse,
-                kategori:    meta.kategori  || fullParsed.kategori  || '',
-                indikasi:    fullParsed.indikasi    || parsed.indikasi    || '',
-                komposisi:   fullParsed.komposisi   || parsed.komposisi   || '',
-                dosis:       fullParsed.dosis       || parsed.dosis       || '',
-                aturan_pakai: fullParsed.aturan_pakai || parsed.aturan_pakai || '',
-                efek_samping: fullParsed.efek_samping || parsed.efek_samping || '',
-                distance: dist,
-            });
-
-            if (drugs.length >= 5) break;
-        }
-
-        // Layer 2: Explicit "Obat Terkait:" mentions in condition content
-        if (condContent) {
-            const obatMentions = [...condContent.matchAll(/Obat Terkait[:\s]+([^\n.]+)/gi)];
-            for (const match of obatMentions) {
-                const drugName = match[1]?.trim();
-                if (!drugName) continue;
-                const key = normalizeText(drugName);
-                if (seenDrugs.has(key)) continue;
-
-                // Lookup langsung di drug collection
-                try {
-                    const lookupRes = await drugCol.query({ queryTexts: [drugName], nResults: 2 });
-                    const lookupDocs  = lookupRes?.documents?.[0] || [];
-                    const lookupMetas = lookupRes?.metadatas?.[0]  || [];
-                    const lookupDists = lookupRes?.distances?.[0]  || [];
-
-                    for (let j = 0; j < lookupDocs.length; j++) {
-                        if (!lookupDocs[j]) continue;
-                        const lParsed = parseDrugContent(lookupDocs[j]);
-                        const lName   = lookupMetas[j]?.nama_obat || lParsed.nama_obat || drugName;
-                        const lKey    = normalizeText(lName);
-                        if (seenDrugs.has(lKey)) continue;
-
-                        // Pastikan nama cocok (bukan random result dari vector search)
-                        const nameMatch = lKey.includes(key) || key.includes(lKey);
-                        if (!nameMatch && (lookupDists[j] ?? 1) > 0.6) continue;
-
-                        seenDrugs.add(lKey);
-                        let fullContent = lookupDocs[j];
-                        if (lookupMetas[j]?.source_id) {
-                            fullContent = await getFullDrugContent(drugCol, lookupMetas[j].source_id, lookupDocs[j]);
-                        }
-                        const fullParsed = parseDrugContent(fullContent);
-                        drugs.push({
-                            nama_obat:    lName,
-                            kategori:     lookupMetas[j]?.kategori || fullParsed.kategori || '',
-                            indikasi:     fullParsed.indikasi     || lParsed.indikasi     || '',
-                            komposisi:    fullParsed.komposisi    || lParsed.komposisi    || '',
-                            dosis:        fullParsed.dosis        || lParsed.dosis        || '',
-                            aturan_pakai: fullParsed.aturan_pakai || lParsed.aturan_pakai || '',
-                            efek_samping: fullParsed.efek_samping || lParsed.efek_samping || '',
-                            distance: lookupDists[j] ?? null,
-                            is_from_explicit_mention: true,
-                        });
-                        break; // ambil satu match terbaik per drugName
-                    }
-                } catch (_) { /* abaikan */ }
-            }
-        }
-    } catch (e) {
-        console.warn(`[CHROMA] fetchDrugsForCondition error for "${illnessName}":`, e.message);
-    }
-
-    return drugs;
-};
+// ─── FETCH ILLNESS INFO ───────────────────────────────────────────────────────
 
 /**
- * Ambil info kondisi penyakit dari Chroma RAG — dengan chunk merging.
+ * Ambil info kondisi penyakit dari ChromaDB berdasarkan nama penyakit.
+ * Menggunakan metadata $eq filter (bukan vector search) untuk akurasi.
  *
- * Flow:
- * 1. Query RAG-TemanPulih dengan nama penyakit + sinonim
- * 2. Untuk setiap hit, fetch SEMUA chunk (chunk_index 0,1,2,...) via source_id
- * 3. Merge semua chunk → parse info lengkap
- * 4. Cross-reference ke RAG-TemanPulih-Obat untuk obat terkait
+ * @param {string} illnessName - Nama penyakit eksak atau mendekati eksak
+ * @returns {object|null} Parsed illness info, atau null jika tidak ditemukan
  */
 const fetchIllnessInfoFromChroma = async (illnessName) => {
+    if (!illnessName) return null;
     try {
-        const condColName = process.env.CHROMA_DATABASE       || 'RAG-TemanPulih';
-        const drugColName = process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat';
+        const condCol = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih');
+        const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat');
 
-        const [condColResult, drugColResult] = await Promise.allSettled([
-            chromaClient.getCollection({ name: condColName }),
-            chromaClient.getCollection({ name: drugColName }),
-        ]);
+        // Step 1: Fuzzy match name from cache
+        const diseaseNames = await getDiseaseNames();
+        const matches      = fuzzyMatchName(illnessName, diseaseNames, 1);
+        const resolvedName = matches[0]?.name || illnessName;
 
-        const condCol = condColResult.status === 'fulfilled' ? condColResult.value : null;
-        const drugCol = drugColResult.status === 'fulfilled' ? drugColResult.value : null;
+        console.log(`[ILLNESS INFO] "${illnessName}" → using name "${resolvedName}"`);
 
-        let fullMergedContent = '';
-        let parsedInfo = {};
+        // Step 2: Fetch all chunks by disease_name
+        let fullContent = condCol ? await getDocsByDiseaseName(condCol, resolvedName) : '';
 
-        if (condCol) {
-            const queries = buildQueryList(illnessName);
-            // Minta lebih banyak hasil agar mendapat semua chunk yang relevan
-            const result = await condCol.query({ queryTexts: queries.slice(0, 5), nResults: 8 });
-
-            const metas = result?.metadatas?.flat() || [];
+        // Fallback: vector search if no metadata match
+        if (!fullContent && condCol) {
+            console.log(`[ILLNESS INFO] Metadata fetch empty, trying vector fallback...`);
+            const queries = buildQueryList(illnessName).slice(0, 3);
+            const result  = await condCol.query({ queryTexts: queries, nResults: 5 });
             const docs  = result?.documents?.flat().filter(Boolean) || [];
-
-            // Kumpulkan semua source_id unik yang relevan
-            const seenSourceIds = new Set();
-            const mergedDocs = [];
-
+            const metas = result?.metadatas?.flat() || [];
             for (let i = 0; i < docs.length; i++) {
-                const sourceId = metas[i]?.source_id;
-                if (sourceId && !seenSourceIds.has(sourceId)) {
-                    seenSourceIds.add(sourceId);
-                    // Fetch SEMUA chunk untuk source_id ini (termasuk chunk_index 1, 2, dst)
-                    const fullContent = await getFullConditionContent(condCol, sourceId, docs[i]);
-                    mergedDocs.push(fullContent);
-                } else if (!sourceId) {
-                    // Tidak ada source_id — gunakan doc apa adanya
-                    mergedDocs.push(docs[i]);
+                const dname = metas[i]?.disease_name;
+                if (dname) {
+                    fullContent = await getDocsByDiseaseName(condCol, dname);
+                    if (fullContent) break;
                 }
-                // Batasi ke 3 source yang paling relevan
-                if (seenSourceIds.size >= 3) break;
             }
-
-            fullMergedContent = mergedDocs.join('\n\n---\n\n');
-            if (fullMergedContent) {
-                parsedInfo = parseIllnessContent(fullMergedContent);
-            }
+            if (!fullContent) fullContent = docs[0] || '';
         }
 
-        // Cross-reference ke RAG-TemanPulih-Obat
-        // Strategi dua lapis: semantic search + explicit "Obat Terkait" lookup
-        const drugResults = await fetchDrugsForCondition(drugCol, illnessName, fullMergedContent);
+        if (!fullContent) return null;
 
-        if (drugResults.length > 0 && !parsedInfo.obat_terkait) {
-            // Format obat_terkait sebagai list nama obat
-            parsedInfo.obat_terkait = drugResults
-                .slice(0, 3)
-                .map(d => d.nama_obat)
-                .filter(Boolean)
-                .join(', ');
-        }
+        // Step 3: Parse illness info
+        const parsedInfo = parseIllnessContent(fullContent);
 
-        // Tambahkan drug details ke parsedInfo jika ada
-        if (drugResults.length > 0) {
-            parsedInfo.drug_details = drugResults.slice(0, 3);
+        // Step 4: Enrich with drug info if obat_terkait is missing
+        if (!parsedInfo.obat_terkait && drugCol) {
+            const drugResult = await fetchDrugsForCondition(drugCol, resolvedName);
+            if (drugResult.length > 0) {
+                parsedInfo.obat_terkait = drugResult.map(d => d.nama_obat).filter(Boolean).join(', ');
+                parsedInfo.drug_details = drugResult.slice(0, 3);
+            }
         }
 
         const hasAnyInfo = Object.values(parsedInfo).some(v => v && (typeof v === 'string' ? v.length > 0 : true));
@@ -296,120 +171,174 @@ const fetchIllnessInfoFromChroma = async (illnessName) => {
     }
 };
 
+// ─── DRUG CROSS-REFERENCE ─────────────────────────────────────────────────────
+
 /**
- * Cari penyakit berdasarkan gejala atau nama penyakit (via Chroma RAG)
+ * Ambil obat terkait dari RAG-TemanPulih-Obat untuk suatu kondisi penyakit.
+ * Hanya Layer 1: semantic vector search dengan nama penyakit.
  *
- * Alur baru:
- * 1. Query expansion dengan sinonim medis (id ↔ en ↔ latin)
- * 2. Ambil banyak kandidat (nResults=15)
- * 3. Group by source_id → fetch SEMUA chunk per penyakit
- * 4. Parse info dari konten lengkap (bukan hanya satu chunk)
- * 5. Cross-reference ke RAG-TemanPulih-Obat untuk obat terkait
- * 6. Soft gate: tidak hard-reject — hanya buang jika benar-benar tidak relevan
+ * @param {object} drugCol     - ChromaDB drug collection
+ * @param {string} illnessName - Nama penyakit
+ * @returns {{ nama_obat, indikasi, dosis, aturan_pakai, efek_samping }[]}
+ */
+const fetchDrugsForCondition = async (drugCol, illnessName) => {
+    if (!drugCol || !illnessName) return [];
+    const drugs    = [];
+    const seenDrugs = new Set();
+
+    try {
+        const queries   = buildQueryList(illnessName).slice(0, 4);
+        const semResult = await drugCol.query({ queryTexts: queries, nResults: 6 });
+        const semDocs   = semResult?.documents?.flat().filter(Boolean) || [];
+        const semMetas  = semResult?.metadatas?.flat() || [];
+
+        for (let i = 0; i < semDocs.length; i++) {
+            const meta = semMetas[i] || {};
+            const nama = meta.nama_obat;
+            if (!nama) continue;
+
+            const key = normalizeText(nama);
+            if (seenDrugs.has(key)) continue;
+            seenDrugs.add(key);
+
+            // Fetch full content by nama_obat
+            const fullContent = await getDocsByDrugName(drugCol, nama);
+            const parsed = parseDrugContent(fullContent || semDocs[i]);
+
+            drugs.push({
+                nama_obat:    nama,
+                kategori:     meta.kategori       || parsed.kategori     || '',
+                indikasi:     parsed.indikasi     || '',
+                komposisi:    parsed.komposisi    || '',
+                dosis:        parsed.dosis        || '',
+                aturan_pakai: parsed.aturan_pakai || '',
+                efek_samping: parsed.efek_samping || '',
+            });
+
+            if (drugs.length >= 5) break;
+        }
+    } catch (e) {
+        console.warn(`[ILLNESS] fetchDrugsForCondition error for "${illnessName}":`, e.message);
+    }
+
+    return drugs;
+};
+
+// ─── SEARCH ILLNESS (autocomplete / suggestion) ───────────────────────────────
+
+/**
+ * Cari penyakit berdasarkan nama atau gejala.
+ *
+ * Alur baru (metadata-first):
+ * 1. Fuzzy match query terhadap cached disease_name list
+ * 2. Untuk setiap match: fetch semua chunk via getDocsByDiseaseName
+ * 3. Parse info → cross-reference ke drug collection
+ * 4. Fallback ke vector search jika tidak ada metadata match
+ *
+ * @param {string} query - User's search query
+ * @returns {object[]} Array of illness suggestions
  */
 const searchIllness = async (query) => {
     if (!query || query.trim().length < 2) return [];
 
     try {
-        const condColName = process.env.CHROMA_DATABASE       || 'RAG-TemanPulih';
-        const drugColName = process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat';
-
-        const [condCol, drugCol] = await Promise.all([
-            chromaClient.getCollection({ name: condColName }).catch(() => null),
-            chromaClient.getCollection({ name: drugColName }).catch(() => null),
-        ]);
+        const condCol = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih').catch(() => null);
+        const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat').catch(() => null);
 
         if (!condCol) return [];
 
-        // Expand query dengan sinonim medis
-        const queries = buildQueryList(query.trim());
-        console.log(`[ILLNESS SEARCH] Query: "${query}" → Expanded: [${queries.slice(0, 4).join(', ')}...]`);
+        console.log(`[ILLNESS SEARCH] Query: "${query}"`);
 
-        const result = await condCol.query({ queryTexts: queries.slice(0, 6), nResults: 15 });
-        if (!result?.documents) return [];
+        // Step 1: Fuzzy match from cached disease names
+        const diseaseNames = await getDiseaseNames();
+        const matches      = fuzzyMatchName(query.trim(), diseaseNames, 6);
 
-        // ── Step 1: Flatten & sort semua kandidat by distance ──
-        const candidates = [];
-        for (let q = 0; q < result.documents.length; q++) {
-            const docs  = result.documents[q] || [];
-            const dists = result.distances?.[q]  || [];
-            const metas = result.metadatas?.[q]   || [];
-            for (let i = 0; i < docs.length; i++) {
-                if (!docs[i]) continue;
-                candidates.push({
-                    doc:      docs[i],
-                    distance: dists[i] ?? null,
-                    meta:     metas[i] || {},
+        const suggestions = [];
+
+        if (matches.length > 0) {
+            console.log(`[ILLNESS SEARCH] ${matches.length} fuzzy matches: ${matches.map(m => m.name).join(', ')}`);
+
+            for (const match of matches) {
+                try {
+                    const fullContent = await getDocsByDiseaseName(condCol, match.name);
+                    if (!fullContent) continue;
+
+                    const info = parseIllnessContent(fullContent);
+
+                    // Cross-reference drugs
+                    const drugResults = drugCol ? await fetchDrugsForCondition(drugCol, match.name) : [];
+                    if (drugResults.length > 0 && !info.obat_terkait) {
+                        info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
+                    }
+
+                    suggestions.push({
+                        name: match.name,
+                        illness_info: {
+                            indikasi:     info.indikasi,
+                            gejala_umum:  info.gejala_umum,
+                            penanganan:   info.penanganan,
+                            obat_terkait: info.obat_terkait,
+                            peringatan:   info.peringatan,
+                            drug_details: drugResults.length > 0 ? drugResults.slice(0, 3) : undefined,
+                        },
+                        relevance_score: match.score,
+                        match_type:     match.type,
+                    });
+                } catch (e) {
+                    console.warn(`[ILLNESS SEARCH] Error fetching "${match.name}":`, e.message);
+                }
+            }
+        }
+
+        // Fallback: vector search if no metadata matches found
+        if (suggestions.length === 0) {
+            console.log(`[ILLNESS SEARCH] No metadata matches, trying vector fallback...`);
+            const queries = buildQueryList(query.trim()).slice(0, 4);
+            const result  = await condCol.query({ queryTexts: queries, nResults: 20 });
+            const docs    = result?.documents?.flat().filter(Boolean) || [];
+            const metas   = result?.metadatas?.flat() || [];
+
+            const seenNames = new Set();
+            for (let i = 0; i < metas.length; i++) {
+                const dname = metas[i]?.disease_name;
+                if (!dname || seenNames.has(dname)) continue;
+                seenNames.add(dname);
+
+                const fullContent = await getDocsByDiseaseName(condCol, dname);
+                const info = parseIllnessContent(fullContent || docs[i] || '');
+                const drugResults = drugCol ? await fetchDrugsForCondition(drugCol, dname) : [];
+
+                if (drugResults.length > 0 && !info.obat_terkait) {
+                    info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
+                }
+
+                suggestions.push({
+                    name: dname,
+                    illness_info: {
+                        indikasi:     info.indikasi,
+                        gejala_umum:  info.gejala_umum,
+                        penanganan:   info.penanganan,
+                        obat_terkait: info.obat_terkait,
+                        peringatan:   info.peringatan,
+                        drug_details: drugResults.length > 0 ? drugResults.slice(0, 3) : undefined,
+                    },
+                    relevance_score: 0,
+                    match_type: 'vector',
                 });
+
+                if (suggestions.length >= 6) break;
             }
         }
-        candidates.sort((a, b) => (a.distance ?? 999) - (b.distance ?? 999));
 
-        // ── Step 2: Group by source_id, ambil yang paling relevan per disease ──
-        const seenSourceIds = new Set();   // dedup per penyakit (by source_id)
-        const seenNames     = new Set();   // dedup by extracted name (fallback)
-        const suggestions   = [];
-
-        for (const { doc, distance, meta } of candidates) {
-            // Soft relevance check
-            const score = softScore(query, doc, distance, queries);
-            if (!isSoftRelevant(score, distance)) continue;
-
-            // Tentukan identity penyakit ini (prioritas: source_id → nama)
-            const sourceId = meta?.source_id || null;
-
-            // Jika kita sudah punya penyakit dari source_id ini, skip
-            if (sourceId && seenSourceIds.has(sourceId)) continue;
-
-            // ── Step 3: Fetch SEMUA chunk untuk penyakit ini ──
-            let fullContent = doc;
-            if (sourceId) {
-                fullContent = await getFullConditionContent(condCol, sourceId, doc);
-                seenSourceIds.add(sourceId);
-            }
-
-            // Ekstrak nama dari konten lengkap (semua chunk)
-            const name = extractIllnessName(fullContent) || extractIllnessName(doc);
-            if (!name) continue;
-
-            const nameLower = normalizeText(name);
-            if (seenNames.has(nameLower)) continue;
-            seenNames.add(nameLower);
-
-            // ── Step 4: Parse info dari konten lengkap ──
-            const info = parseIllnessContent(fullContent);
-
-            // ── Step 5: Cross-reference ke RAG-TemanPulih-Obat ──
-            const drugResults = await fetchDrugsForCondition(drugCol, name, fullContent);
-            if (drugResults.length > 0 && !info.obat_terkait) {
-                info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
-            }
-
-            suggestions.push({
-                name,
-                illness_info: {
-                    indikasi:     info.indikasi,
-                    gejala_umum:  info.gejala_umum,
-                    penanganan:   info.penanganan,
-                    obat_terkait: info.obat_terkait,
-                    peringatan:   info.peringatan,
-                    drug_details: drugResults.length > 0 ? drugResults.slice(0, 3) : undefined,
-                },
-                distance,
-                relevance_score: score,
-                chunks_merged: !!sourceId,
-            });
-
-            if (suggestions.length >= 6) break;
-        }
-
-        console.log(`[ILLNESS SEARCH] Returned ${suggestions.length} results for "${query}" (with chunk merging)`);
+        console.log(`[ILLNESS SEARCH] Returned ${suggestions.length} results for "${query}"`);
         return suggestions;
     } catch (e) {
         console.warn('[CHROMA] searchIllness error:', e.message);
         return [];
     }
 };
+
+// ─── MARK RECOVERED ───────────────────────────────────────────────────────────
 
 /**
  * Tandai penyakit sebagai sudah sembuh
@@ -447,4 +376,10 @@ const markRecovered = async (user, supabase, illnessId) => {
     return data;
 };
 
-module.exports = { getIllnessHistory, addIllness, markRecovered, searchIllness, fetchIllnessInfoFromChroma };
+module.exports = {
+    getIllnessHistory,
+    addIllness,
+    markRecovered,
+    searchIllness,
+    fetchIllnessInfoFromChroma,
+};

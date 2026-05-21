@@ -1,9 +1,7 @@
 const db = require('../config/db');
 const { resolveTargetPatientId } = require('../helpers/patientAccess');
 const { cacheGet, cacheSet, cacheDel } = require('../helpers/cache');
-
-// RAG search is handled by ragService (Single Responsibility)
-const { searchChroma } = require('./ragService');
+const { searchDrug } = require('./ragService');
 
 
 // Ambil daftar obat beserta jadwalnya
@@ -58,10 +56,7 @@ const create = async (user, supabase, data) => {
 
     if (!medicinal_insight || !hasInsightFields) {
         try {
-            const chromaResult = await searchChroma(name, user, supabase, patientId);
-            if (chromaResult?.obat?.length > 0) {
-                medicinal_insight = chromaResult.obat[0];
-            }
+            medicinal_insight = await searchDrug(name);
         } catch (e) {
             console.warn('[CHROMA] Fallback medicinal insight gagal:', e.message);
         }
@@ -267,5 +262,5 @@ const getLogs = async (user, candidatePatientId) => {
     return rows;
 };
 
-module.exports = { getAll, create, update, remove, markTaken, getLogs, searchChroma };
+module.exports = { getAll, create, update, remove, markTaken, getLogs };
 

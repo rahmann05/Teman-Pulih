@@ -1,6 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { cacheGet, cacheSet } = require('../helpers/cache');
-const { buildRagContext } = require('./ragService');
 
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'MISSING_API_KEY');
@@ -138,8 +137,7 @@ const getEmrContext = async (supabase, user) => {
     return result;
 };
 
+// buildRagContext is now in ragService.js and imported directly by chatbotController
 
-// buildRagContext is handled by ragService.js and exported below
 
-
-module.exports = { sanitizeInput, normalizeHistory, getHistory, clearHistory, getEmrContext, buildRagContext, genAI };
+module.exports = { sanitizeInput, normalizeHistory, getHistory, clearHistory, getEmrContext, genAI };
