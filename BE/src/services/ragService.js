@@ -27,6 +27,22 @@ const {
     parseIllnessContent,
 } = require('../helpers/ragUtils');
 
+// ─── ALIGNMENT HELPER ────────────────────────────────────────────────────────
+const alignQueryResults = (result) => {
+    const rawDocs = result?.documents?.flat() || [];
+    const rawMetas = result?.metadatas?.flat() || [];
+    
+    const docs = [];
+    const metas = [];
+    for (let i = 0; i < rawDocs.length; i++) {
+        if (rawDocs[i] && rawMetas[i]) {
+            docs.push(rawDocs[i]);
+            metas.push(rawMetas[i]);
+        }
+    }
+    return { docs, metas };
+};
+
 // ─── PATIENT CONTEXT ──────────────────────────────────────────────────────────
 
 /**
@@ -139,8 +155,7 @@ const searchDrug = async (query) => {
     try {
         const queries = buildQueryList(query).slice(0, 4);
         const result  = await drugCol.query({ queryTexts: queries, nResults: 10 });
-        const docs  = result?.documents?.flat().filter(Boolean) || [];
-        const metas = result?.metadatas?.flat() || [];
+        const { docs, metas } = alignQueryResults(result);
 
         const normQuery = normalizeText(query);
 
@@ -201,7 +216,110 @@ const searchDrug = async (query) => {
     return null;
 };
 
+
+/**
+ * Search for multiple matching drugs by name or ingredient/composition.
+ *
+ * @param {string} query - Drug name or ingredient to search for
+ * @returns {Promise<Array>} Array of drug objects
+ */
+const searchDrugsList = async (query) => {
+    if (!query?.trim()) return [];
+
+    const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat');
+    if (!drugCol) return [];
+
+    const resultsMap = new Map();
+
+    const addResult = (name, parsed, doc) => {
+        if (!resultsMap.has(name)) {
+            resultsMap.set(name, {
+                nama_obat:      name,
+                kategori:       parsed.kategori       || '',
+                indikasi:       parsed.indikasi       || '',
+                komposisi:      parsed.komposisi      || '',
+                dosis:          parsed.dosis          || '',
+                aturan_pakai:   parsed.aturan_pakai   || '',
+                efek_samping:   parsed.efek_samping   || '',
+                kontraindikasi: parsed.kontraindikasi || '',
+                peringatan:     parsed.peringatan     || '',
+                raw_content:    doc,
+            });
+        }
+    };
+
+    // Step 1: Fuzzy match against cached drug names
+    const drugNames = await getDrugNames();
+    const matches = fuzzyMatchName(query, drugNames, 5);
+    for (const m of matches) {
+        const name = m.name;
+        const fullContent = await getDocsByDrugName(drugCol, name);
+        if (fullContent) {
+            const parsed = parseDrugContent(fullContent);
+            addResult(name, parsed, fullContent);
+        }
+    }
+
+    // Step 2: Vector search — collect unique candidates, then check FULL document content
+    try {
+        const queries = buildQueryList(query).slice(0, 4);
+        const result  = await drugCol.query({ queryTexts: queries, nResults: 15 });
+        const { docs, metas } = alignQueryResults(result);
+
+        const normQuery = normalizeText(query);
+
+        // Collect unique drug names returned by vector search
+        const candidateNames = new Set();
+        for (let i = 0; i < docs.length; i++) {
+            const name = metas[i]?.nama_obat;
+            if (name && !resultsMap.has(name)) candidateNames.add(name);
+        }
+
+        // Fetch full document for each candidate and check name OR full content
+        await Promise.all(Array.from(candidateNames).map(async (name) => {
+            const fullContent = await getDocsByDrugName(drugCol, name).catch(() => '');
+            if (!fullContent) return;
+            const normName = normalizeText(name);
+            const normFull = normalizeText(fullContent);
+            if (normName.includes(normQuery) || normQuery.includes(normName) || normFull.includes(normQuery)) {
+                const parsed = parseDrugContent(fullContent);
+                addResult(name, parsed, fullContent);
+            }
+        }));
+    } catch (e) {
+        console.warn(`[RAG DRUG LIST] Vector search failed:`, e.message);
+    }
+
+    // Step 3: Exhaustive ingredient/composition scan (fallback for ingredient queries e.g. "paracetamol")
+    if (resultsMap.size === 0) {
+        console.log(`[RAG DRUG LIST] No results yet — trying exhaustive ingredient scan for "${query}"...`);
+        try {
+            const allDrugNames = await getDrugNames();
+            const normQuery    = normalizeText(query);
+            const BATCH        = 10;
+
+            for (let i = 0; i < allDrugNames.length; i += BATCH) {
+                await Promise.all(allDrugNames.slice(i, i + BATCH).map(async (name) => {
+                    if (resultsMap.has(name)) return;
+                    const fullContent = await getDocsByDrugName(drugCol, name).catch(() => '');
+                    if (!fullContent) return;
+                    if (normalizeText(fullContent).includes(normQuery)) {
+                        const parsed = parseDrugContent(fullContent);
+                        addResult(name, parsed, fullContent);
+                        console.log(`[RAG DRUG LIST] Ingredient match: "${name}" contains "${query}"`);
+                    }
+                }));
+            }
+        } catch (e) {
+            console.warn(`[RAG DRUG LIST] Ingredient scan failed:`, e.message);
+        }
+    }
+
+    return Array.from(resultsMap.values());
+};
+
 // ─── PRIMARY SEARCH: DISEASE ──────────────────────────────────────────────────
+
 
 /**
  * Search for disease/condition information by name.
@@ -247,8 +365,7 @@ const searchDisease = async (query) => {
     try {
         const queries = buildQueryList(query).slice(0, 4);
         const result  = await condCol.query({ queryTexts: queries, nResults: 5 });
-        const docs  = result?.documents?.flat().filter(Boolean) || [];
-        const metas = result?.metadatas?.flat() || [];
+        const { docs, metas } = alignQueryResults(result);
 
         for (let i = 0; i < docs.length; i++) {
             const dname = metas[i]?.disease_name;
@@ -369,6 +486,7 @@ const _buildDrugFallbackFromCondition = async (keyword) => {
 
 module.exports = {
     searchDrug,
+    searchDrugsList,
     searchDisease,
     buildChatbotContext,
     checkDrugAllergy,

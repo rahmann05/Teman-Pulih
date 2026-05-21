@@ -1,5 +1,5 @@
 const medicationService = require('../services/medicationService');
-const { searchDrug } = require('../services/ragService');
+const { searchDrug, searchDrugsList, searchDisease } = require('../services/ragService');
 const { getSupabaseClient } = require('../helpers/supabase');
 
 const getMedications = async (req, res, next) => {
@@ -62,15 +62,77 @@ const getMedicationLogs = async (req, res, next) => {
 
 const searchChroma = async (req, res, next) => {
     try {
-        const { query } = req.query;
+        const { query, patient_id } = req.query;
         if (!query || query.trim() === '') {
-            return res.status(200).json({ data: null });
+            return res.status(200).json({ data: { obat: [], kondisi: [] } });
         }
-        const data = await searchDrug(query.trim());
-        res.status(200).json({ data });
+
+        const drugsList = await searchDrugsList(query.trim());
+        const disease = await searchDisease(query.trim());
+
+        const responseData = {
+            obat: [],
+            kondisi: []
+        };
+
+        if (drugsList && drugsList.length > 0) {
+            // Check allergy for each drug in the list
+            let patientProfile = null;
+            if (patient_id) {
+                try {
+                    const db = require('../config/db');
+                    const { rows } = await db.query(
+                        'SELECT chronic_conditions, allergies, past_illnesses, last_illness, routine_medications FROM profiles WHERE user_id = $1',
+                        [patient_id]
+                    );
+                    patientProfile = rows[0] || null;
+                } catch (e) {
+                    console.warn('[medicationController] Failed to query profile for allergy check:', e.message);
+                }
+            }
+
+            for (let idx = 0; idx < drugsList.length; idx++) {
+                const drug = drugsList[idx];
+                let allergyWarningText = '';
+                if (patientProfile) {
+                    try {
+                        const { checkDrugAllergy } = require('../services/ragService');
+                        const allergyCheck = checkDrugAllergy(drug, patientProfile);
+                        if (allergyCheck.hasAllergy) {
+                            allergyWarningText = allergyCheck.details;
+                        }
+                    } catch (e) {
+                        console.warn('[medicationController] Failed to check allergy:', e.message);
+                    }
+                }
+
+                responseData.obat.push({
+                    id: `drug-${idx + 1}`,
+                    nama_obat:      drug.nama_obat,
+                    kategori:       drug.kategori,
+                    dosis:          drug.dosis,
+                    aturan_pakai:   drug.aturan_pakai,
+                    indikasi:       drug.indikasi,
+                    komposisi:      drug.komposisi,
+                    efek_samping:   drug.efek_samping,
+                    kontraindikasi: drug.kontraindikasi,
+                    peringatan:     drug.peringatan,
+                    allergy_warning: allergyWarningText
+                });
+            }
+        }
+
+        if (disease) {
+            responseData.kondisi.push({
+                id: 'cond-1',
+                content: disease.raw_content
+            });
+        }
+
+        res.status(200).json({ data: responseData });
     } catch (err) {
         next(err);
     }
 };
 
-module.exports = { getMedications, createMedication, updateMedication, deleteMedication, markTaken, getMedicationLogs, searchChroma };
+module.exports = { getMedications, createMedication, updateMedication, deleteMedication, markTaken, getMedicationLogs, searchChroma };

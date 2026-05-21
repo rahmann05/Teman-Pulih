@@ -29,7 +29,7 @@ const getUserContactInfo = async (userId) => {
 const initReminderTasks = () => {
     // Schedule: every minute
     cron.schedule('* * * * *', async () => {
-        console.log('[CRON-Medication] Checking medication schedules...');
+        // Silenced to keep dev logs clean
         const now = new Date();
         const todayStr = now.toLocaleDateString('en-CA'); // YYYY-MM-DD local
 

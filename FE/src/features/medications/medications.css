@@ -1376,27 +1376,49 @@
   width: 100%;
 }
 .med-input-with-search {
-  padding-right: 48px !important;
+  padding-right: 56px !important;
 }
-.med-input-search-icon {
+.med-search-trigger-btn {
   position: absolute;
-  right: 16px;
+  right: 6px;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--accent);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  pointer-events: none;
-  z-index: 2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 5;
+  box-shadow: 0 4px 10px rgba(196, 101, 58, 0.15);
+}
+.med-search-trigger-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 14px rgba(196, 101, 58, 0.25);
+}
+.med-search-trigger-btn:active:not(:disabled) {
+  transform: translateY(-50%) scale(0.95);
+}
+.med-search-trigger-btn:disabled {
+  background: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
 }
 
 /* Spinner Animation */
 .med-search-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(var(--accent-rgb), 0.1);
-  border-top-color: var(--accent);
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
   border-radius: 50%;
   animation: medSpinner 0.8s linear infinite;
 }
@@ -1571,7 +1593,18 @@
     font-size: 15px !important;
     border-radius: 16px !important;
     padding: 0 20px !important;
-    border-color: rgba(var(--accent-rgb), 0.15) !important;
+    border-color: rgba(196, 101, 58, 0.15) !important;
+  }
+  
+  .med-input-with-search {
+    padding-right: 64px !important;
+  }
+
+  .med-search-trigger-btn {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px !important;
+    right: 6px !important;
   }
   
   .med-form-textarea {

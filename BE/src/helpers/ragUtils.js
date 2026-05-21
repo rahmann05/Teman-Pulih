@@ -291,25 +291,55 @@ const buildQueryList = (queryText, extraTerms = []) => {
         });
 };
 
-// ─── FIELD EXTRACTION ────────────────────────────────────────────────────────
+const ALL_FIELD_KEYS = [
+    'Nama Obat', 'Obat', 'Nama', 'Drug Name', 'Informasi Obat',
+    'Kategori', 'Golongan', 'Kelas', 'Category',
+    'Indikasi', 'Kegunaan', 'Fungsi', 'Indication', 'Digunakan untuk',
+    'Komposisi', 'Kandungan', 'Bahan Aktif', 'Composition',
+    'Dosis', 'Takaran', 'Dosage', 'Dosis Umum',
+    'Aturan Pakai', 'Cara Pakai', 'Cara Penggunaan', 'Cara Minum',
+    'Efek Samping', 'Side Effects', 'Reaksi',
+    'Peringatan', 'Perhatian', 'Kontraindikasi', 'Warning', 'Contraindication',
+    'Gejala', 'Tanda', 'Gejala Umum', 'Symptoms', 'Signs',
+    'Penanganan', 'Pengobatan', 'Terapi', 'Tatalaksana', 'Treatment', 'Manajemen',
+    'Obat Terkait', 'Farmakologi', 'Medication', 'Drug'
+];
 
-/**
- * Extract a field value from text, supporting multiple key aliases and formats.
- */
 const extractField = (text, keys, maxLen = 300) => {
     if (!text) return null;
+    const normalizedText = text.replace(/\r\n/g, '\n');
 
     for (const key of keys) {
-        const p1 = new RegExp(`${key}[\\s]*[:\\-–—][\\s]*([^\\n]{3,${maxLen}})`, 'i');
-        const m1 = text.match(p1);
-        if (m1 && m1[1]?.trim().length >= 3) {
-            return m1[1].trim().substring(0, maxLen);
+        const regex = new RegExp(`(?:^|\\n|\\.|;|\\s)(${key})\\s*[:\\-–—]\\s*`, 'i');
+        const match = normalizedText.match(regex);
+        if (!match) continue;
+
+        const startIndex = match.index + match[0].length;
+        let value = normalizedText.substring(startIndex);
+
+        let minNextKeyIndex = value.length;
+        for (const otherKey of ALL_FIELD_KEYS) {
+            if (keys.some(k => k.toLowerCase() === otherKey.toLowerCase())) continue;
+            const nextKeyRegex = new RegExp(`(?:^|\\n|\\.|;|\\s)(${otherKey})\\s*[:\\-–—]`, 'i');
+            const nextKeyMatch = value.match(nextKeyRegex);
+            if (nextKeyMatch && nextKeyMatch.index < minNextKeyIndex) {
+                minNextKeyIndex = nextKeyMatch.index;
+            }
         }
 
-        const p2 = new RegExp(`${key}\\s*\\n+([^\\n]{3,${maxLen}})`, 'i');
-        const m2 = text.match(p2);
-        if (m2 && m2[1]?.trim().length >= 3) {
-            return m2[1].trim().substring(0, maxLen);
+        const newlineIndex = value.indexOf('\n');
+        if (newlineIndex !== -1 && newlineIndex < minNextKeyIndex) {
+            const lineContent = value.substring(0, newlineIndex).trim();
+            if (lineContent.length >= 3) {
+                minNextKeyIndex = newlineIndex;
+            }
+        }
+
+        value = value.substring(0, minNextKeyIndex).trim();
+        value = value.replace(/[.,;:\-\s]+$/, '').trim();
+
+        if (value.length >= 3) {
+            return value.substring(0, maxLen);
         }
     }
     return null;
@@ -355,14 +385,15 @@ const extractIllnessName = (doc) => {
 const parseDrugContent = (content) => {
     if (!content) return {};
     return {
-        nama_obat:    extractField(content, ['Nama Obat', 'Obat', 'Nama', 'Drug Name', 'Informasi Obat'], 80),
-        kategori:     extractField(content, ['Kategori', 'Golongan', 'Kelas', 'Category'], 80),
-        indikasi:     extractField(content, ['Indikasi', 'Kegunaan', 'Fungsi', 'Indication', 'Digunakan untuk'], 300),
-        komposisi:    extractField(content, ['Komposisi', 'Kandungan', 'Bahan Aktif', 'Composition'], 200),
-        dosis:        extractField(content, ['Dosis', 'Takaran', 'Dosage', 'Dosis Umum'], 200),
-        aturan_pakai: extractField(content, ['Aturan Pakai', 'Cara Pakai', 'Cara Penggunaan', 'Cara Minum'], 200),
-        efek_samping: extractField(content, ['Efek Samping', 'Side Effects', 'Reaksi'], 200),
-        peringatan:   extractField(content, ['Peringatan', 'Perhatian', 'Kontraindikasi', 'Warning'], 200),
+        nama_obat:      extractField(content, ['Nama Obat', 'Obat', 'Nama', 'Drug Name', 'Informasi Obat'], 80),
+        kategori:       extractField(content, ['Kategori', 'Golongan', 'Kelas', 'Category'], 80),
+        indikasi:       extractField(content, ['Indikasi', 'Kegunaan', 'Fungsi', 'Indication', 'Digunakan untuk'], 300),
+        komposisi:      extractField(content, ['Komposisi', 'Kandungan', 'Bahan Aktif', 'Composition'], 200),
+        dosis:          extractField(content, ['Dosis', 'Takaran', 'Dosage', 'Dosis Umum'], 200),
+        aturan_pakai:   extractField(content, ['Aturan Pakai', 'Cara Pakai', 'Cara Penggunaan', 'Cara Minum'], 200),
+        efek_samping:   extractField(content, ['Efek Samping', 'Side Effects', 'Reaksi'], 200),
+        kontraindikasi: extractField(content, ['Kontraindikasi', 'Contraindication'], 200),
+        peringatan:     extractField(content, ['Peringatan', 'Perhatian', 'Warning'], 200),
     };
 };
 

@@ -108,34 +108,58 @@ const CurrentIllnessCard = () => {
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
-  // Debounced search saat user mengetik
+  // Input change only updates state
   const handleInputChange = (val) => {
     setInputValue(val);
     setSelectedIllness(null);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (val.trim().length < 2) {
+    if (!val.trim()) {
       setSearchResults([]);
-      return;
     }
-    debounceRef.current = setTimeout(async () => {
-      setSearchLoading(true);
-      try {
-        const { data } = await searchIllness(val.trim());
-        setSearchResults(data || []);
-      } catch {
-        setSearchResults([]);
-      } finally {
-        setSearchLoading(false);
-      }
-    }, 500);
   };
 
-  const handleSelectPreset = (name) => {
+  // Manual search trigger
+  const handleSearch = async () => {
+    const query = inputValue.trim();
+    if (!query || query.length < 2) {
+      setError('Masukkan minimal 2 karakter untuk melakukan pencarian.');
+      return;
+    }
+    setSearchLoading(true);
+    setError('');
+    try {
+      const { data } = await searchIllness(query);
+      setSearchResults(data || []);
+      if (!data || data.length === 0) {
+        setError('Tidak ada data penyakit RAG yang cocok.');
+      }
+    } catch (err) {
+      setSearchResults([]);
+      setError('Gagal mencari rekomendasi penyakit.');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSelectPreset = async (name) => {
     setInputValue(name);
     setSelectedIllness({ name, illness_info: null });
     setSearchResults([]);
-    // Trigger Chroma search for info
-    handleInputChange(name);
+    
+    // Auto-search Chroma on selecting preset
+    setSearchLoading(true);
+    setError('');
+    try {
+      const { data } = await searchIllness(name);
+      setSearchResults(data || []);
+      if (data && data.length > 0) {
+        // Auto-select match if exact/strong preset
+        handleSelectResult(data[0]);
+      }
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   const handleSelectResult = (result) => {
@@ -309,7 +333,12 @@ const CurrentIllnessCard = () => {
                   type="text"
                   value={inputValue}
                   onChange={(e) => handleInputChange(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
                   placeholder="Ketik gejala atau nama penyakit..."
                   className="illness-search-input"
                   autoFocus
@@ -319,6 +348,14 @@ const CurrentIllnessCard = () => {
                     <LuX size={13} />
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  disabled={searchLoading || !inputValue.trim()}
+                  className="illness-search-trigger-btn"
+                >
+                  {searchLoading ? 'Cari...' : 'Cari'}
+                </button>
               </div>
 
               {/* Search Results Dropdown */}

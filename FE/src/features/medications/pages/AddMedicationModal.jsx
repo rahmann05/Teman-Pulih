@@ -121,102 +121,76 @@ const EMPTY_FORM     = { name: '', dosage: '', instructions: '', schedules: [{ .
 const parseDosisAndFrekuensi = (dosisText) => {
   if (!dosisText) return { cleanDosage: '', detectedFrequency: '' };
 
-  const textLower = dosisText.toLowerCase();
+  const textLower = dosisText.toLowerCase().trim();
   let detectedFrequency = '';
+  let cleanDosage = dosisText;
 
-  if (
-    textLower.includes('3-4 kali sehari') ||
-    textLower.includes('3 - 4 kali sehari') ||
-    textLower.includes('3 atau 4 kali sehari') ||
-    textLower.includes('3-4x sehari') ||
-    textLower.includes('3 - 4x sehari') ||
-    textLower.includes('3x sehari') ||
-    textLower.includes('3 kali sehari') ||
-    textLower.includes('sehari 3 kali') ||
-    textLower.includes('sehari 3x') ||
-    textLower.includes('3 x sehari')
-  ) {
-    detectedFrequency = '3x sehari';
-  } else if (
-    textLower.includes('2x sehari') ||
-    textLower.includes('2 kali sehari') ||
-    textLower.includes('sehari 2 kali') ||
-    textLower.includes('sehari 2x') ||
-    textLower.includes('2 x sehari')
-  ) {
-    detectedFrequency = '2x sehari';
-  } else if (
-    textLower.includes('1x sehari') ||
-    textLower.includes('1 kali sehari') ||
-    textLower.includes('sehari sekali') ||
-    textLower.includes('sehari 1 kali') ||
-    textLower.includes('sehari 1x') ||
-    textLower.includes('1 x sehari') ||
-    textLower.includes('sehari semalam')
-  ) {
-    detectedFrequency = '1x sehari';
-  } else if (
-    textLower.includes('4x sehari') ||
-    textLower.includes('4 kali sehari') ||
-    textLower.includes('sehari 4 kali') ||
-    textLower.includes('sehari 4x') ||
-    textLower.includes('4 x sehari')
-  ) {
-    detectedFrequency = '4x sehari';
-  } else if (
-    textLower.includes('8 jam') ||
-    textLower.includes('setiap 8 jam') ||
-    textLower.includes('tiap 8 jam')
-  ) {
-    detectedFrequency = 'Setiap 8 jam';
-  } else if (
-    textLower.includes('sesuai kebutuhan') ||
-    textLower.includes('jika perlu') ||
-    textLower.includes('bila perlu') ||
-    textLower.includes('prn')
-  ) {
-    detectedFrequency = 'Sesuai kebutuhan';
+  // Pattern A: "3 kali sehari 1 sachet" or "3 x sehari 2 tablet"
+  const matchA = textLower.match(/(\d+)\s*(?:kali|x)\s*sehari\s*([\d][\d\s./]*[a-zA-Z]+[a-zA-Z\s]*)/i);
+  if (matchA) {
+    const freq = parseInt(matchA[1], 10);
+    if (freq >= 1 && freq <= 4) {
+      detectedFrequency = `${freq}x sehari`;
+      cleanDosage = matchA[2].trim();
+    }
   }
 
-  const stripPatterns = [
-    /,?\s*3-4\s*kali\s*sehari/gi,
-    /,?\s*3\s*-\s*4\s*kali\s*sehari/gi,
-    /,?\s*3\s*atau\s*4\s*kali\s*sehari/gi,
-    /,?\s*3-4x\s*sehari/gi,
-    /,?\s*3\s*-\s*4x\s*sehari/gi,
-    /,?\s*1x\s*sehari/gi,
-    /,?\s*2x\s*sehari/gi,
-    /,?\s*3x\s*sehari/gi,
-    /,?\s*4x\s*sehari/gi,
-    /,?\s*1\s*kali\s*sehari/gi,
-    /,?\s*2\s*kali\s*sehari/gi,
-    /,?\s*3\s*kali\s*sehari/gi,
-    /,?\s*4\s*kali\s*sehari/gi,
-    /,?\s*sehari\s*sekali/gi,
-    /,?\s*sehari\s*1\s*kali/gi,
-    /,?\s*sehari\s*2\s*kali/gi,
-    /,?\s*sehari\s*3\s*kali/gi,
-    /,?\s*sehari\s*4\s*kali/gi,
-    /,?\s*sehari\s*1x/gi,
-    /,?\s*sehari\s*2x/gi,
-    /,?\s*sehari\s*3x/gi,
-    /,?\s*sehari\s*4x/gi,
-    /,?\s*1\s*x\s*sehari/gi,
-    /,?\s*2\s*x\s*sehari/gi,
-    /,?\s*3\s*x\s*sehari/gi,
-    /,?\s*4\s*x\s*sehari/gi,
-    /,?\s*setiap\s*8\s*jam/gi,
-    /,?\s*tiap\s*8\s*jam/gi,
-    /,?\s*8\s*jam/gi,
-    /,?\s*sesuai\s*kebutuhan/gi,
-    /,?\s*jika\s*perlu/gi,
-    /,?\s*bila\s*perlu/gi,
-    /,?\s*prn/gi
-  ];
+  // Pattern B: "3 kali 1 sachet sehari" or "3 x 2 tablet sehari"
+  if (!detectedFrequency) {
+    const matchB = textLower.match(/(\d+)\s*(?:kali|x)\s*([\d][\d\s./]*[a-zA-Z]+[a-zA-Z\s]*)\s*sehari/i);
+    if (matchB) {
+      const freq = parseInt(matchB[1], 10);
+      if (freq >= 1 && freq <= 4) {
+        detectedFrequency = `${freq}x sehari`;
+        cleanDosage = matchB[2].trim();
+      }
+    }
+  }
 
-  let cleanDosage = dosisText;
-  for (const pattern of stripPatterns) {
-    cleanDosage = cleanDosage.replace(pattern, '');
+  // Pattern C: "3x1 sachet" or "3 kali 1 kapsul" (no sehari)
+  if (!detectedFrequency) {
+    const matchC = textLower.match(/(\d+)\s*(?:kali|x)\s*([\d][\d\s./]*[a-zA-Z]+[a-zA-Z\s]*)/i);
+    if (matchC) {
+      const freq = parseInt(matchC[1], 10);
+      // Only use if the unit looks like a dosage unit, not a time word
+      const candidate = matchC[2].trim();
+      const isTimeFrag = /^sehari|^hari|^jam/.test(candidate);
+      if (freq >= 1 && freq <= 4 && !isTimeFrag) {
+        detectedFrequency = `${freq}x sehari`;
+        cleanDosage = candidate;
+      }
+    }
+  }
+
+  // Pattern D: plain frequency keywords (for texts like "2x sehari" or "setiap 8 jam")
+  if (!detectedFrequency) {
+    if (textLower.includes('8 jam') || textLower.includes('setiap 8 jam') || textLower.includes('tiap 8 jam')) {
+      detectedFrequency = 'Setiap 8 jam';
+    } else if (textLower.includes('sesuai kebutuhan') || textLower.includes('jika perlu') || textLower.includes('bila perlu') || textLower.includes('prn')) {
+      detectedFrequency = 'Sesuai kebutuhan';
+    } else if (textLower.includes('3-4 kali sehari') || textLower.includes('3 atau 4 kali sehari') || textLower.includes('3-4x sehari') || textLower.includes('3x sehari') || textLower.includes('3 kali sehari') || textLower.includes('sehari 3 kali') || textLower.includes('3 x sehari')) {
+      detectedFrequency = '3x sehari';
+    } else if (textLower.includes('2x sehari') || textLower.includes('2 kali sehari') || textLower.includes('sehari 2 kali') || textLower.includes('2 x sehari')) {
+      detectedFrequency = '2x sehari';
+    } else if (textLower.includes('1x sehari') || textLower.includes('1 kali sehari') || textLower.includes('sehari sekali') || textLower.includes('sehari semalam') || textLower.includes('1 x sehari')) {
+      detectedFrequency = '1x sehari';
+    } else if (textLower.includes('4x sehari') || textLower.includes('4 kali sehari') || textLower.includes('sehari 4 kali') || textLower.includes('4 x sehari')) {
+      detectedFrequency = '4x sehari';
+    }
+  }
+
+  // Strip frequency phrases from dosage only if regex patterns didn't already clean it
+  if (cleanDosage === dosisText) {
+    const stripPatterns = [
+      /,?\s*\d+\s*-\s*\d+\s*kali\s*sehari/gi, /,?\s*\d+\s*atau\s*\d+\s*kali\s*sehari/gi,
+      /,?\s*\d+x\s*sehari/gi, /,?\s*\d+\s*kali\s*sehari/gi,
+      /,?\s*sehari\s*\d+\s*kali/gi, /,?\s*sehari\s*\d+x/gi,
+      /,?\s*\d+\s*x\s*sehari/gi,
+      /,?\s*setiap\s*8\s*jam/gi, /,?\s*tiap\s*8\s*jam/gi, /,?\s*8\s*jam/gi,
+      /,?\s*sesuai\s*kebutuhan/gi, /,?\s*jika\s*perlu/gi, /,?\s*bila\s*perlu/gi, /,?\s*prn/gi,
+      /,?\s*sehari\s*sekali/gi, /,?\s*sehari\s*semalam/gi,
+    ];
+    for (const p of stripPatterns) cleanDosage = cleanDosage.replace(p, '');
   }
 
   cleanDosage = cleanDosage
@@ -224,9 +198,7 @@ const parseDosisAndFrekuensi = (dosisText) => {
     .replace(/[,;.\-\s|]+$/g, '')
     .trim();
 
-  if (!cleanDosage) {
-    cleanDosage = dosisText;
-  }
+  if (!cleanDosage) cleanDosage = dosisText;
 
   return { cleanDosage, detectedFrequency };
 };
@@ -373,8 +345,8 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
   const [selectedChromaDrug, setSelectedChromaDrug] = useState(null);
   const [hoveredChromaDrug, setHoveredChromaDrug] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [debouncedName, setDebouncedName] = useState('');
   const [dosageOptions, setDosageOptions] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // Handle adding class to body to smoothly hide TopNav on desktop
   useEffect(() => {
@@ -388,49 +360,34 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
     };
   }, [isOpen]);
 
-  // Debounce form.name input
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedName(form.name);
-    }, 400);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [form.name]);
-
-  // Fetch suggestions when debouncedName changes
-  useEffect(() => {
-    if (!debouncedName || debouncedName.trim().length < 2) {
-      setSuggestions({ obat: [], kondisi: [] });
-      setShowSuggestions(false);
+  // Manual Chroma Search trigger
+  const handleSearchChroma = async () => {
+    const query = form.name.trim();
+    if (!query || query.length < 2) {
+      setError('Masukkan minimal 2 karakter untuk melakukan pencarian.');
       return;
     }
 
-    // If the name exactly matches the selected drug name, don't query
-    if (selectedChromaDrug && selectedChromaDrug.nama_obat.toLowerCase() === debouncedName.trim().toLowerCase()) {
-      return;
-    }
-
-    const fetchSuggestions = async () => {
-      try {
-        setSearchingChroma(true);
-        const res = await searchChromaDrugs(debouncedName.trim(), patientId);
-        if (res.data?.data) {
-          setSuggestions(res.data.data);
-          setShowSuggestions(true);
-        } else {
-          setSuggestions({ obat: [], kondisi: [] });
-        }
-      } catch (err) {
-        console.error('[CHROMA] Suggestion query failed:', err);
-      } finally {
-        setSearchingChroma(false);
+    try {
+      setSearchingChroma(true);
+      setError(null);
+      const res = await searchChromaDrugs(query, patientId);
+      if (res.data?.data) {
+        setSuggestions(res.data.data);
+        setShowSuggestions(true);
+      } else {
+        setSuggestions({ obat: [], kondisi: [] });
+        setError('Tidak ditemukan data obat yang cocok.');
       }
-    };
-
-    fetchSuggestions();
-  }, [debouncedName, selectedChromaDrug, patientId]);
+      setHasSearched(true);
+    } catch (err) {
+      console.error('[CHROMA] Semantic search failed:', err);
+      setError('Gagal menghubungkan ke sistem pencarian medis.');
+      setHasSearched(true);
+    } finally {
+      setSearchingChroma(false);
+    }
+  };
 
   const handleSelectDrug = (drug) => {
     setForm((prev) => ({ ...prev, name: drug.nama_obat }));
@@ -496,6 +453,7 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
     setSelectedChromaDrug(null);
     setHoveredChromaDrug(null);
     setDosageOptions([]);
+    setHasSearched(false);
     setForm((prev) => ({
       ...prev,
       name: '',
@@ -587,6 +545,7 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
       setSuggestions({ obat: [], kondisi: [] });
       setDosageOptions([]);
       setShowSuggestions(false);
+      setHasSearched(false);
       onClose();
     } catch (err) {
       setError(err.response?.data?.error || 'Gagal menyimpan obat.');
@@ -601,6 +560,7 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
     setSuggestions({ obat: [], kondisi: [] });
     setDosageOptions([]);
     setShowSuggestions(false);
+    setHasSearched(false);
     onClose();
   };
  
@@ -636,19 +596,40 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
                     className="med-form-input med-input-with-search"
                     placeholder="Ketik nama obat atau gejala (cth. Paracetamol / demam)..."
                     value={form.name}
-                    onChange={(e) => handleField('name', e.target.value)}
-                    onFocus={() => { if (form.name.trim().length >= 2) setShowSuggestions(true); }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleField('name', val);
+                      setHasSearched(false);
+                      if (!val.trim()) {
+                        setSuggestions({ obat: [], kondisi: [] });
+                        setShowSuggestions(false);
+                        setSelectedChromaDrug(null);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSearchChroma();
+                      }
+                    }}
+                    onFocus={() => { if (form.name.trim().length >= 2 && (suggestions.obat?.length > 0 || suggestions.kondisi?.length > 0)) setShowSuggestions(true); }}
                     onBlur={handleBlur}
                     required
                     autoComplete="off"
                   />
-                  <div className="med-input-search-icon">
+                  <button
+                    type="button"
+                    className="med-search-trigger-btn"
+                    onClick={handleSearchChroma}
+                    disabled={searchingChroma || !form.name.trim()}
+                    aria-label="Cari Obat"
+                  >
                     {searchingChroma ? (
                       <div className="med-search-spinner" />
                     ) : (
                       <LuSearch size={18} />
                     )}
-                  </div>
+                  </button>
                 </div>
 
                 {showSuggestions && (suggestions.obat?.length > 0 || suggestions.kondisi?.length > 0) && (
@@ -857,10 +838,10 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
                             </div>
                           )}
                           
-                          {parsedES.kontraindikasi && (
+                          {(parsedES.kontraindikasi || activeDrug.kontraindikasi || activeDrug.peringatan) && (
                             <div className="med-info-cell danger warning-border">
                               <span className="med-info-cell-label text-orange">Kontraindikasi</span>
-                              <p className="med-info-cell-value">{parsedES.kontraindikasi}</p>
+                              <p className="med-info-cell-value">{parsedES.kontraindikasi || activeDrug.kontraindikasi || activeDrug.peringatan}</p>
                             </div>
                           )}
                           
@@ -907,14 +888,14 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
                   </button>
                 </div>
               </div>
-            ) : debouncedName.trim().length >= 2 && !searchingChroma && suggestions.obat?.length === 0 && suggestions.kondisi?.length === 0 ? (
+            ) : hasSearched && (form.name || '').trim().length >= 2 && !searchingChroma && suggestions.obat?.length === 0 && suggestions.kondisi?.length === 0 ? (
               <div className="med-large-info-placeholder med-apology-state">
                 <div className="med-placeholder-icon-wrapper" style={{ borderColor: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}>
                   <LuTriangleAlert className="med-placeholder-sparkle-icon" size={36} />
                 </div>
                 <h4 className="med-placeholder-title">Data Tidak Tersedia</h4>
                 <p className="med-placeholder-desc" style={{ maxWidth: '300px' }}>
-                  Mohon maaf, data obat atau detail rekomendasi untuk pencarian &quot;{debouncedName}&quot; tidak tersedia di database kami. Silakan periksa kembali penulisan nama obat atau gejala Anda.
+                  Mohon maaf, data obat atau detail rekomendasi untuk pencarian &quot;{form.name}&quot; tidak tersedia di database kami. Silakan periksa kembali penulisan nama obat atau gejala Anda.
                 </p>
                 <div className="med-placeholder-visual-bars">
                   <div className="med-placeholder-bar short" style={{ background: 'rgba(239, 68, 68, 0.08)' }} />
