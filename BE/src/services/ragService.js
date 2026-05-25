@@ -18,7 +18,9 @@ const {
     getDocsByDiseaseName,
     getDocsByDrugName,
     getFullDrugContent,
+    queryDiseasesBySymptoms,
 } = require('../helpers/chromaHelper');
+
 
 const {
     normalizeText,
@@ -318,6 +320,151 @@ const searchDrugsList = async (query) => {
     return Array.from(resultsMap.values());
 };
 
+// ─── MULTI-SYMPTOM DISEASE SEARCH ────────────────────────────────────────────
+
+/**
+ * Search for diseases that match a given set of symptoms.
+ *
+ * Strategy 1 — Direct fuzzy match: each symptom matched against disease names
+ *   (finds conditions named after a symptom, e.g. "Pusing", "Mual").
+ * Strategy 2 — Vector search: combined symptom string used as embedding query;
+ *   candidates re-scored by counting symptom overlap in the full document.
+ * Strategy 3 — gejala_umum re-rank: additional bonus for symptoms found
+ *   specifically in the structured Gejala field.
+ *
+ * @param {string[]} symptoms - Array of symptom strings from user input
+ * @returns {Promise<Array>}  Top-3 ranked disease objects with matchedSymptoms[]
+ */
+const searchDiseaseBySymptoms = async (symptoms) => {
+    if (!symptoms?.length) return [];
+
+    const condCol = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih');
+    if (!condCol) return [];
+
+    const diseaseNames = await getDiseaseNames();
+    const resultsMap   = new Map(); // disease_name → enriched entry
+
+    const upsert = (name, parsed, rawContent, score, matched) => {
+        const prev = resultsMap.get(name);
+        if (!prev) {
+            resultsMap.set(name, {
+                name,
+                indikasi:      parsed.indikasi     || '',
+                gejala_umum:   parsed.gejala_umum  || '',
+                penanganan:    parsed.penanganan   || '',
+                obat_terkait:  parsed.obat_terkait || '',
+                peringatan:    parsed.peringatan   || '',
+                raw_content:   rawContent,
+                score,
+                matchedSymptoms: matched,
+            });
+        } else {
+            const merged = [...new Set([...prev.matchedSymptoms, ...matched])];
+            prev.matchedSymptoms = merged;
+            prev.score = Math.max(prev.score, score);
+        }
+    };
+
+    // ── Strategy 1: Direct fuzzy name match per symptom ──────────────────────
+    for (const symptom of symptoms) {
+        const matches = fuzzyMatchName(symptom, diseaseNames, 2);
+        for (const m of matches) {
+            if (resultsMap.has(m.name)) continue;
+            const fullContent = await getDocsByDiseaseName(condCol, m.name);
+            if (fullContent) {
+                const parsed = parseIllnessContent(fullContent);
+                const scoreMap = { exact: 90, substring: 70, fuzzy: 50 };
+                upsert(m.name, parsed, fullContent, scoreMap[m.type] || 50, [symptom]);
+                console.log(`[RAG SYMPTOMS] S1 match: "${symptom}" → "${m.name}" (${m.type})`);
+            }
+        }
+    }
+
+    // ── Strategy 2: Vector search with combined symptom query ────────────────
+    try {
+        const { docs, metas } = await queryDiseasesBySymptoms(condCol, symptoms, 12);
+
+        // Group unique disease names found by vector search
+        const candidates = new Map();
+        for (let i = 0; i < docs.length; i++) {
+            const dname = metas[i]?.disease_name;
+            if (dname && !candidates.has(dname)) candidates.set(dname, docs[i]);
+        }
+
+        // Fetch full content per candidate and score by symptom overlap
+        await Promise.all(Array.from(candidates.entries()).map(async ([dname, sampleDoc]) => {
+            const fullContent = await getDocsByDiseaseName(condCol, dname).catch(() => sampleDoc);
+            const parsed      = parseIllnessContent(fullContent || sampleDoc);
+            const normContent = normalizeText(fullContent || sampleDoc);
+            const matched     = symptoms.filter(s => normContent.includes(normalizeText(s)));
+            const score       = 20 + matched.length * 25;
+            upsert(dname, parsed, fullContent || sampleDoc, score, matched);
+        }));
+    } catch (e) {
+        console.warn('[RAG SYMPTOMS] Strategy 2 vector search failed:', e.message);
+    }
+
+    // ── Strategy 3: Re-rank by gejala_umum field overlap ────────────────────
+    for (const entry of resultsMap.values()) {
+        if (entry.gejala_umum) {
+            const normGejala = normalizeText(entry.gejala_umum);
+            const gMatched   = symptoms.filter(s => normGejala.includes(normalizeText(s)));
+            if (gMatched.length > 0) {
+                entry.score += gMatched.length * 15;
+                entry.matchedSymptoms = [...new Set([...entry.matchedSymptoms, ...gMatched])];
+            }
+        }
+    }
+
+    const ranked = Array.from(resultsMap.values())
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3);
+
+    if (ranked.length > 0) {
+        console.log(
+            `[RAG SYMPTOMS] Top conditions for [${symptoms.join(', ')}]:`,
+            ranked.map(d => `${d.name}(${d.score})`).join(', ')
+        );
+    }
+    return ranked;
+};
+
+/**
+ * Build a differential-diagnosis RAG context string from a set of symptoms.
+ * Calls searchDiseaseBySymptoms, then formats the top-3 results with priority
+ * labels ([KEMUNGKINAN UTAMA] / [KEMUNGKINAN LAIN]) for the LLM prompt.
+ *
+ * @param {string[]} symptoms
+ * @returns {Promise<string>} Formatted context block, or '' if no match
+ */
+const buildSymptomDifferentialContext = async (symptoms) => {
+    if (!symptoms?.length) return '';
+    try {
+        const diseases = await searchDiseaseBySymptoms(symptoms);
+        if (!diseases.length) return '';
+
+        let ctx = `=== REFERENSI KONDISI MEDIS (Berdasarkan Gejala: ${symptoms.join(', ')}) ===\n`;
+        for (let i = 0; i < diseases.length; i++) {
+            const d       = diseases[i];
+            const label   = i === 0 ? '[KEMUNGKINAN UTAMA]' : '[KEMUNGKINAN LAIN]';
+            const lines   = [
+                `${label} Kondisi: ${d.name}`,
+                d.matchedSymptoms?.length ? `Gejala Cocok: ${d.matchedSymptoms.join(', ')}` : '',
+                d.indikasi     ? `Definisi: ${d.indikasi}`         : '',
+                d.gejala_umum  ? `Gejala Umum: ${d.gejala_umum}`  : '',
+                d.penanganan   ? `Penanganan: ${d.penanganan}`     : '',
+                d.obat_terkait ? `Obat Terkait: ${d.obat_terkait}` : '',
+                d.peringatan   ? `Peringatan: ${d.peringatan}`     : '',
+            ].filter(Boolean).join('\n');
+            ctx += `${lines}\n---\n`;
+        }
+        return ctx + '\n';
+    } catch (e) {
+        console.error('[RAG SYMPTOMS] buildSymptomDifferentialContext error:', e.message);
+        return '';
+    }
+};
+
 // ─── PRIMARY SEARCH: DISEASE ──────────────────────────────────────────────────
 
 
@@ -488,8 +635,11 @@ module.exports = {
     searchDrug,
     searchDrugsList,
     searchDisease,
+    searchDiseaseBySymptoms,
+    buildSymptomDifferentialContext,
     buildChatbotContext,
     checkDrugAllergy,
     enrichDrugDetails,
     getPatientContextText,
 };
+

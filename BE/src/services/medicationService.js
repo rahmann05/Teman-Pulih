@@ -73,10 +73,11 @@ const create = async (user, supabase, data) => {
     if (schedules && schedules.length > 0) {
         const schedulesToInsert = schedules.map(s => ({
             medication_id: medData.id,
-            frequency: s.frequency,
+            frequency:  s.frequency  || null,
             time_slots: s.time_slots,
-            start_date: s.start_date,
-            end_date: s.end_date,
+            // PostgreSQL rejects empty string "" for date columns — convert to null
+            start_date: s.start_date || null,
+            end_date:   s.end_date   || null,
         }));
         const { data: schedData, error: schedError } = await supabase
             .from('medication_schedules')

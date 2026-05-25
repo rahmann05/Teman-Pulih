@@ -55,21 +55,14 @@ export const ChatProvider = ({ children }) => {
       const decoder = new TextDecoder();
       
       aiMsgId = 'ai-' + Date.now();
-      const openingText = "Baik Asep, bantu jawab pertanyaannya ya.\n\n";
-      let accumulatedText = openingText;
+      let accumulatedText = '';
       let isDoneReceived = false;
       let lastActivity = Date.now();
       let buffer = ''; // Buffer untuk menangani baris yang terpotong
-      
-      // Initial AI message
-      setMessages(prev => [...prev, { 
-        id: aiMsgId, 
-        message: openingText, 
-        sender: 'ai', 
-        created_at: new Date().toISOString(),
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        isStreaming: true 
-      }]);
+      let isAiMessageAdded = false;
+
+      // Note: Initial AI message is NOT added here.
+      // This allows <ChatTyping /> to stay visible while the backend processes RAG & LLM.
 
       // Watchdog timer to detect hung streams (diperlonggar ke 25 detik)
       const watchdog = setInterval(() => {
@@ -78,13 +71,23 @@ export const ChatProvider = ({ children }) => {
           clearInterval(watchdog);
           controller.abort(); 
           
-          setMessages(prev => prev.map(m => 
-            m.id === aiMsgId ? { 
-              ...m, 
-              message: 'Asep minta maaf, koneksi Asep terputus nih. Tolong coba lagi beberapa saat ya.', 
-              isStreaming: false 
-            } : m
-          ));
+          if (!isAiMessageAdded) {
+            setMessages(prev => [...prev, {
+              id: aiMsgId,
+              message: 'Asep minta maaf, koneksi Asep terputus nih. Tolong coba lagi beberapa saat ya.',
+              sender: 'ai',
+              created_at: new Date().toISOString(),
+              isStreaming: false
+            }]);
+          } else {
+            setMessages(prev => prev.map(m => 
+              m.id === aiMsgId ? { 
+                ...m, 
+                message: 'Asep minta maaf, koneksi Asep terputus nih. Tolong coba lagi beberapa saat ya.', 
+                isStreaming: false 
+              } : m
+            ));
+          }
         }
       }, 2000);
 
@@ -117,13 +120,27 @@ export const ChatProvider = ({ children }) => {
                 
                 if (data.text) {
                   accumulatedText += data.text;
-                  setMessages(prev => prev.map(m => 
-                    m.id === aiMsgId ? { ...m, message: accumulatedText } : m
-                  ));
+                  if (!isAiMessageAdded) {
+                    setMessages(prev => [...prev, {
+                      id: aiMsgId,
+                      message: accumulatedText,
+                      sender: 'ai',
+                      created_at: new Date().toISOString(),
+                      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                      isStreaming: true
+                    }]);
+                    isAiMessageAdded = true;
+                  } else {
+                    setMessages(prev => prev.map(m => 
+                      m.id === aiMsgId ? { ...m, message: accumulatedText } : m
+                    ));
+                  }
                 } else if (data.error) {
                   isDoneReceived = true;
                   setMessages(prev => prev.map(m => 
-                    m.id === aiMsgId ? { ...m, message: data.error, isStreaming: false } : m
+                    m.id === aiMsgId 
+                      ? { ...m, message: accumulatedText + '\n\n' + data.error, isStreaming: false } 
+                      : m
                   ));
                   return;
                 }
@@ -141,13 +158,23 @@ export const ChatProvider = ({ children }) => {
 
       // Final check
       if (!isDoneReceived) {
-        setMessages(prev => prev.map(m => 
-          m.id === aiMsgId ? { 
-            ...m, 
-            message: 'Asep minta maaf, Asep lagi nggak bisa diakses nih. Tolong coba lagi beberapa saat ya.', 
-            isStreaming: false 
-          } : m
-        ));
+        if (!isAiMessageAdded) {
+           setMessages(prev => [...prev, { 
+             id: aiMsgId, 
+             message: 'Asep minta maaf, Asep lagi nggak bisa diakses nih. Tolong coba lagi beberapa saat ya.', 
+             sender: 'ai',
+             created_at: new Date().toISOString(),
+             isStreaming: false 
+           }]);
+        } else {
+           setMessages(prev => prev.map(m => 
+             m.id === aiMsgId ? { 
+               ...m, 
+               message: 'Asep minta maaf, Asep lagi nggak bisa diakses nih. Tolong coba lagi beberapa saat ya.', 
+               isStreaming: false 
+             } : m
+           ));
+        }
       } else {
         setMessages(prev => prev.map(m => 
           m.id === aiMsgId ? { ...m, isStreaming: false } : m
@@ -156,15 +183,24 @@ export const ChatProvider = ({ children }) => {
     } catch (err) {
       if (err.name === 'AbortError') return; 
       
-      // Jika terjadi error saat pengiriman, pastikan pesan AI yang sedang 'loading' diisi dengan pesan error
       if (aiMsgId) {
-        setMessages(prev => prev.map(m => 
-          m.id === aiMsgId ? { 
-            ...m, 
-            message: 'Asep minta maaf, Asep lagi nggak bisa diakses nih. Tolong coba lagi beberapa saat ya.', 
-            isStreaming: false 
-          } : m
-        ));
+        if (!isAiMessageAdded) {
+           setMessages(prev => [...prev, { 
+             id: aiMsgId, 
+             message: 'Asep minta maaf, Asep lagi nggak bisa diakses nih. Tolong coba lagi beberapa saat ya.', 
+             sender: 'ai',
+             created_at: new Date().toISOString(),
+             isStreaming: false 
+           }]);
+        } else {
+           setMessages(prev => prev.map(m => 
+             m.id === aiMsgId ? { 
+               ...m, 
+               message: 'Asep minta maaf, Asep lagi nggak bisa diakses nih. Tolong coba lagi beberapa saat ya.', 
+               isStreaming: false 
+             } : m
+           ));
+        }
       }
       setError(err.message || 'Gagal mengirim pesan');
     } finally {

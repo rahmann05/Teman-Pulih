@@ -30,8 +30,8 @@ const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 const _cache = {
     diseaseNames: null,
-    drugNames:    null,
-    expiry:       0,
+    drugNames: null,
+    expiry: 0,
 };
 
 /**
@@ -100,8 +100,8 @@ const getDrugNames = async () => {
 /** Invalidate the metadata cache (call after new data is indexed). */
 const invalidateMetadataCache = () => {
     _cache.diseaseNames = null;
-    _cache.drugNames    = null;
-    _cache.expiry       = 0;
+    _cache.drugNames = null;
+    _cache.expiry = 0;
     console.log('[CHROMA CACHE] Metadata cache invalidated.');
 };
 
@@ -212,7 +212,7 @@ const getDocsByDiseaseName = async (condCol, diseaseName) => {
 
         const indexed = response.documents.map((doc, i) => ({
             index: response.metadatas?.[i]?.chunk_index ?? 0,
-            doc:   doc || '',
+            doc: doc || '',
         }));
         indexed.sort((a, b) => a.index - b.index);
         return indexed.map(d => d.doc).filter(Boolean).join('\n');
@@ -241,13 +241,44 @@ const getDocsByDrugName = async (drugCol, drugName) => {
 
         const indexed = response.documents.map((doc, i) => ({
             index: response.metadatas?.[i]?.chunk_index ?? 0,
-            doc:   doc || '',
+            doc: doc || '',
         }));
         indexed.sort((a, b) => a.index - b.index);
         return indexed.map(d => d.doc).filter(Boolean).join('\n');
     } catch (e) {
         console.warn(`[CHROMA] getDocsByDrugName error ("${drugName}"):`, e.message);
         return '';
+    }
+};
+
+/**
+ * Query ChromaDB disease collection with a list of symptoms via vector search.
+ * Returns aligned docs + metadatas for further scoring by ragService.
+ *
+ * @param {object} collection - ChromaDB collection (RAG-TemanPulih)
+ * @param {string[]} symptoms  - List of symptom strings to search with
+ * @param {number}  nResults   - Max results to return (default 12)
+ * @returns {{ docs: string[], metas: object[] }}
+ */
+const queryDiseasesBySymptoms = async (collection, symptoms, nResults = 12) => {
+    if (!collection || !symptoms?.length) return { docs: [], metas: [] };
+    try {
+        const combinedQuery = symptoms.join(' ');
+        const result = await collection.query({
+            queryTexts: [combinedQuery],
+            nResults,
+            include: ['documents', 'metadatas'],
+        });
+        const rawDocs  = result?.documents?.flat() || [];
+        const rawMetas = result?.metadatas?.flat() || [];
+        const docs = [], metas = [];
+        for (let i = 0; i < rawDocs.length; i++) {
+            if (rawDocs[i] && rawMetas[i]) { docs.push(rawDocs[i]); metas.push(rawMetas[i]); }
+        }
+        return { docs, metas };
+    } catch (e) {
+        console.warn('[CHROMA] queryDiseasesBySymptoms failed:', e.message);
+        return { docs: [], metas: [] };
     }
 };
 
@@ -263,7 +294,7 @@ const getFullConditionContent = async (collection, sourceId, initialDoc = '') =>
 
         const indexedDocs = response.documents.map((doc, i) => ({
             index: response.metadatas?.[i]?.chunk_index ?? 0,
-            doc:   doc || '',
+            doc: doc || '',
         }));
         indexedDocs.sort((a, b) => a.index - b.index);
         return indexedDocs.map(d => d.doc).filter(Boolean).join('\n') || initialDoc;
@@ -284,7 +315,7 @@ const getFullDrugContent = async (collection, sourceId, initialDoc = '') => {
 
         const indexedDocs = response.documents.map((doc, i) => ({
             index: response.metadatas?.[i]?.chunk_index ?? 0,
-            doc:   doc || '',
+            doc: doc || '',
         }));
         indexedDocs.sort((a, b) => a.index - b.index);
         return indexedDocs.map(d => d.doc).filter(Boolean).join(' ') || initialDoc;
@@ -304,4 +335,6 @@ module.exports = {
     getDocsByDrugName,
     getFullConditionContent,
     getFullDrugContent,
+    queryDiseasesBySymptoms,
 };
+
