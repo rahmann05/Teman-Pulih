@@ -16,6 +16,7 @@ const ScanPage = lazy(() => import('@/features/scan/pages/ScanPage'));
 const ScanCropPage = lazy(() => import('@/features/scan/pages/ScanCropPage'));
 const ScanResultPage = lazy(() => import('@/features/scan/pages/ScanResultPage'));
 const MedicationListPage = lazy(() => import('@/features/medications/pages/MedicationListPage'));
+const CaregiverMedicationListPage = lazy(() => import('@/features/medications/pages/CaregiverMedicationListPage'));
 const MedicationDetailPage = lazy(() => import('@/features/medications/pages/MedicationDetailPage'));
 const ChatbotPage = lazy(() => import('@/features/chatbot/pages/ChatbotPage'));
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage'));
@@ -51,6 +52,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   return children;
+};
+
+const MedicationsRoute = () => {
+  const { user } = useAuth();
+  if (user?.role === 'caregiver') {
+    return <CaregiverMedicationListPage />;
+  }
+  return <MedicationListPage />;
 };
 
 const AnimatedRoutes = () => {
@@ -140,7 +149,7 @@ const AnimatedRoutes = () => {
             path="/medications"
             element={
               <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
-                <PageTransition><MedicationListPage /></PageTransition>
+                <PageTransition><MedicationsRoute /></PageTransition>
               </ProtectedRoute>
             }
           />
