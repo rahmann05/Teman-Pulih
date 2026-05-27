@@ -124,55 +124,41 @@ const enrichDrugDetails = async (drug, drugCol) => {
 const searchDrug = async (query) => {
     if (!query?.trim()) return null;
 
-    const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat');
-    if (!drugCol) return null;
+    const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat').catch(() => null);
 
-    // Step 1: Fuzzy match against cached drug names
-    const drugNames = await getDrugNames();
-    const matches   = fuzzyMatchName(query, drugNames, 1);
-    const bestMatch = matches[0]?.name || null;
-
-    if (bestMatch) {
-        console.log(`[RAG DRUG] "${query}" → matched "${bestMatch}" (${matches[0].type})`);
-        const fullContent = await getDocsByDrugName(drugCol, bestMatch);
-        if (fullContent) {
-            const parsed = parseDrugContent(fullContent);
-            return {
-                nama_obat:    bestMatch,
-                kategori:     parsed.kategori     || '',
-                indikasi:     parsed.indikasi     || '',
-                komposisi:    parsed.komposisi    || '',
-                dosis:        parsed.dosis        || '',
-                aturan_pakai: parsed.aturan_pakai || '',
-                efek_samping: parsed.efek_samping || '',
-                peringatan:   parsed.peringatan   || '',
-                raw_content:  fullContent,
-            };
-        }
+    // Step 1: Use Gemini to predict standard drug name
+    let geminiDrugName = null;
+    try {
+        const { genAI } = require('./chatbotService');
+        const prompt = `Pengguna menginputkan pencarian obat: "${query}". 
+Berikan 1 kemungkinan nama obat generik atau merek dagang paling umum dalam bahasa Indonesia yang paling relevan.
+HANYA kembalikan string nama obat, tanpa tambahan apapun.
+Contoh jika input "panadol": Paracetamol
+Contoh jika input "obat pusing": Paracetamol`;
+        
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+        const result = await model.generateContent(prompt);
+        geminiDrugName = result.response.text().trim();
+        console.log(`[RAG DRUG] Gemini prediction: "${geminiDrugName}"`);
+    } catch (e) {
+        console.warn('[RAG DRUG] Gemini prediction failed:', e.message);
     }
 
-    // Step 2: Vector fallback — check nama_obat match first
-    console.log(`[RAG DRUG] No metadata match for "${query}", trying vector fallback...`);
-    const komposisiMatches = []; // collect drugs that match by komposisi
-    try {
-        const queries = buildQueryList(query).slice(0, 4);
-        const result  = await drugCol.query({ queryTexts: queries, nResults: 10 });
-        const { docs, metas } = alignQueryResults(result);
+    const drugNames = await getDrugNames();
+    const searchTerms = [query.trim(), geminiDrugName].filter(Boolean);
 
-        const normQuery = normalizeText(query);
+    // Step 2: Fuzzy match against cached drug names
+    for (const term of searchTerms) {
+        const matches = fuzzyMatchName(term, drugNames, 1);
+        const bestMatch = matches[0]?.name || null;
 
-        for (let i = 0; i < docs.length; i++) {
-            const nama = metas[i]?.nama_obat;
-            if (!nama) continue;
-
-            // Check nama_obat match (substring)
-            const normNama = normalizeText(nama);
-            if (normNama.includes(normQuery) || normQuery.includes(normNama)) {
-                const fullContent = await getDocsByDrugName(drugCol, nama);
-                const parsed = parseDrugContent(fullContent || docs[i]);
-                console.log(`[RAG DRUG] Vector fallback matched by name "${nama}"`);
+        if (bestMatch) {
+            console.log(`[RAG DRUG] "${term}" → matched "${bestMatch}" (${matches[0].type})`);
+            const fullContent = drugCol ? await getDocsByDrugName(drugCol, bestMatch).catch(()=>'') : '';
+            if (fullContent) {
+                const parsed = parseDrugContent(fullContent);
                 return {
-                    nama_obat:    nama,
+                    nama_obat:    bestMatch,
                     kategori:     parsed.kategori     || '',
                     indikasi:     parsed.indikasi     || '',
                     komposisi:    parsed.komposisi    || '',
@@ -180,21 +166,58 @@ const searchDrug = async (query) => {
                     aturan_pakai: parsed.aturan_pakai || '',
                     efek_samping: parsed.efek_samping || '',
                     peringatan:   parsed.peringatan   || '',
-                    raw_content:  fullContent || docs[i],
+                    raw_content:  fullContent,
                 };
             }
-
-            // Check komposisi match — query might be an ingredient name
-            const normDoc = normalizeText(docs[i]);
-            if (normDoc.includes(normQuery)) {
-                komposisiMatches.push({ nama, doc: docs[i] });
-            }
         }
-    } catch (e) {
-        console.warn(`[RAG DRUG] Vector fallback failed:`, e.message);
     }
 
-    // Step 3: Komposisi/ingredient match — return first drug that contains this ingredient
+    // Step 3: Vector fallback — check nama_obat match first
+    console.log(`[RAG DRUG] No metadata match for "${query}", trying vector fallback...`);
+    const komposisiMatches = []; // collect drugs that match by komposisi
+    if (drugCol) {
+        try {
+            const queries = buildQueryList(query).slice(0, 4);
+            const result  = await drugCol.query({ queryTexts: queries, nResults: 10 });
+            const { docs, metas } = alignQueryResults(result);
+
+            const normQuery = normalizeText(query);
+
+            for (let i = 0; i < docs.length; i++) {
+                const nama = metas[i]?.nama_obat;
+                if (!nama) continue;
+
+                // Check nama_obat match (substring)
+                const normNama = normalizeText(nama);
+                if (normNama.includes(normQuery) || normQuery.includes(normNama)) {
+                    const fullContent = await getDocsByDrugName(drugCol, nama);
+                    const parsed = parseDrugContent(fullContent || docs[i]);
+                    console.log(`[RAG DRUG] Vector fallback matched by name "${nama}"`);
+                    return {
+                        nama_obat:    nama,
+                        kategori:     parsed.kategori     || '',
+                        indikasi:     parsed.indikasi     || '',
+                        komposisi:    parsed.komposisi    || '',
+                        dosis:        parsed.dosis        || '',
+                        aturan_pakai: parsed.aturan_pakai || '',
+                        efek_samping: parsed.efek_samping || '',
+                        peringatan:   parsed.peringatan   || '',
+                        raw_content:  fullContent || docs[i],
+                    };
+                }
+
+                // Check komposisi match — query might be an ingredient name
+                const normDoc = normalizeText(docs[i]);
+                if (normDoc.includes(normQuery)) {
+                    komposisiMatches.push({ nama, doc: docs[i] });
+                }
+            }
+        } catch (e) {
+            console.warn(`[RAG DRUG] Vector fallback failed:`, e.message);
+        }
+    }
+
+    // Step 4: Komposisi/ingredient match — return first drug that contains this ingredient
     if (komposisiMatches.length > 0) {
         const first = komposisiMatches[0];
         const fullContent = await getDocsByDrugName(drugCol, first.nama).catch(() => first.doc);
@@ -214,6 +237,47 @@ const searchDrug = async (query) => {
         };
     }
 
+    // Step 5: Synthesize via Gemini if RAG returns absolutely nothing
+    if (geminiDrugName) {
+        console.log('[RAG DRUG] No RAG matches, generating synthesis from Gemini...');
+        try {
+            const { genAI } = require('./chatbotService');
+            const p = `Berikan informasi medis edukatif singkat tentang obat "${geminiDrugName}" dalam format JSON.
+Format HARUS persis seperti ini tanpa markdown tambahan:
+{
+  "kategori": "Kategori obat",
+  "indikasi": "Kegunaan utama",
+  "komposisi": "Bahan aktif utama",
+  "dosis": "Dosis umum",
+  "aturan_pakai": "Cara penggunaan umum",
+  "efek_samping": "Efek samping umum",
+  "kontraindikasi": "Siapa yang tidak boleh meminumnya",
+  "peringatan": "Hal yang harus diperhatikan"
+}`;
+            const m = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+            const r = await m.generateContent(p);
+            const t = r.response.text().trim();
+            const j = t.match(/\{.*\}/s);
+            if (j) {
+                const parsed = JSON.parse(j[0]);
+                return {
+                    nama_obat:    geminiDrugName,
+                    kategori:     parsed.kategori     || '',
+                    indikasi:     parsed.indikasi     || '',
+                    komposisi:    parsed.komposisi    || '',
+                    dosis:        parsed.dosis        || '',
+                    aturan_pakai: parsed.aturan_pakai || '',
+                    efek_samping: parsed.efek_samping || '',
+                    peringatan:   parsed.peringatan   || '',
+                    raw_content:  "Generated by Gemini API",
+                    matched_by_ingredient: false,
+                };
+            }
+        } catch(e) {
+            console.warn('[RAG DRUG] Synthesis error:', e.message);
+        }
+    }
+
     console.warn(`[RAG DRUG] No match found for "${query}"`);
     return null;
 };
@@ -228,8 +292,7 @@ const searchDrug = async (query) => {
 const searchDrugsList = async (query) => {
     if (!query?.trim()) return [];
 
-    const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat');
-    if (!drugCol) return [];
+    const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat').catch(() => null);
 
     const resultsMap = new Map();
 
@@ -250,50 +313,84 @@ const searchDrugsList = async (query) => {
         }
     };
 
-    // Step 1: Fuzzy match against cached drug names
+    // Step 1: Use Gemini to predict standard drug names based on user input
+    let geminiDrugNames = [];
+    try {
+        const { genAI } = require('./chatbotService');
+        const prompt = `Pengguna menginputkan pencarian obat: "${query}". 
+Tugasmu adalah memberikan 3 kemungkinan nama obat generik atau merek dagang umum dalam bahasa Indonesia yang relevan.
+HANYA kembalikan array JSON berisi string nama obat. Dilarang memberikan teks lain.
+Contoh jika input "obat sakit kepala": ["Paracetamol", "Ibuprofen", "Aspirin"]
+Contoh jika input "panadol": ["Paracetamol", "Panadol"]`;
+        
+        const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+        const jsonMatch = text.match(/\[.*\]/s);
+        if (jsonMatch) {
+            geminiDrugNames = JSON.parse(jsonMatch[0]);
+            console.log(`[RAG DRUG LIST] Gemini predictions:`, geminiDrugNames);
+        }
+    } catch (e) {
+        console.warn('[RAG DRUG LIST] Gemini prediction failed:', e.message);
+    }
+
     const drugNames = await getDrugNames();
-    const matches = fuzzyMatchName(query, drugNames, 5);
-    for (const m of matches) {
-        const name = m.name;
-        const fullContent = await getDocsByDrugName(drugCol, name);
-        if (fullContent) {
-            const parsed = parseDrugContent(fullContent);
-            addResult(name, parsed, fullContent);
+    const searchTerms = [query.trim(), ...geminiDrugNames].filter(Boolean);
+
+    // Step 2: Fuzzy match against cached drug names for all search terms
+    const uniqueDrugMatches = new Set();
+    for (const term of searchTerms) {
+        const matches = fuzzyMatchName(term, drugNames, 5);
+        for (const m of matches) {
+            uniqueDrugMatches.add(m.name);
         }
     }
 
-    // Step 2: Vector search — collect unique candidates, then check FULL document content
-    try {
-        const queries = buildQueryList(query).slice(0, 4);
-        const result  = await drugCol.query({ queryTexts: queries, nResults: 15 });
-        const { docs, metas } = alignQueryResults(result);
-
-        const normQuery = normalizeText(query);
-
-        // Collect unique drug names returned by vector search
-        const candidateNames = new Set();
-        for (let i = 0; i < docs.length; i++) {
-            const name = metas[i]?.nama_obat;
-            if (name && !resultsMap.has(name)) candidateNames.add(name);
-        }
-
-        // Fetch full document for each candidate and check name OR full content
-        await Promise.all(Array.from(candidateNames).map(async (name) => {
+    if (uniqueDrugMatches.size > 0 && drugCol) {
+        await Promise.all(Array.from(uniqueDrugMatches).map(async (name) => {
             const fullContent = await getDocsByDrugName(drugCol, name).catch(() => '');
-            if (!fullContent) return;
-            const normName = normalizeText(name);
-            const normFull = normalizeText(fullContent);
-            if (normName.includes(normQuery) || normQuery.includes(normName) || normFull.includes(normQuery)) {
+            if (fullContent) {
                 const parsed = parseDrugContent(fullContent);
                 addResult(name, parsed, fullContent);
             }
         }));
-    } catch (e) {
-        console.warn(`[RAG DRUG LIST] Vector search failed:`, e.message);
     }
 
-    // Step 3: Exhaustive ingredient/composition scan (fallback for ingredient queries e.g. "paracetamol")
-    if (resultsMap.size === 0) {
+    // Step 3: Vector search — collect unique candidates, then check FULL document content
+    if (drugCol) {
+        try {
+            const queries = buildQueryList(query).slice(0, 4);
+            const result  = await drugCol.query({ queryTexts: queries, nResults: 15 });
+            const { docs, metas } = alignQueryResults(result);
+
+            const normQuery = normalizeText(query);
+
+            // Collect unique drug names returned by vector search
+            const candidateNames = new Set();
+            for (let i = 0; i < docs.length; i++) {
+                const name = metas[i]?.nama_obat;
+                if (name && !resultsMap.has(name)) candidateNames.add(name);
+            }
+
+            // Fetch full document for each candidate and check name OR full content
+            await Promise.all(Array.from(candidateNames).map(async (name) => {
+                const fullContent = await getDocsByDrugName(drugCol, name).catch(() => '');
+                if (!fullContent) return;
+                const normName = normalizeText(name);
+                const normFull = normalizeText(fullContent);
+                if (normName.includes(normQuery) || normQuery.includes(normName) || normFull.includes(normQuery)) {
+                    const parsed = parseDrugContent(fullContent);
+                    addResult(name, parsed, fullContent);
+                }
+            }));
+        } catch (e) {
+            console.warn(`[RAG DRUG LIST] Vector search failed:`, e.message);
+        }
+    }
+
+    // Step 4: Exhaustive ingredient/composition scan (fallback for ingredient queries e.g. "paracetamol")
+    if (resultsMap.size === 0 && drugCol) {
         console.log(`[RAG DRUG LIST] No results yet — trying exhaustive ingredient scan for "${query}"...`);
         try {
             const allDrugNames = await getDrugNames();
@@ -314,6 +411,37 @@ const searchDrugsList = async (query) => {
             }
         } catch (e) {
             console.warn(`[RAG DRUG LIST] Ingredient scan failed:`, e.message);
+        }
+    }
+
+    // Step 5: Synthesize via Gemini if RAG returns absolutely nothing
+    if (resultsMap.size === 0 && geminiDrugNames.length > 0) {
+        console.log('[RAG DRUG LIST] No RAG matches, generating synthesis from Gemini...');
+        try {
+            const { genAI } = require('./chatbotService');
+            const targetDrug = geminiDrugNames[0];
+            const p = `Berikan informasi medis edukatif singkat tentang obat "${targetDrug}" dalam format JSON.
+Format HARUS persis seperti ini tanpa markdown tambahan:
+{
+  "kategori": "Kategori obat",
+  "indikasi": "Kegunaan utama",
+  "komposisi": "Bahan aktif utama",
+  "dosis": "Dosis umum",
+  "aturan_pakai": "Cara penggunaan umum",
+  "efek_samping": "Efek samping umum",
+  "kontraindikasi": "Siapa yang tidak boleh meminumnya",
+  "peringatan": "Hal yang harus diperhatikan"
+}`;
+            const m = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+            const r = await m.generateContent(p);
+            const t = r.response.text().trim();
+            const j = t.match(/\{.*\}/s);
+            if (j) {
+                const info = JSON.parse(j[0]);
+                addResult(targetDrug, info, "Generated by Gemini API");
+            }
+        } catch(e) {
+            console.warn('[RAG DRUG LIST] Synthesis error:', e.message);
         }
     }
 

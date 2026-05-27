@@ -140,26 +140,10 @@ const CurrentIllnessCard = () => {
     }
   };
 
-  const handleSelectPreset = async (name) => {
+  const handleSelectPreset = (name) => {
     setInputValue(name);
     setSelectedIllness({ name, illness_info: null });
     setSearchResults([]);
-    
-    // Auto-search Chroma on selecting preset
-    setSearchLoading(true);
-    setError('');
-    try {
-      const { data } = await searchIllness(name);
-      setSearchResults(data || []);
-      if (data && data.length > 0) {
-        // Auto-select match if exact/strong preset
-        handleSelectResult(data[0]);
-      }
-    } catch {
-      setSearchResults([]);
-    } finally {
-      setSearchLoading(false);
-    }
   };
 
   const handleSelectResult = (result) => {

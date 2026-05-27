@@ -226,18 +226,6 @@ const fetchDrugsForCondition = async (drugCol, illnessName) => {
 
 // ─── SEARCH ILLNESS (autocomplete / suggestion) ───────────────────────────────
 
-/**
- * Cari penyakit berdasarkan nama atau gejala.
- *
- * Alur baru (metadata-first):
- * 1. Fuzzy match query terhadap cached disease_name list
- * 2. Untuk setiap match: fetch semua chunk via getDocsByDiseaseName
- * 3. Parse info → cross-reference ke drug collection
- * 4. Fallback ke vector search jika tidak ada metadata match
- *
- * @param {string} query - User's search query
- * @returns {object[]} Array of illness suggestions
- */
 const searchIllness = async (query) => {
     if (!query || query.trim().length < 2) return [];
 
@@ -245,74 +233,48 @@ const searchIllness = async (query) => {
         const condCol = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih').catch(() => null);
         const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat').catch(() => null);
 
-        if (!condCol) return [];
-
         console.log(`[ILLNESS SEARCH] Query: "${query}"`);
 
-        // Step 1: Fuzzy match from cached disease names
-        const diseaseNames = await getDiseaseNames();
-        const matches      = fuzzyMatchName(query.trim(), diseaseNames, 6);
-
-        const suggestions = [];
-
-        if (matches.length > 0) {
-            console.log(`[ILLNESS SEARCH] ${matches.length} fuzzy matches: ${matches.map(m => m.name).join(', ')}`);
-
-            for (const match of matches) {
-                try {
-                    const fullContent = await getDocsByDiseaseName(condCol, match.name);
-                    if (!fullContent) continue;
-
-                    const info = parseIllnessContent(fullContent);
-
-                    // Cross-reference drugs
-                    const drugResults = drugCol ? await fetchDrugsForCondition(drugCol, match.name) : [];
-                    if (drugResults.length > 0 && !info.obat_terkait) {
-                        info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
-                    }
-
-                    suggestions.push({
-                        name: match.name,
-                        illness_info: {
-                            indikasi:     info.indikasi,
-                            gejala_umum:  info.gejala_umum,
-                            penanganan:   info.penanganan,
-                            obat_terkait: info.obat_terkait,
-                            peringatan:   info.peringatan,
-                            drug_details: drugResults.length > 0 ? drugResults.slice(0, 3) : undefined,
-                        },
-                        relevance_score: match.score,
-                        match_type:     match.type,
-                    });
-                } catch (e) {
-                    console.warn(`[ILLNESS SEARCH] Error fetching "${match.name}":`, e.message);
-                }
+        // Step 1: Use Gemini to predict standard medical conditions based on user input
+        let geminiDiseaseNames = [];
+        try {
+            const { genAI } = require('./chatbotService');
+            const prompt = `Pengguna menginputkan keluhan atau nama kondisi: "${query}". 
+Tugasmu adalah memberikan 3 kemungkinan kondisi medis atau penyakit umum dalam bahasa Indonesia yang relevan.
+HANYA kembalikan array JSON berisi string nama penyakit. Dilarang memberikan teks lain.
+Contoh jika input "perut perih": ["Maag", "Asam Lambung", "Gastritis"]
+Contoh jika input "pusing muter": ["Vertigo", "Sakit Kepala", "Migrain"]`;
+            
+            const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+            const result = await model.generateContent(prompt);
+            const text = result.response.text().trim();
+            const jsonMatch = text.match(/\[.*\]/s);
+            if (jsonMatch) {
+                geminiDiseaseNames = JSON.parse(jsonMatch[0]);
+                console.log(`[ILLNESS SEARCH] Gemini predictions:`, geminiDiseaseNames);
             }
+        } catch (e) {
+            console.warn('[ILLNESS SEARCH] Gemini prediction failed:', e.message);
         }
 
-        // Fallback: vector search if no metadata matches found
-        if (suggestions.length === 0) {
-            console.log(`[ILLNESS SEARCH] No metadata matches, trying vector fallback...`);
-            const queries = buildQueryList(query.trim()).slice(0, 4);
-            const result  = await condCol.query({ queryTexts: queries, nResults: 20 });
-            const docs    = result?.documents?.flat().filter(Boolean) || [];
-            const metas   = result?.metadatas?.flat() || [];
+        const diseaseNames = await getDiseaseNames();
+        const suggestions = [];
+        const seenNames = new Set();
 
-            const seenNames = new Set();
-            for (let i = 0; i < metas.length; i++) {
-                const dname = metas[i]?.disease_name;
-                if (!dname || seenNames.has(dname)) continue;
-                seenNames.add(dname);
+        // Step 2: Fuzzy match from query and Gemini predictions
+        const searchTerms = [query.trim(), ...geminiDiseaseNames].filter(Boolean);
 
-                const fullContent = await getDocsByDiseaseName(condCol, dname);
-                const info = parseIllnessContent(fullContent || docs[i] || '');
+        // Helper function for concurrent fetching
+        const fetchDiseaseData = async (dname, score, type) => {
+            try {
+                const fullContent = condCol ? await getDocsByDiseaseName(condCol, dname) : '';
+                if (!fullContent) return null;
+                const info = parseIllnessContent(fullContent);
                 const drugResults = drugCol ? await fetchDrugsForCondition(drugCol, dname) : [];
-
                 if (drugResults.length > 0 && !info.obat_terkait) {
                     info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
                 }
-
-                suggestions.push({
+                return {
                     name: dname,
                     illness_info: {
                         indikasi:     info.indikasi,
@@ -322,11 +284,89 @@ const searchIllness = async (query) => {
                         peringatan:   info.peringatan,
                         drug_details: drugResults.length > 0 ? drugResults.slice(0, 3) : undefined,
                     },
-                    relevance_score: 0,
-                    match_type: 'vector',
-                });
+                    relevance_score: score,
+                    match_type: type,
+                };
+            } catch (e) {
+                console.warn(`[ILLNESS SEARCH] Error fetching "${dname}":`, e.message);
+                return null;
+            }
+        };
 
-                if (suggestions.length >= 6) break;
+        const allMatches = [];
+        for (const term of searchTerms) {
+            allMatches.push(...fuzzyMatchName(term, diseaseNames, 4));
+        }
+
+        const uniqueMatches = [];
+        for (const match of allMatches) {
+            if (!seenNames.has(match.name)) {
+                seenNames.add(match.name);
+                uniqueMatches.push(match);
+            }
+        }
+        
+        uniqueMatches.sort((a, b) => b.score - a.score);
+        const topMatches = uniqueMatches.slice(0, 6);
+
+        if (topMatches.length > 0) {
+            const resolved = await Promise.all(topMatches.map(m => fetchDiseaseData(m.name, m.score || 0, m.type || 'fuzzy')));
+            suggestions.push(...resolved.filter(Boolean));
+        }
+
+        // Step 3: Fallback Vector Search if no metadata matches
+        if (suggestions.length === 0 && condCol) {
+            console.log(`[ILLNESS SEARCH] No metadata matches, trying vector fallback...`);
+            const queries = buildQueryList(query.trim()).slice(0, 4);
+            const result  = await condCol.query({ queryTexts: queries, nResults: 10 });
+            const metas   = result?.metadatas?.flat() || [];
+
+            const vectorMatches = [];
+            for (const meta of metas) {
+                const dname = meta?.disease_name;
+                if (dname && !seenNames.has(dname)) {
+                    seenNames.add(dname);
+                    vectorMatches.push(dname);
+                    if (vectorMatches.length >= 6) break;
+                }
+            }
+
+            if (vectorMatches.length > 0) {
+                const resolved = await Promise.all(vectorMatches.map(name => fetchDiseaseData(name, 0, 'vector')));
+                suggestions.push(...resolved.filter(Boolean));
+            }
+        }
+
+        // Step 4: Synthesize via Gemini if RAG returns absolutely nothing
+        if (suggestions.length === 0 && geminiDiseaseNames.length > 0) {
+            console.log('[ILLNESS SEARCH] No RAG matches, generating synthesis from Gemini...');
+            try {
+                const { genAI } = require('./chatbotService');
+                const targetDisease = geminiDiseaseNames[0];
+                const p = `Berikan informasi medis edukatif singkat tentang "${targetDisease}" dalam format JSON.
+Format HARUS persis seperti ini tanpa markdown tambahan:
+{
+  "indikasi": "Penjelasan singkat tentang kondisi ini",
+  "gejala_umum": "Gejala yang sering dialami",
+  "penanganan": "Penanganan mandiri yang disarankan",
+  "obat_terkait": "Contoh obat generik yang umum",
+  "peringatan": "Kapan pasien harus segera ke dokter"
+}`;
+                const m = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+                const r = await m.generateContent(p);
+                const t = r.response.text().trim();
+                const j = t.match(/\{.*\}/s);
+                if (j) {
+                    const info = JSON.parse(j[0]);
+                    suggestions.push({
+                        name: targetDisease,
+                        illness_info: info,
+                        relevance_score: 0,
+                        match_type: 'gemini-synthesized'
+                    });
+                }
+            } catch(e) {
+                console.warn('[ILLNESS SEARCH] Synthesis error:', e.message);
             }
         }
 
