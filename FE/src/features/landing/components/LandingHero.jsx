@@ -1,12 +1,12 @@
-
+﻿
 import { useRef, useState, useCallback } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { HiOutlineArrowRight } from 'react-icons/hi2';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '@/shared/layouts/Navbar';
-import heroBG from '@/assets/images/hero-medical-BG.png';
-import heroObj from '@/assets/images/hero-medical-object.png';
-import hero3D from '@/assets/images/hero-medical-3d.png';
+import heroBG from '@/assets/images/hero-medical-BG.webp';
+import heroObj from '@/assets/images/hero-medical-object.webp';
+import hero3D from '@/assets/images/hero-medical-3d.webp';
 
 const LandingHero = () => {
   const containerRef = useRef(null);

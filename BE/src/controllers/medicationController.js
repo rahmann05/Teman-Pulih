@@ -135,4 +135,16 @@ const searchChroma = async (req, res, next) => {
     }
 };
 
-module.exports = { getMedications, createMedication, updateMedication, deleteMedication, markTaken, getMedicationLogs, searchChroma };
+const uploadMedicationImage = async (req, res, next) => {
+    try {
+        const supabase = getSupabaseClient(req);
+        const file = req.file;
+        if (!file) return res.status(400).json({ error: 'File gambar tidak ditemukan dalam request.' });
+        const data = await medicationService.uploadMedicationImage(req.user, supabase, req.params.id, file);
+        res.status(200).json({ message: 'Foto obat berhasil diupload', data });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { getMedications, createMedication, updateMedication, deleteMedication, markTaken, getMedicationLogs, searchChroma, uploadMedicationImage };

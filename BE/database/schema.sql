@@ -30,6 +30,7 @@ DROP TABLE IF EXISTS public.users CASCADE;
 DROP TABLE IF EXISTS public.illness_history CASCADE;
 DROP TABLE IF EXISTS public.daily_checkins CASCADE;
 DROP TABLE IF EXISTS public.medical_complaints CASCADE;
+DROP TABLE IF EXISTS public.compliance_assessments CASCADE;
 
 -- Aktifkan UUID generation extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -125,6 +126,7 @@ CREATE TABLE public.medications (
     dosage VARCHAR(100),
     instructions TEXT,
     medicinal_insight JSONB,
+    image_url TEXT DEFAULT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -209,6 +211,19 @@ CREATE TABLE public.medical_complaints (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 15. Compliance Assessments Table
+CREATE TABLE public.compliance_assessments (
+    id SERIAL PRIMARY KEY,
+    patient_id INTEGER NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    raw_responses JSONB NOT NULL,
+    adherence_class SMALLINT NOT NULL,     -- 0: Non-Adherent, 1: Adherent
+    adherence_score NUMERIC(5,4) NOT NULL,  -- Probability (0.0000 - 1.0000)
+    behaviour_class SMALLINT NOT NULL,     -- 0: Negatif, 1: Positif
+    perception_class SMALLINT NOT NULL,    -- 0: Negatif, 1: Netral, 2: Positif
+    model_version VARCHAR(50) DEFAULT 'hf-acous-v1',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ──────────────────────────────────────────────────────────
 -- Bagian 3: Indeks Performa (Indexes)
 -- ──────────────────────────────────────────────────────────
@@ -225,6 +240,9 @@ CREATE INDEX IF NOT EXISTS idx_medical_complaints_patient_id ON public.medical_c
 
 CREATE INDEX IF NOT EXISTS idx_ocr_history_created_at ON public.ocr_history(created_at);
 CREATE INDEX IF NOT EXISTS idx_ocr_history_user_id ON public.ocr_history(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_compliance_patient_id ON public.compliance_assessments(patient_id);
+CREATE INDEX IF NOT EXISTS idx_compliance_created_at ON public.compliance_assessments(created_at);
 
 -- ──────────────────────────────────────────────────────────
 -- Bagian 4: Trigger & Fungsi Pendaftaran User Baru
@@ -308,6 +326,7 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.illness_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.daily_checkins ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.medical_complaints ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.compliance_assessments ENABLE ROW LEVEL SECURITY;
 
 -- ── 1. Users Policies
 DROP POLICY IF EXISTS "Users can view their own data" ON public.users;
@@ -408,3 +427,22 @@ CREATE POLICY "Patients manage own complaints" ON public.medical_complaints FOR 
 
 DROP POLICY IF EXISTS "Caregivers view patient complaints" ON public.medical_complaints;
 CREATE POLICY "Caregivers view patient complaints" ON public.medical_complaints FOR SELECT USING (EXISTS (SELECT 1 FROM public.family_relations fr JOIN public.users u ON u.id = fr.caregiver_id WHERE fr.patient_id = medical_complaints.patient_id AND fr.status = 'accepted' AND u.auth_id = auth.uid()));
+
+-- ── 14. Compliance Assessments Policies
+DROP POLICY IF EXISTS "Patients manage own compliance" ON public.compliance_assessments;
+CREATE POLICY "Patients manage own compliance" ON public.compliance_assessments 
+    FOR ALL USING (EXISTS (
+        SELECT 1 FROM public.users 
+        WHERE users.id = compliance_assessments.patient_id 
+        AND users.auth_id = auth.uid()
+    ));
+
+DROP POLICY IF EXISTS "Caregivers view patient compliance" ON public.compliance_assessments;
+CREATE POLICY "Caregivers view patient compliance" ON public.compliance_assessments 
+    FOR SELECT USING (EXISTS (
+        SELECT 1 FROM public.family_relations fr 
+        JOIN public.users u ON u.id = fr.caregiver_id 
+        WHERE fr.patient_id = compliance_assessments.patient_id 
+        AND fr.status = 'accepted' 
+        AND u.auth_id = auth.uid()
+    ));

@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
+﻿import { motion } from 'framer-motion';
 
-import imgAbu from '@/assets/images/developer/Abu Harris.png';
-import imgSafdar from '@/assets/images/developer/Safdar Rahman.png';
-import imgRuli from '@/assets/images/developer/Ruli Hardimulya.png';
-import bgDev from '@/assets/images/developer/dev-bg.png';
+import imgAbu from '@/assets/images/developer/Abu Harris.webp';
+import imgSafdar from '@/assets/images/developer/Safdar Rahman.webp';
+import imgRuli from '@/assets/images/developer/Ruli Hardimulya.webp';
+import bgDev from '@/assets/images/developer/dev-bg.webp';
 
 const imgMirza = `https://ui-avatars.com/api/?name=Mirza&background=random&color=fff&size=512`;
 const imgIkhsan = `https://ui-avatars.com/api/?name=M+Ikhsan&background=random&color=fff&size=512`;

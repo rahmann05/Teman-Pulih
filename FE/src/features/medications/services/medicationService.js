@@ -56,3 +56,17 @@ export const getMedicationLogs = (patientId) =>
  */
 export const searchChromaDrugs = (query, patientId) =>
   api.get('/medications/search-chroma', { params: { query, patient_id: patientId } });
+
+/**
+ * Upload a medication photo to Supabase Storage.
+ * Naming convention: medications/{userId}/{medicationId}_{timestamp}.{ext}
+ * @param {string} id - Medication ID.
+ * @param {File} file - Image File object from input[type=file].
+ */
+export const uploadMedicationImage = (id, file) => {
+  const formData = new FormData();
+  formData.append('image', file);
+  return api.post(`/medications/${id}/image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};

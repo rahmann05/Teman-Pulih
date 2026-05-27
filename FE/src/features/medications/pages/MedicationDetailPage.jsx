@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+﻿import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
@@ -13,7 +13,9 @@ import {
   LuCalendar,
   LuClock,
   LuCoins,
-  LuShield
+  LuShield,
+  LuCamera,
+  LuLoader
 } from 'react-icons/lu';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import MedicationDoseTimeline from '@/features/medications/components/MedicationDoseTimeline';
@@ -22,7 +24,8 @@ import EditMedicationModal from '@/features/medications/pages/EditMedicationModa
 import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { useMedications } from '@/features/medications/hooks/useMedications';
 import { useAuth } from '@/shared/hooks/useAuth';
-import heroImg from '@/assets/images/feature-medication.png';
+import { uploadMedicationImage } from '@/features/medications/services/medicationService';
+import heroImg from '@/assets/images/feature-medication.webp';
 import '@/features/medications/medications.css';
 
 /**
@@ -191,6 +194,10 @@ const MedicationDetailPage = () => {
 
   const [showEdit, setShowEdit]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [uploading, setUploading]     = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [localImageUrl, setLocalImageUrl] = useState(null); // optimistic preview
+  const fileInputRef = useRef(null);
 
   const {
     medications,
@@ -220,6 +227,25 @@ const MedicationDetailPage = () => {
 
   const handleEdit = async (data) => {
     await editMedication(id, data);
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError('');
+    setUploading(true);
+    // Optimistic local preview
+    const objectUrl = URL.createObjectURL(file);
+    setLocalImageUrl(objectUrl);
+    try {
+      await uploadMedicationImage(id, file);
+      await fetchAll(); // refresh data from server
+    } catch (err) {
+      setLocalImageUrl(null); // rollback preview
+      setUploadError(err?.response?.data?.error || 'Gagal upload foto. Pastikan bucket sudah dibuat di Supabase.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   // Loading skeleton
@@ -307,13 +333,56 @@ const MedicationDetailPage = () => {
               </button>
             </div>
           </div>
-          <div className="med-hero-image-slot">
-            <motion.img 
-              style={{ y: imgY, scale: 1.35 }} 
-              src={heroImg} 
-              alt="Medication Illustration" 
-              className="med-hero-img-parallax" 
+          {/* Hero Image with Upload Overlay */}
+          <div className="med-hero-image-slot" style={{ position: 'relative' }}>
+            <motion.img
+              style={{ y: imgY, scale: 1.35 }}
+              src={localImageUrl || medication.image_url || heroImg}
+              alt="Medication Illustration"
+              className="med-hero-img-parallax"
+              onError={(e) => { e.target.src = heroImg; }}
             />
+            {/* Camera overlay button */}
+            {!isCaregiver && (
+              <>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  style={{ display: 'none' }}
+                  onChange={handleImageUpload}
+                  id={`med-img-upload-${id}`}
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  aria-label="Ubah foto obat"
+                  title="Ubah foto kemasan obat"
+                  style={{
+                    position: 'absolute', bottom: 12, right: 12,
+                    background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)',
+                    border: '1.5px solid rgba(255,255,255,0.25)',
+                    borderRadius: '50%', width: 40, height: 40,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fff', cursor: uploading ? 'wait' : 'pointer',
+                    zIndex: 10, transition: 'background 0.2s',
+                  }}
+                >
+                  {uploading
+                    ? <LuLoader size={18} style={{ animation: 'spin 1s linear infinite' }} />
+                    : <LuCamera size={18} />}
+                </button>
+                {uploadError && (
+                  <p style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    background: 'rgba(220,38,38,0.85)', color: '#fff',
+                    fontSize: 11, padding: '4px 8px', textAlign: 'center',
+                    borderRadius: '0 0 var(--radius-xl) var(--radius-xl)',
+                  }}>{uploadError}</p>
+                )}
+              </>
+            )}
           </div>
         </div>
 

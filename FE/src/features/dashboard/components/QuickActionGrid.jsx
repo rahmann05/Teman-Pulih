@@ -1,8 +1,8 @@
-import { LuScanLine, LuPill, LuMessageCircle, LuUsers } from 'react-icons/lu';
-import scanImg   from '@/assets/images/feature-ocr-scan-v2.png';
-import medImg    from '@/assets/images/feature-med-schedule-v2.png';
-import chatImg   from '@/assets/images/feature-ai-chatbot-v2.png';
-import familyImg from '@/assets/images/feature-family-sync.png';
+﻿import { LuScanLine, LuPill, LuMessageCircle, LuUsers } from 'react-icons/lu';
+import scanImg   from '@/assets/images/feature-ocr-scan-v2.webp';
+import medImg    from '@/assets/images/feature-med-schedule-v2.webp';
+import chatImg   from '@/assets/images/feature-ai-chatbot-v2.webp';
+import familyImg from '@/assets/images/feature-family-sync.webp';
 import ActionTile from '@/features/dashboard/components/ActionTile';
 
 const ACTIONS = [

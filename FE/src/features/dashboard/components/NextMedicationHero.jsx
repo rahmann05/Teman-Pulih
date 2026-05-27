@@ -1,7 +1,7 @@
-import { useRef } from 'react';
+﻿import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { LuPill } from 'react-icons/lu';
-import heroImg from '@/assets/images/feature-medication.png';
+import heroImg from '@/assets/images/feature-medication.webp';
 
 const NextMedicationHero = ({
   time,
@@ -11,7 +11,8 @@ const NextMedicationHero = ({
   medicationId,
   scheduleId,
   onMarkTaken,
-  isCompletedToday
+  isCompletedToday,
+  imageUrl,
 }) => {
   const containerRef = useRef(null);
   
@@ -59,11 +60,12 @@ const NextMedicationHero = ({
       </div>
 
       <div className="hero-image-pane">
-        <motion.img 
-          style={{ y: imgY, scale: 1.35 }} 
-          src={heroImg} 
-          alt="Medication illustration" 
-          className="hero-bento-img" 
+        <motion.img
+          style={{ y: imgY, scale: 1.35 }}
+          src={imageUrl || heroImg}
+          alt={medName || 'Medication illustration'}
+          className="hero-bento-img"
+          onError={(e) => { e.target.src = heroImg; }}
         />
       </div>
     </div>

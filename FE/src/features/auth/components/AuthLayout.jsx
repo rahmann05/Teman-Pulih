@@ -1,10 +1,10 @@
-// src/components/layout/auth/AuthLayout.jsx
+﻿// src/components/layout/auth/AuthLayout.jsx
 import { LuHeartPulse, LuArrowLeft } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '@/features/auth/auth.css';
-import heroObjImg from '@/assets/images/hero-medical-object.png'; // 3D object without background
-import hero3DImg from '@/assets/images/hero-medical-3d.png';
+import heroObjImg from '@/assets/images/hero-medical-object.webp'; // 3D object without background
+import hero3DImg from '@/assets/images/hero-medical-3d.webp';
 
 const AuthLayout = ({ children }) => {
   return (

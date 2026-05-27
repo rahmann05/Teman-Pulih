@@ -1,10 +1,10 @@
-import { useRef } from 'react';
+﻿import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import {
   LuTriangleAlert, LuCircleCheck, LuChevronLeft, LuChevronRight,
   LuActivity, LuPill, LuInfo,
 } from 'react-icons/lu';
-import heroImg from '@/assets/images/hero-recovery.png';
+import heroImg from '@/assets/images/hero-recovery.webp';
 import '@/features/dashboard/dashboard.css';
 import '@/features/dashboard/caregiver-dashboard.css';
 

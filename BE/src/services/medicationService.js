@@ -2,6 +2,8 @@ const db = require('../config/db');
 const { resolveTargetPatientId } = require('../helpers/patientAccess');
 const { cacheGet, cacheSet, cacheDel } = require('../helpers/cache');
 const { searchDrug } = require('./ragService');
+const path = require('path');
+const sharp = require('sharp');
 
 
 // Ambil daftar obat beserta jadwalnya
@@ -93,7 +95,7 @@ const create = async (user, supabase, data) => {
 
 // Update Data Obat
 const update = async (user, supabase, medicationId, data) => {
-    const { name, dosage, instructions } = data;
+    const { name, dosage, instructions, image_url } = data;
     const { rows: meds } = await db.query('SELECT id, user_id FROM medications WHERE id = $1', [medicationId]);
     const medication = meds[0];
     if (!medication) throw Object.assign(new Error('Obat tidak ditemukan'), { statusCode: 404 });
@@ -101,9 +103,12 @@ const update = async (user, supabase, medicationId, data) => {
     const { error: accessError } = await resolveTargetPatientId(user, medication.user_id);
     if (accessError) throw Object.assign(new Error(accessError), { statusCode: 403 });
 
+    const updatePayload = { name, dosage, instructions };
+    if (image_url !== undefined) updatePayload.image_url = image_url;
+
     const { data: updated, error } = await supabase
         .from('medications')
-        .update({ name, dosage, instructions })
+        .update(updatePayload)
         .eq('id', medication.id)
         .select()
         .single();
@@ -263,5 +268,66 @@ const getLogs = async (user, candidatePatientId) => {
     return rows;
 };
 
-module.exports = { getAll, create, update, remove, markTaken, getLogs };
+/**
+ * Upload medication image to Supabase Storage.
+ * All uploaded images are converted to WebP (quality 85) by sharp before upload.
+ * Naming convention: medications/{userId}/{medicationId}_{timestamp}.webp
+ * Bucket: medication-images (public read)
+ */
+const uploadMedicationImage = async (user, supabase, medicationId, file) => {
+    if (!file) throw Object.assign(new Error('File gambar wajib disertakan'), { statusCode: 400 });
+
+    // Verify ownership
+    const { rows: meds } = await db.query('SELECT id, user_id FROM medications WHERE id = $1', [medicationId]);
+    const medication = meds[0];
+    if (!medication) throw Object.assign(new Error('Obat tidak ditemukan'), { statusCode: 404 });
+    const { error: accessError } = await resolveTargetPatientId(user, medication.user_id);
+    if (accessError) throw Object.assign(new Error(accessError), { statusCode: 403 });
+
+    // ── Convert to WebP using sharp (quality 85) ─────────────────────────────
+    let webpBuffer;
+    try {
+        webpBuffer = await sharp(file.buffer)
+            .webp({ quality: 85, lossless: false })
+            .toBuffer();
+    } catch (sharpErr) {
+        throw Object.assign(new Error(`Konversi gambar gagal: ${sharpErr.message}`), { statusCode: 400 });
+    }
+
+    // Always store as .webp regardless of original extension
+    const timestamp = Date.now();
+    const storagePath = `medications/${user.id}/${medicationId}_${timestamp}.webp`;
+
+    // Upload WebP buffer to Supabase Storage bucket
+    const { error: uploadError } = await supabase.storage
+        .from('medication-images')
+        .upload(storagePath, webpBuffer, {
+            contentType: 'image/webp',
+            upsert: true,
+        });
+
+    if (uploadError) throw Object.assign(new Error(`Upload gagal: ${uploadError.message}`), { statusCode: 500 });
+
+    // Get public URL
+    const { data: urlData } = supabase.storage
+        .from('medication-images')
+        .getPublicUrl(storagePath);
+
+    const publicUrl = urlData?.publicUrl;
+    if (!publicUrl) throw Object.assign(new Error('Gagal mendapatkan URL gambar'), { statusCode: 500 });
+
+    // Persist URL to medications table
+    const { data: updated, error: dbError } = await supabase
+        .from('medications')
+        .update({ image_url: publicUrl })
+        .eq('id', medicationId)
+        .select()
+        .single();
+    if (dbError) throw dbError;
+
+    await cacheDel(`medications:${user.id}`);
+    return { image_url: publicUrl, medication: updated };
+};
+
+module.exports = { getAll, create, update, remove, markTaken, getLogs, uploadMedicationImage };
 

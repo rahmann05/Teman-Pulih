@@ -1,9 +1,9 @@
-import { useRef } from 'react';
+﻿import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { HiOutlineArrowDownRight } from 'react-icons/hi2';
-import featureScan from '@/assets/images/feature-scan.png';
-import featureMeds from '@/assets/images/feature-medication.png';
-import featureChat from '@/assets/images/feature-chatbot.png';
+import featureScan from '@/assets/images/feature-scan.webp';
+import featureMeds from '@/assets/images/feature-medication.webp';
+import featureChat from '@/assets/images/feature-chatbot.webp';
 
 const FEATURES = [
   {
