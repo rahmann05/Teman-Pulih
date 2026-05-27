@@ -283,21 +283,26 @@ const getDocsByDrugName = async (drugCol, drugName) => {
  * @returns {{ docs: string[], metas: object[] }}
  */
 const queryDiseasesBySymptoms = async (collection, symptoms, nResults = 12) => {
-    if (!collection || !symptoms?.length) return { docs: [], metas: [] };
+    if (!collection || !symptoms?.length) return { docs: [], metas: [], distances: [] };
     try {
         const combinedQuery = symptoms.join(' ');
         const result = await collection.query({
             queryTexts: [combinedQuery],
             nResults,
-            include: ['documents', 'metadatas'],
+            include: ['documents', 'metadatas', 'distances'],
         });
         const rawDocs  = result?.documents?.flat() || [];
         const rawMetas = result?.metadatas?.flat() || [];
-        const docs = [], metas = [];
+        const rawDists = result?.distances?.flat() || [];
+        const docs = [], metas = [], distances = [];
         for (let i = 0; i < rawDocs.length; i++) {
-            if (rawDocs[i] && rawMetas[i]) { docs.push(rawDocs[i]); metas.push(rawMetas[i]); }
+            if (rawDocs[i] && rawMetas[i]) { 
+                docs.push(rawDocs[i]); 
+                metas.push(rawMetas[i]); 
+                distances.push(rawDists[i] ?? 1.0);
+            }
         }
-        return { docs, metas };
+        return { docs, metas, distances };
     } catch (e) {
         console.warn('[CHROMA] queryDiseasesBySymptoms failed:', e.message);
         return { docs: [], metas: [] };

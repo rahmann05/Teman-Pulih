@@ -493,40 +493,69 @@ const searchDiseaseBySymptoms = async (symptoms) => {
         }
     };
 
-    // ── Strategy 1: Direct fuzzy name match per symptom ──────────────────────
-    for (const symptom of symptoms) {
-        const matches = fuzzyMatchName(symptom, diseaseNames, 2);
+    // ── Strategy 1: Gemini AI Prediction & Fuzzy Match ──────────────────────
+    let geminiPredicted = [];
+    try {
+        const { genAI } = require('./chatbotService');
+        const prompt = `Diberikan daftar gejala pasien: ${symptoms.join(', ')}. Berikan maksimal 3 kemungkinan nama penyakit/kondisi dalam istilah awam bahasa Indonesia yang paling sering digunakan masyarakat (Contoh: Bintitan, bukan Hordeolum. Maag, bukan Dispepsia). Pisahkan HANYA dengan koma. (Tanpa markdown).`;
+        const m = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
+        const r = await m.generateContent(prompt);
+        geminiPredicted = r.response.text().split(',').map(s => s.trim().replace(/[^a-zA-Z0-9\s-]/g, '')).filter(s => s.length >= 3);
+        console.log(`[RAG SYMPTOMS] Gemini predictions for [${symptoms.join(', ')}]:`, geminiPredicted);
+    } catch (e) {
+        console.warn(`[RAG SYMPTOMS] Gemini prediction failed:`, e.message);
+    }
+
+    const s1Candidates = new Set();
+    for (const term of geminiPredicted) {
+        const matches = fuzzyMatchName(term, diseaseNames, 2);
         for (const m of matches) {
-            if (resultsMap.has(m.name)) continue;
-            const fullContent = await getDocsByDiseaseName(condCol, m.name);
-            if (fullContent) {
-                const parsed = parseIllnessContent(fullContent);
-                const scoreMap = { exact: 90, substring: 70, fuzzy: 50 };
-                upsert(m.name, parsed, fullContent, scoreMap[m.type] || 50, [symptom]);
-                console.log(`[RAG SYMPTOMS] S1 match: "${symptom}" → "${m.name}" (${m.type})`);
-            }
+            s1Candidates.add(m.name);
         }
     }
 
+    await Promise.all(Array.from(s1Candidates).map(async (name) => {
+        const fullContent = await getDocsByDiseaseName(condCol, name);
+        if (fullContent) {
+            const parsed = parseIllnessContent(fullContent);
+            upsert(name, parsed, fullContent, 90, symptoms);
+            console.log(`[RAG SYMPTOMS] S1 (Gemini) match: "${name}"`);
+        }
+    }));
+
     // ── Strategy 2: Vector search with combined symptom query ────────────────
     try {
-        const { docs, metas } = await queryDiseasesBySymptoms(condCol, symptoms, 12);
+        const { docs, metas, distances } = await queryDiseasesBySymptoms(condCol, symptoms, 12);
 
-        // Group unique disease names found by vector search
         const candidates = new Map();
         for (let i = 0; i < docs.length; i++) {
             const dname = metas[i]?.disease_name;
-            if (dname && !candidates.has(dname)) candidates.set(dname, docs[i]);
+            if (dname && !candidates.has(dname)) {
+                candidates.set(dname, { doc: docs[i], dist: distances[i] });
+            }
         }
 
-        // Fetch full content per candidate and score by symptom overlap
-        await Promise.all(Array.from(candidates.entries()).map(async ([dname, sampleDoc]) => {
+        await Promise.all(Array.from(candidates.entries()).map(async ([dname, { doc: sampleDoc, dist }]) => {
             const fullContent = await getDocsByDiseaseName(condCol, dname).catch(() => sampleDoc);
             const parsed      = parseIllnessContent(fullContent || sampleDoc);
+            
+            // Chroma returns cosine distance (0 = identical, 1 = orthogonal, >1 = opposite)
+            // We convert distance to a score: Max 100, dropping sharply as distance increases.
+            // Example: dist 0.2 -> score ~80. dist 0.5 -> score ~50
+            const maxDistScore = Math.max(0, 100 - (dist * 100));
+            
+            // Still check for textual overlap to add bonus points and matched symptoms
             const normContent = normalizeText(fullContent || sampleDoc);
-            const matched     = symptoms.filter(s => normContent.includes(normalizeText(s)));
-            const score       = 20 + matched.length * 25;
-            upsert(dname, parsed, fullContent || sampleDoc, score, matched);
+            
+            // Tokenize symptoms to check for word-level matches
+            const tokenizedSymptoms = symptoms.map(s => s.toLowerCase().split(/\s+/).filter(w => w.length > 3)).flat();
+            const matchedWords = tokenizedSymptoms.filter(word => normContent.includes(word));
+            const uniqueMatchedWords = [...new Set(matchedWords)];
+            
+            // Bonus 10 points for every unique symptom word found in the text
+            const finalScore = maxDistScore + (uniqueMatchedWords.length * 10);
+            
+            upsert(dname, parsed, fullContent || sampleDoc, finalScore, symptoms);
         }));
     } catch (e) {
         console.warn('[RAG SYMPTOMS] Strategy 2 vector search failed:', e.message);
@@ -536,10 +565,12 @@ const searchDiseaseBySymptoms = async (symptoms) => {
     for (const entry of resultsMap.values()) {
         if (entry.gejala_umum) {
             const normGejala = normalizeText(entry.gejala_umum);
-            const gMatched   = symptoms.filter(s => normGejala.includes(normalizeText(s)));
-            if (gMatched.length > 0) {
-                entry.score += gMatched.length * 15;
-                entry.matchedSymptoms = [...new Set([...entry.matchedSymptoms, ...gMatched])];
+            const tokenizedSymptoms = symptoms.map(s => s.toLowerCase().split(/\s+/).filter(w => w.length > 3)).flat();
+            const gMatchedWords = tokenizedSymptoms.filter(word => normGejala.includes(word));
+            const uniqueGMatchedWords = [...new Set(gMatchedWords)];
+            
+            if (uniqueGMatchedWords.length > 0) {
+                entry.score += uniqueGMatchedWords.length * 15;
             }
         }
     }
