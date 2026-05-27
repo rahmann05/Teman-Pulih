@@ -57,9 +57,9 @@
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg,
-      rgba(26, 26, 46, 0.5) 0%, 
-      rgba(26, 26, 46, 0.2) 40%,
-      rgba(26, 26, 46, 0.7) 100%);
+      rgba(91, 123, 106, 0.5) 0%, 
+      rgba(91, 123, 106, 0.2) 40%,
+      rgba(91, 123, 106, 0.7) 100%);
   z-index: 4;
   transition: background 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -90,9 +90,9 @@
 .hero-mobile.hero-zoom-exit .hero-overlay {
   /* Darken slightly to match the auth page background on mobile */
   background: linear-gradient(180deg,
-      rgba(26, 26, 46, 0.65) 0%, 
-      rgba(26, 26, 46, 0.35) 40%,
-      rgba(26, 26, 46, 0.85) 100%);
+      rgba(91, 123, 106, 0.65) 0%, 
+      rgba(91, 123, 106, 0.35) 40%,
+      rgba(91, 123, 106, 0.85) 100%);
 }
 
 .hero-content {
@@ -244,7 +244,7 @@
 .hero-3d-img {
   width: clamp(350px, 36vw, 600px);
   height: auto;
-  filter: drop-shadow(0 40px 100px rgba(26, 26, 46, 0.2));
+  filter: drop-shadow(0 40px 100px rgba(91, 123, 106, 0.2));
   transition: width 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s var(--ease);
 }
 
@@ -686,19 +686,19 @@
 }
 
 .step-timeline-item:nth-child(1) .step-circle {
-  background: #1A1A2E;
+  background: var(--accent);
   border: 2px solid var(--accent);
   color: #fff;
 }
 
 .step-timeline-item:nth-child(2) .step-circle {
-  background: #1A1A2E;
+  background: var(--sage);
   border: 2px solid var(--sage);
   color: #fff;
 }
 
 .step-timeline-item:nth-child(3) .step-circle {
-  background: #1A1A2E;
+  background: var(--copper);
   border: 2px solid var(--copper);
   color: #fff;
 }
@@ -1277,19 +1277,19 @@
   }
 
   .step:nth-child(1) .step-num {
-    background: linear-gradient(135deg, var(--accent) 0%, #1A1A2E 100%);
+    background: linear-gradient(135deg, var(--accent) 0%, var(--text) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   .step:nth-child(2) .step-num {
-    background: linear-gradient(135deg, var(--sage) 0%, #1A1A2E 100%);
+    background: linear-gradient(135deg, var(--sage) 0%, var(--text) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
   .step:nth-child(3) .step-num {
-    background: linear-gradient(135deg, var(--copper) 0%, #1A1A2E 100%);
+    background: linear-gradient(135deg, var(--copper) 0%, var(--text) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }

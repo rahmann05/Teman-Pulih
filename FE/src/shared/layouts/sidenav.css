@@ -51,7 +51,7 @@
     flex-shrink: 0;
   }
 
-  .logo-text {
+  .sidenav-brand .logo-text {
     display: none; /* Hidden on tablet */
     font-family: var(--font-heading);
     font-weight: 800;
