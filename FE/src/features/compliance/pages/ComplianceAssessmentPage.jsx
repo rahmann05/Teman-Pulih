@@ -577,14 +577,14 @@ const ComplianceAssessmentPage = () => {
                             ) : (
                                 <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '320px', marginTop: '24px' }}>
                                     <button
-                                        className="btn-outline"
+                                        className="compliance-btn-outline"
                                         style={{ flex: 1 }}
                                         onClick={prevStep}
                                     >
                                         Kembali
                                     </button>
                                     <button
-                                        className="btn-primary"
+                                        className="compliance-btn-primary"
                                         style={{ flex: 1.5 }}
                                         onClick={submitForm}
                                     >
@@ -600,14 +600,14 @@ const ComplianceAssessmentPage = () => {
                         <div className="compliance-actions">
                             <button
                                 type="button"
-                                className="btn-outline"
+                                className="compliance-btn-outline"
                                 onClick={prevStep}
                             >
                                 Kembali
                             </button>
                             <button
                                 type="button"
-                                className="btn-primary"
+                                className="compliance-btn-primary"
                                 onClick={nextStep}
                             >
                                 Lanjut

@@ -62,14 +62,14 @@ const ComplianceIntroPage = ({ eligibility, onStart }) => {
                     </div>
                     <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '320px', marginTop: '12px' }}>
                         <button
-                            className="btn-outline"
+                            className="compliance-btn-outline"
                             style={{ flex: 1 }}
                             onClick={() => navigate('/dashboard')}
                         >
                             Kembali
                         </button>
                         <button
-                            className="btn-primary"
+                            className="compliance-btn-primary"
                             style={{ flex: 1.5 }}
                             onClick={onStart}
                         >
@@ -90,7 +90,7 @@ const ComplianceIntroPage = ({ eligibility, onStart }) => {
                     </div>
                     <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '320px', marginTop: '12px' }}>
                         <button
-                            className="btn-primary"
+                            className="compliance-btn-primary"
                             style={{ flex: 1 }}
                             onClick={() => navigate('/dashboard')}
                         >

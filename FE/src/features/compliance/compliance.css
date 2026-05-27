@@ -405,3 +405,61 @@
         transform: translateY(0);
     }
 }
+
+/* ── Premium Custom Buttons ───────────────────────────────── */
+.compliance-btn-primary {
+    background: var(--accent);
+    color: #FFFFFF;
+    border: none;
+    padding: 14px 28px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-weight: 850;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-expo);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.25);
+}
+
+.compliance-btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(var(--accent-rgb), 0.35);
+}
+
+.compliance-btn-primary:active {
+    transform: translateY(0);
+}
+
+.compliance-btn-outline {
+    background: rgba(var(--accent-rgb), 0.08);
+    color: var(--accent);
+    border: none;
+    padding: 14px 28px;
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-weight: 850;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-out-expo);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.compliance-btn-outline:hover {
+    background: var(--accent);
+    color: #FFFFFF;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--accent-rgb), 0.2);
+}
+
+.compliance-btn-outline:active {
+    transform: translateY(0);
+}
+
