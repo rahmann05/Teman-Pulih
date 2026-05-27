@@ -181,13 +181,15 @@ const FamilyComplaintsSection = ({ caregiverMode, members }) => {
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', paddingLeft: '22px' }}>
                   {patientEmr.chronic && (
-                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                      🫀 {patientEmr.chronic}
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <LuStethoscope size={13} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                      {patientEmr.chronic}
                     </span>
                   )}
                   {patientEmr.allergy && (
-                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-                      ⚠️ Alergi: {patientEmr.allergy}
+                    <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <LuTriangleAlert size={13} style={{ color: 'var(--accent)', flexShrink: 0 }} />
+                      Alergi: {patientEmr.allergy}
                     </span>
                   )}
                 </div>
