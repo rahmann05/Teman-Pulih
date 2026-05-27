@@ -8,7 +8,7 @@ export const ChatHeader = () => {
     <header className="chat-header">
       <div className="chat-header-left">
         <div className="chat-header-avatar">
-          <img src="/assets/asep.png" alt="Asep" className="chat-avatar-image" />
+          <img src="/assets/asep.webp" alt="Asep" className="chat-avatar-image" />
         </div>
         <div className="chat-header-info">
           <p className="chat-header-eyebrow">Konsultasi</p>

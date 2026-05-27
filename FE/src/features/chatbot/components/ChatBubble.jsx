@@ -6,7 +6,7 @@ export const ChatBubble = ({ message }) => {
     <div className={`chat-bubble-wrapper chat-bubble-wrapper--${message.sender}`}>
       <div className={`chat-bubble-avatar chat-bubble-avatar--${message.sender}`}>
         {message.sender === 'ai' ? (
-          <img src="/assets/asep.png" alt="Asep" className="chat-avatar-image" />
+          <img src="/assets/asep.webp" alt="Asep" className="chat-avatar-image" />
         ) : (
           ''
         )}

@@ -9,7 +9,7 @@
   position: relative;
   overflow: hidden;
   /* Background image only, gradient overlay moved to visual-panel::after to darken 3D object */
-  background: url(../../assets/images/hero-medical-BG.png) no-repeat center center;
+  background: url(../../assets/images/hero-medical-BG.webp) no-repeat center center;
   background-size: cover;
 }
 
@@ -354,7 +354,7 @@
 @media (min-width: 1024px) {
   .auth-container {
     background-color: var(--bg-primary);
-    background-image: url('../../assets/images/hero-shadow-overlay.png');
+    background-image: url('../../assets/images/hero-shadow-overlay.webp');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
