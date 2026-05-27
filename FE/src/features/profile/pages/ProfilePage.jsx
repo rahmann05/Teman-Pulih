@@ -196,12 +196,20 @@ const ProfilePage = () => {
                 isSaving={isSaving}
               />
             </div>
-            
             <div className="bento-card">
-              <ProfileSettingsSection
-                notificationsEnabled={notificationsEnabled}
-                onToggleNotifications={() => setNotificationsEnabled((prev) => !prev)}
-              />
+              {(() => {
+                const globalScore = latestCompliance?.global_score ?? latestCompliance?.adherence_score ?? 1.0;
+                const isForcedWa = globalScore < 0.75;
+                return (
+                  <ProfileSettingsSection
+                    notificationsEnabled={isForcedWa ? true : notificationsEnabled}
+                    isForcedWa={isForcedWa}
+                    onToggleNotifications={() => {
+                      if (!isForcedWa) setNotificationsEnabled((prev) => !prev);
+                    }}
+                  />
+                );
+              })()}
             </div>
           </div>
 

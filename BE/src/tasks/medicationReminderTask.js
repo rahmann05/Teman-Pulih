@@ -84,106 +84,94 @@ const initReminderTasks = () => {
                     const [hours, minutes] = slot.split(':').map(Number);
                     if (Number.isNaN(hours) || Number.isNaN(minutes)) continue;
 
-                    // Create scheduled date time for today
                     const scheduledTime = new Date(now);
                     scheduledTime.setHours(hours, minutes, 0, 0);
 
                     const diffMs = now - scheduledTime;
                     const diffMinutes = Math.round(diffMs / 60000);
 
-                    // --- Condition A: 10 Minutes Before ---
-                    if (diffMinutes >= -10 && diffMinutes < 0) {
-                        // Check if already notified
-                        const { data: existing } = await serviceSupabase
-                            .from('notifications')
-                            .select('id')
-                            .eq('user_id', patient_id)
-                            .eq('type', 'reminder_10m')
-                            .eq('schedule_id', schedule_id)
-                            .eq('time_slot', slot)
-                            .eq('target_date', todayStr);
+                    // We only process if diffMinutes matches one of our trigger times
+                    const isBefore15 = diffMinutes === -15;
+                    const isBefore10 = diffMinutes === -10;
+                    const isBefore5 = diffMinutes === -5;
+                    const isExact = diffMinutes === 0;
+                    const isLate15 = diffMinutes === 15;
+                    const isLateHourly = diffMinutes > 15 && diffMinutes % 60 === 15; // e.g. 75, 135
+                    const isLate15Min = diffMinutes > 15 && diffMinutes % 15 === 0;   // e.g. 30, 45, 60
 
-                        if (!existing || existing.length === 0) {
-                            console.log(`[CRON-Medication] Sending 10m reminder for ${medication_name} to ${patient_name}`);
-                            
-                            // Insert database notification
-                            await serviceSupabase
-                                .from('notifications')
-                                .insert([{
-                                    user_id: patient_id,
-                                    title: 'Pengingat: Minum Obat 10 Menit Lagi',
-                                    message: `Persiapkan diri Anda untuk meminum ${medication_name} (${medication_dosage || ''}) dalam 10 menit (jadwal: ${slot}).`,
-                                    type: 'reminder_10m',
-                                    schedule_id,
-                                    time_slot: slot,
-                                    target_date: todayStr
-                                }]);
-
-                            // Send WhatsApp / Email
-                            const patientContact = await getUserContactInfo(patient_id);
-                            if (patientContact) {
-                                if (patientContact.phone) {
-                                    await notificationService.sendMedicationReminderWhatsApp(patientContact.phone, medication_name, slot);
-                                } else if (patientContact.email) {
-                                    await notificationService.sendEmail(
-                                        patientContact.email,
-                                        'Pengingat Minum Obat - 10 Menit Lagi',
-                                        `<h3>Halo, ${patient_name}!</h3><p>Jadwal minum obat <strong>${medication_name}</strong> Anda adalah pukul <strong>${slot}</strong> (10 menit lagi).</p>`,
-                                        `Halo, ${patient_name}! Jadwal minum obat ${medication_name} Anda adalah pukul ${slot} (10 menit lagi).`
-                                    );
-                                }
-                            }
-                        }
+                    if (!isBefore15 && !isBefore10 && !isBefore5 && !isExact && !isLate15 && !isLateHourly && !isLate15Min) {
+                        continue;
                     }
 
-                    // --- Condition B: Exactly On Time ---
-                    if (diffMinutes >= 0 && diffMinutes < 15) {
-                        // Check if already notified
-                        const { data: existing } = await serviceSupabase
-                            .from('notifications')
-                            .select('id')
-                            .eq('user_id', patient_id)
-                            .eq('type', 'reminder_exact')
-                            .eq('schedule_id', schedule_id)
-                            .eq('time_slot', slot)
-                            .eq('target_date', todayStr);
+                    // Determine Compliance Level
+                    const { data: assessments } = await serviceSupabase
+                        .from('compliance_assessments')
+                        .select('global_score')
+                        .eq('patient_id', patient_id)
+                        .order('created_at', { ascending: false })
+                        .limit(1);
 
-                        if (!existing || existing.length === 0) {
-                            console.log(`[CRON-Medication] Sending exact reminder for ${medication_name} to ${patient_name}`);
-                            
-                            // Insert database notification
-                            await serviceSupabase
-                                .from('notifications')
-                                .insert([{
-                                    user_id: patient_id,
-                                    title: 'Waktunya Minum Obat Sekarang!',
-                                    message: `Saatnya meminum obat ${medication_name} (${medication_dosage || ''}) Anda sekarang (jadwal: ${slot}). Jangan lupa mencatatnya setelah diminum.`,
-                                    type: 'reminder_exact',
-                                    schedule_id,
-                                    time_slot: slot,
-                                    target_date: todayStr
-                                }]);
-
-                            // Send WhatsApp / Email
-                            const patientContact = await getUserContactInfo(patient_id);
-                            if (patientContact) {
-                                if (patientContact.phone) {
-                                    await notificationService.sendMedicationReminderWhatsApp(patientContact.phone, medication_name, slot);
-                                } else if (patientContact.email) {
-                                    await notificationService.sendEmail(
-                                        patientContact.email,
-                                        'Waktunya Minum Obat Sekarang!',
-                                        `<h3>Halo, ${patient_name}!</h3><p>Saatnya meminum obat <strong>${medication_name}</strong> Anda sekarang (jadwal: <strong>${slot}</strong>).</p>`,
-                                        `Halo, ${patient_name}! Saatnya meminum obat ${medication_name} Anda sekarang (jadwal: ${slot}).`
-                                    );
-                                }
-                            }
-                        }
+                    let score = 1.0;
+                    if (assessments && assessments.length > 0) {
+                        score = assessments[0].global_score ?? 1.0;
                     }
 
-                    // --- Condition D: Late by > 15 Minutes ---
-                    if (diffMinutes >= 15) {
-                        // Check if patient has logged it as taken today
+                    let complianceLevel = 'baik';
+                    if (score < 0.50) complianceLevel = 'mengkhawatirkan';
+                    else if (score < 0.75) complianceLevel = 'menengah';
+
+                    // WA Toggle Config (Fallback to True if not exist)
+                    const { data: prefs } = await serviceSupabase
+                        .from('reminder_preferences')
+                        .select('enabled')
+                        .eq('user_id', patient_id)
+                        .limit(1);
+                    const isWaEnabledSetting = prefs && prefs.length > 0 ? prefs[0].enabled : true;
+
+                    // If menengah/mengkhawatirkan -> WA is always ON (Cannot be turned off).
+                    const shouldSendWa = complianceLevel !== 'baik' || isWaEnabledSetting;
+
+                    // Check if rule applies
+                    let shouldTrigger = false;
+                    let notifType = '';
+                    let title = '';
+                    let msg = '';
+                    let isLate = false;
+
+                    if (isBefore15 && complianceLevel === 'mengkhawatirkan') {
+                        shouldTrigger = true; notifType = 'reminder_15m';
+                        title = 'Pengingat: Minum Obat 15 Menit Lagi';
+                        msg = `Persiapkan diri Anda untuk meminum ${medication_name} (${medication_dosage || ''}) dalam 15 menit (jadwal: ${slot}).`;
+                    } else if (isBefore10) { // All levels
+                        shouldTrigger = true; notifType = 'reminder_10m';
+                        title = 'Pengingat: Minum Obat 10 Menit Lagi';
+                        msg = `Persiapkan diri Anda untuk meminum ${medication_name} (${medication_dosage || ''}) dalam 10 menit (jadwal: ${slot}).`;
+                    } else if (isBefore5 && (complianceLevel === 'menengah' || complianceLevel === 'mengkhawatirkan')) {
+                        shouldTrigger = true; notifType = 'reminder_5m';
+                        title = 'Pengingat: Minum Obat 5 Menit Lagi';
+                        msg = `Persiapkan diri Anda untuk meminum ${medication_name} (${medication_dosage || ''}) dalam 5 menit (jadwal: ${slot}).`;
+                    } else if (isExact) { // All levels
+                        shouldTrigger = true; notifType = 'reminder_exact';
+                        title = 'Waktunya Minum Obat Sekarang!';
+                        msg = `Saatnya meminum obat ${medication_name} (${medication_dosage || ''}) Anda sekarang (jadwal: ${slot}). Jangan lupa mencatatnya setelah diminum.`;
+                    } else if (isLate15) { // All levels
+                        shouldTrigger = true; notifType = 'patient_late'; isLate = true;
+                        title = 'Terlambat Minum Obat!';
+                        msg = `Anda terlambat meminum obat ${medication_name} (${medication_dosage || ''}) lebih dari 15 menit dari jadwal (pukul ${slot}). Mohon segera diminum.`;
+                    } else if (isLateHourly && complianceLevel === 'menengah') {
+                        shouldTrigger = true; notifType = `patient_late_hourly_${diffMinutes}`; isLate = true;
+                        title = 'Peringatan Lanjutan: Anda Belum Minum Obat';
+                        msg = `Sudah lewat ${Math.floor(diffMinutes / 60)} jam dari jadwal minum obat ${medication_name}. Kesehatan Anda sangat penting, segera minum sekarang.`;
+                    } else if (isLate15Min && complianceLevel === 'mengkhawatirkan') {
+                        shouldTrigger = true; notifType = `patient_late_15min_${diffMinutes}`; isLate = true;
+                        title = 'Peringatan Darurat: Segera Minum Obat Anda';
+                        msg = `Anda sangat terlambat meminum ${medication_name}. Mohon jangan ditunda lagi untuk hasil pemulihan optimal!`;
+                    }
+
+                    if (!shouldTrigger) continue;
+
+                    // If it's a late notification, ensure they haven't actually taken it yet
+                    if (isLate) {
                         const { data: takenLogs, error: logErr } = await serviceSupabase
                             .from('medication_logs')
                             .select('id, taken_at')
@@ -195,71 +183,77 @@ const initReminderTasks = () => {
                             const logDate = l.taken_at ? new Date(l.taken_at).toLocaleDateString('en-CA') : null;
                             return logDate === todayStr;
                         });
+                        
+                        if (hasBeenTakenToday) continue; // Skip since they already took it!
+                    }
 
-                        if (!logErr && !hasBeenTakenToday) {
-                            // Patient is LATE!
-                            // Check if caregiver_late has already been notified
-                            const { data: existingNotif } = await serviceSupabase
-                                .from('notifications')
-                                .select('id')
-                                .eq('user_id', patient_id)
-                                .eq('type', 'patient_late')
-                                .eq('schedule_id', schedule_id)
-                                .eq('time_slot', slot)
-                                .eq('target_date', todayStr);
+                    // Check if already notified
+                    const { data: existing } = await serviceSupabase
+                        .from('notifications')
+                        .select('id')
+                        .eq('user_id', patient_id)
+                        .eq('type', notifType)
+                        .eq('schedule_id', schedule_id)
+                        .eq('time_slot', slot)
+                        .eq('target_date', todayStr);
 
-                            if (!existingNotif || existingNotif.length === 0) {
-                                console.log(`[CRON-Medication] ${patient_name} is late by 15m for ${medication_name} schedule ${slot}`);
+                    if (!existing || existing.length === 0) {
+                        console.log(`[CRON-Medication] Sending ${notifType} to ${patient_name}`);
+                        
+                        // 1. Notify patient
+                        await serviceSupabase
+                            .from('notifications')
+                            .insert([{
+                                user_id: patient_id,
+                                title,
+                                message: msg,
+                                type: notifType,
+                                schedule_id,
+                                time_slot: slot,
+                                target_date: todayStr
+                            }]);
 
-                                // 1. Notify patient
-                                await serviceSupabase
-                                    .from('notifications')
-                                    .insert([{
-                                        user_id: patient_id,
-                                        title: 'Terlambat Minum Obat!',
-                                        message: `Anda terlambat meminum obat ${medication_name} (${medication_dosage || ''}) lebih dari 15 menit dari jadwal (pukul ${slot}). Mohon segera diminum.`,
-                                        type: 'patient_late',
-                                        schedule_id,
-                                        time_slot: slot,
-                                        target_date: todayStr
-                                    }]);
+                        // Send WhatsApp / Email to Patient (Obeying WA Config)
+                        const patientContact = await getUserContactInfo(patient_id);
+                        if (patientContact) {
+                            if (patientContact.phone && shouldSendWa) {
+                                await notificationService.sendWhatsApp(patientContact.phone, msg);
+                            } else if (patientContact.email) {
+                                await notificationService.sendEmail(patientContact.email, title, `<h3>${title}</h3><p>${msg}</p>`, msg);
+                            }
+                        }
 
-                                // 2. Query accepted caregivers
-                                const { data: relations } = await serviceSupabase
-                                    .from('family_relations')
-                                    .select('caregiver_id')
-                                    .eq('patient_id', patient_id)
-                                    .eq('status', 'accepted');
+                        // 2. Notify Caregiver if it's a late warning (inheriting patient's frequency)
+                        if (isLate) {
+                            const { data: relations } = await serviceSupabase
+                                .from('family_relations')
+                                .select('caregiver_id')
+                                .eq('patient_id', patient_id)
+                                .eq('status', 'accepted');
 
-                                if (relations && relations.length > 0) {
-                                    for (const rel of relations) {
-                                        // Insert caregiver notification
-                                        await serviceSupabase
-                                            .from('notifications')
-                                            .insert([{
-                                                user_id: rel.caregiver_id,
-                                                title: `Peringatan: ${patient_name} Terlambat Minum Obat!`,
-                                                message: `${patient_name} terlambat meminum obat ${medication_name} (${medication_dosage || ''}) lebih dari 15 menit dari jadwal seharusnya (pukul ${slot}).`,
-                                                type: 'caregiver_late',
-                                                schedule_id,
-                                                time_slot: slot,
-                                                target_date: todayStr
-                                            }]);
+                            if (relations && relations.length > 0) {
+                                for (const rel of relations) {
+                                    const cgNotifType = `cg_${notifType}`;
+                                    
+                                    await serviceSupabase
+                                        .from('notifications')
+                                        .insert([{
+                                            user_id: rel.caregiver_id,
+                                            title: `Peringatan: ${patient_name} Belum Minum Obat!`,
+                                            message: `${patient_name} belum meminum obat ${medication_name} (jadwal: ${slot}).`,
+                                            type: cgNotifType,
+                                            schedule_id,
+                                            time_slot: slot,
+                                            target_date: todayStr
+                                        }]);
 
-                                        // Send WhatsApp/Email to caregiver
-                                        const caregiverContact = await getUserContactInfo(rel.caregiver_id);
-                                        if (caregiverContact) {
-                                            const message = `Peringatan: ${patient_name} terlambat meminum obat ${medication_name} lebih dari 15 menit dari jadwal seharusnya (pukul ${slot}).`;
-                                            if (caregiverContact.phone) {
-                                                await notificationService.sendWhatsApp(caregiverContact.phone, message);
-                                            } else if (caregiverContact.email) {
-                                                await notificationService.sendEmail(
-                                                    caregiverContact.email,
-                                                    `Peringatan: ${patient_name} Terlambat Minum Obat!`,
-                                                    `<h3>Peringatan Hubungan Pendamping</h3><p>${message}</p>`,
-                                                    message
-                                                );
-                                            }
+                                    const caregiverContact = await getUserContactInfo(rel.caregiver_id);
+                                    if (caregiverContact) {
+                                        const cgMsg = `Peringatan: ${patient_name} belum meminum obat ${medication_name} dari jadwal seharusnya (pukul ${slot}). Mohon segera hubungi pasien.`;
+                                        if (caregiverContact.phone) { // Caregiver WA is always sent for late warnings
+                                            await notificationService.sendWhatsApp(caregiverContact.phone, cgMsg);
+                                        } else if (caregiverContact.email) {
+                                            await notificationService.sendEmail(caregiverContact.email, `Peringatan: ${patient_name} Terlambat Minum Obat!`, `<p>${cgMsg}</p>`, cgMsg);
                                         }
                                     }
                                 }
