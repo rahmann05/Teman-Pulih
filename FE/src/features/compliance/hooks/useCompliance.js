@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import * as complianceService from '../services/complianceService';
 
 const INITIAL_FORM_DATA = {
@@ -66,6 +67,7 @@ const INITIAL_FORM_DATA = {
 };
 
 export const useCompliance = (patientId = null) => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(0); // 0: Intro, 1-6: Form, 7: Confirm
     const [eligibility, setEligibility] = useState({ eligible: true, prefill: {} });
     const [formData, setFormData] = useState(INITIAL_FORM_DATA);
@@ -150,7 +152,7 @@ export const useCompliance = (patientId = null) => {
                 formData
             });
             setResult(res.data.data);
-            setStep(8); // Step 8: Success / Result Screen
+            navigate('/compliance/result'); // Redirect directly to the results screen!
         } catch (err) {
             setError(err.response?.data?.error || 'Gagal memproses kuesioner kepatuhan.');
         } finally {

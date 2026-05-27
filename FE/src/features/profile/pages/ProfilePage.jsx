@@ -241,55 +241,57 @@ const ProfilePage = () => {
                 {complianceLoading ? (
                   <div className="skeleton-block" style={{ height: 120, width: '100%', borderRadius: 16 }} />
                 ) : latestCompliance ? (
-                  <div className="profile-compliance-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-tint)', padding: '12px 16px', borderRadius: '16px', border: '1px solid var(--accent-light)' }}>
-                      <div>
-                        <p style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-dark)', letterSpacing: '0.05em' }}>Skor Keseluruhan</p>
-                        <p style={{ fontSize: '20px', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>{(latestCompliance.adherence_score * 100).toFixed(0)}%</p>
-                      </div>
-                      <span className={`compliance-status-badge ${latestCompliance.adherence_class === 1 ? 'active' : 'danger'}`} style={{
-                        padding: '6px 14px',
-                        borderRadius: '100px',
-                        fontSize: '11px',
-                        fontWeight: 800,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        background: latestCompliance.adherence_class === 1 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        color: latestCompliance.adherence_class === 1 ? 'var(--success)' : 'var(--error)'
-                      }}>
-                        {latestCompliance.adherence_class === 1 ? 'Sangat Patuh' : 'Butuh Intervensi'}
-                      </span>
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-muted)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-light)' }}>
-                      {/* Adherence */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Kedisiplinan Obat</span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: latestCompliance.adherence_class === 1 ? 'var(--success)' : 'var(--error)' }}>
-                          {latestCompliance.adherence_class === 1 ? 'Sangat Patuh' : 'Kurang Patuh'}
-                        </span>
-                      </div>
-
-                      {/* Behaviour */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Perilaku Rutinitas</span>
-                        <span style={{ fontSize: '13px', fontWeight: 700, color: latestCompliance.behaviour_class === 1 ? 'var(--success)' : 'var(--error)' }}>
-                          {latestCompliance.behaviour_class === 1 ? 'Baik (Positif)' : 'Perlu Koreksi'}
-                        </span>
-                      </div>
-
-                      {/* Perception */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Persepsi Khasiat</span>
-                        <span style={{
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          color: latestCompliance.perception_class === 2 ? 'var(--success)' : latestCompliance.perception_class === 1 ? 'var(--warning)' : 'var(--error)'
+                    <div className="profile-compliance-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'var(--accent-tint)', padding: '12px 16px', borderRadius: '16px', border: '1px solid var(--accent-light)' }}>
+                        <div>
+                          <p style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', color: 'var(--accent-dark)', letterSpacing: '0.05em' }}>Skor Keseluruhan</p>
+                          <p style={{ fontSize: '20px', fontWeight: 900, color: 'var(--accent)', margin: 0 }}>
+                            {((latestCompliance.global_score !== undefined ? latestCompliance.global_score : latestCompliance.adherence_score) * 100).toFixed(0)}%
+                          </p>
+                        </div>
+                        <span className={`compliance-status-badge ${(latestCompliance.global_class !== undefined ? latestCompliance.global_class : latestCompliance.adherence_class) === 1 ? 'active' : 'danger'}`} style={{
+                          padding: '6px 14px',
+                          borderRadius: '100px',
+                          fontSize: '11px',
+                          fontWeight: 800,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          background: (latestCompliance.global_class !== undefined ? latestCompliance.global_class : latestCompliance.adherence_class) === 1 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                          color: (latestCompliance.global_class !== undefined ? latestCompliance.global_class : latestCompliance.adherence_class) === 1 ? 'var(--success)' : 'var(--error)'
                         }}>
-                          {latestCompliance.perception_class === 2 ? 'Positif (Yakin)' : latestCompliance.perception_class === 1 ? 'Netral/Cukup' : 'Negatif (Ragu)'}
+                          {(latestCompliance.global_class !== undefined ? latestCompliance.global_class : latestCompliance.adherence_class) === 1 ? 'Sangat Patuh' : 'Butuh Intervensi'}
                         </span>
                       </div>
-                    </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--bg-muted)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-light)' }}>
+                        {/* Adherence */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Kedisiplinan Obat</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: latestCompliance.adherence_class === 1 ? 'var(--success)' : 'var(--error)' }}>
+                            {latestCompliance.adherence_class === 1 ? 'Patuh' : 'Tidak Patuh'}
+                          </span>
+                        </div>
+
+                        {/* Behaviour */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '8px' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Perilaku Rutinitas</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: latestCompliance.behaviour_class === 1 ? 'var(--success)' : 'var(--error)' }}>
+                            {latestCompliance.behaviour_class === 1 ? 'Positif (Baik)' : 'Negatif (Perlu Koreksi)'}
+                          </span>
+                        </div>
+
+                        {/* Perception */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Persepsi Khasiat</span>
+                          <span style={{
+                            fontSize: '13px',
+                            fontWeight: 700,
+                            color: latestCompliance.perception_class === 2 ? 'var(--success)' : latestCompliance.perception_class === 1 ? 'var(--warning)' : 'var(--error)'
+                          }}>
+                            {latestCompliance.perception_class === 2 ? 'Positif' : latestCompliance.perception_class === 1 ? 'Netral' : 'Negatif'}
+                          </span>
+                        </div>
+                      </div>
 
                     <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
                       <button

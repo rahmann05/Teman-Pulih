@@ -5,7 +5,7 @@ import ComplianceIntroPage from '../components/ComplianceIntroPage';
 import ScaleQuestion from '../components/ScaleQuestion';
 import ChoiceQuestion from '../components/ChoiceQuestion';
 import { useNavigate } from 'react-router-dom';
-import { LuClipboardList, LuShield, LuTriangleAlert } from 'react-icons/lu';
+import { LuClipboardList, LuShield, LuTriangleAlert, LuActivity, LuBrain, LuShieldAlert, LuSmartphone, LuCircleCheck, LuLightbulb } from 'react-icons/lu';
 import '../compliance.css';
 
 const DEMOGRAPHIC_OPTIONS = {
@@ -123,7 +123,7 @@ const ComplianceAssessmentPage = () => {
     if (step === 0) {
         return (
             <DashboardLayout hideNavigation={true}>
-                <div className="compliance-container">
+                <div className="compliance-container intro-state">
                     <div className="compliance-card">
                         <ComplianceIntroPage
                             eligibility={eligibility}
@@ -140,7 +140,7 @@ const ComplianceAssessmentPage = () => {
 
     return (
         <DashboardLayout hideNavigation={true}>
-            <div className="compliance-container">
+            <div className={`compliance-container ${step === 0 ? 'intro-state' : 'active-state'}`}>
                 <div className="compliance-header">
                     <h1>Tes Kepatuhan Medis AI</h1>
                     <p>Langkah {step} dari 7: {getStepTitle(step)}</p>
@@ -242,7 +242,7 @@ const ComplianceAssessmentPage = () => {
                                 <LuClipboardList size={20} style={{ color: 'var(--accent)' }} />
                                 <span>Rutinitas & Detail Obat</span>
                             </h3>
-                            <div className="compliance-form-grid">
+                            <div className="compliance-form-grid symmetrical-grid">
                                 <div className="compliance-form-group">
                                     <label htmlFor="Hours_Work_Per_Day">Jam Kerja Per Hari</label>
                                     <input
@@ -347,7 +347,10 @@ const ComplianceAssessmentPage = () => {
                     {/* STEP 3: BEHAVIOUR (BLOK B) */}
                     {step === 3 && (
                         <div className="compliance-form-step">
-                            <h3 className="compliance-step-title">🏃 Pilar Perilaku Harian</h3>
+                            <h3 className="compliance-step-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <LuActivity size={20} style={{ color: 'var(--accent)' }} />
+                                <span>Pilar Perilaku Harian</span>
+                            </h3>
                             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
                                 Jawab skala 1 (Sangat Sering Lupa/Rendah) sampai 5 (Tidak Pernah/Sangat Baik) berdasarkan kebiasaan Anda seminggu terakhir.
                             </p>
@@ -413,7 +416,10 @@ const ComplianceAssessmentPage = () => {
                     {/* STEP 4: PERCEPTION (BLOK C) */}
                     {step === 4 && (
                         <div className="compliance-form-step">
-                            <h3 className="compliance-step-title">🧠 Pilar Persepsi Manfaat Obat</h3>
+                            <h3 className="compliance-step-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <LuBrain size={20} style={{ color: 'var(--accent)' }} />
+                                <span>Pilar Persepsi Manfaat Obat</span>
+                            </h3>
                             <ScaleQuestion
                                 questionText="Seberapa yakin Anda bahwa obat-obat ini benar-benar menyembuhkan kondisi Anda?"
                                 fieldName="C1_DrugHelp"
@@ -461,7 +467,10 @@ const ComplianceAssessmentPage = () => {
                     {/* STEP 5: DIFFICULTY (BLOK D) */}
                     {step === 5 && (
                         <div className="compliance-form-step">
-                            <h3 className="compliance-step-title">🚧 Pilar Hambatan & Kesulitan</h3>
+                            <h3 className="compliance-step-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <LuShieldAlert size={20} style={{ color: 'var(--accent)' }} />
+                                <span>Pilar Hambatan & Kesulitan</span>
+                            </h3>
                             <ScaleQuestion
                                 questionText="Apakah Anda pernah lupa meminum obat resep yang sudah disiapkan?"
                                 fieldName="D_ForgetPrescribed"
@@ -523,7 +532,10 @@ const ComplianceAssessmentPage = () => {
                     {/* STEP 6: TECHNOLOGY (BLOK E) */}
                     {step === 6 && (
                         <div className="compliance-form-step">
-                            <h3 className="compliance-step-title">📱 Pilar Manfaat Teknologi Kesehatan</h3>
+                            <h3 className="compliance-step-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <LuSmartphone size={20} style={{ color: 'var(--accent)' }} />
+                                <span>Pilar Manfaat Teknologi Kesehatan</span>
+                            </h3>
                             <ScaleQuestion
                                 questionText="Seberapa sering Anda lupa meminum obat secara umum tanpa adanya alat bantu?"
                                 fieldName="E_ForgetGeneral"
@@ -614,20 +626,7 @@ const ComplianceAssessmentPage = () => {
                                 Semua pertanyaan telah diisi dengan lengkap! Kami siap mengirimkan data Anda ke model kecerdasan buatan klinis untuk melakukan kalkulasi kepatuhan.
                             </p>
 
-                            <div style={{
-                                background: 'var(--accent-tint)',
-                                border: '1.5px solid var(--accent-light)',
-                                padding: '16px',
-                                borderRadius: '16px',
-                                color: 'var(--accent-dark)',
-                                fontWeight: 600,
-                                fontSize: '13px',
-                                maxWidth: '440px',
-                                textAlign: 'left',
-                                marginTop: '12px'
-                            }}>
-                                💡 <strong>Catatan Keamanan:</strong> Analisis diproses secara aman menggunakan enkripsi endpoint dan rahasia data klinis Anda tetap terlindungi di platform TemanPulih.
-                            </div>
+
 
                             {submitting ? (
                                 <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>

@@ -16,61 +16,53 @@ const ComplianceIntroPage = ({ eligibility, onStart }) => {
 
     return (
         <div className="compliance-intro">
-            <div style={{ background: 'var(--accent-tint)', color: 'var(--accent)', padding: '16px', borderRadius: '24px', marginBottom: '8px' }}>
-                <LuActivity size={48} />
+            <div className="compliance-intro-icon-wrapper">
+                <LuActivity size={44} />
             </div>
-            <h2>Analisis Kepatuhan Medis AI</h2>
-            <p style={{ color: 'var(--text-secondary)', maxWidth: '540px', lineHeight: 1.6, fontSize: '14px' }}>
-                TemanPulih menggunakan model kecerdasan buatan (AI) terkalibrasi klinis untuk menganalisis 3 pilar kepatuhan Anda: **Kedisiplinan Obat (Adherence)**, **Perilaku Rutinitas (Behaviour)**, dan **Persepsi Khasiat (Perception)**.
+
+            <h2 className="compliance-intro-title">AI Analisis Kepatuhan Medis</h2>
+
+            <p className="compliance-intro-subtitle">
+                TemanPulih menggunakan model Arificial Intelligence terkalibrasi klinis untuk menganalisis karakteristik Anda terhadap: <strong>Kedisiplinan Obat (Adherence)</strong>, <strong>Perilaku Rutinitas (Behaviour)</strong>, dan <strong>Persepsi Khasiat (Perception)</strong>.
             </p>
 
-            <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr',
-                gap: '16px',
-                width: '100%',
-                maxWidth: '560px',
-                textAlign: 'left',
-                margin: '12px 0'
-            }}>
-                <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-muted)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-light)', alignItems: 'center' }}>
-                    <div style={{ color: 'var(--accent)' }}>
-                        <LuFileText size={24} />
+            <div className="compliance-intro-features">
+                <div className="compliance-intro-feature-card">
+                    <div className="compliance-intro-feature-icon">
+                        <LuFileText size={22} />
                     </div>
                     <div>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>Pengisian Cepat ~3 Menit</p>
-                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Kuesioner dirancang terarah dengan pertanyaan pilihan ganda yang sangat sederhana.</p>
+                        <h4 className="compliance-intro-feature-title">Pengisian Cepat ~3 Menit</h4>
+                        <p className="compliance-intro-feature-desc">Kuesioner dirancang terarah dengan pertanyaan pilihan ganda yang sangat sederhana.</p>
                     </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', background: 'var(--bg-muted)', padding: '16px', borderRadius: '16px', border: '1px solid var(--border-light)', alignItems: 'center' }}>
-                    <div style={{ color: 'var(--accent)' }}>
-                        <LuShield size={24} />
+                <div className="compliance-intro-feature-card">
+                    <div className="compliance-intro-feature-icon">
+                        <LuShield size={22} />
                     </div>
                     <div>
-                        <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)' }}>Rekomendasi Tindakan Instan</p>
-                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Dapatkan rencana intervensi pemulihan, penyesuaian alarm, dan panduan coaching langsung.</p>
+                        <h4 className="compliance-intro-feature-title">Rekomendasi Tindakan Instan</h4>
+                        <p className="compliance-intro-feature-desc">Dapatkan rencana intervensi pemulihan, penyesuaian alarm, dan panduan coaching langsung.</p>
                     </div>
                 </div>
             </div>
 
             {eligible ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
-                    <div className="compliance-intro-meta" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
+                <div className="compliance-intro-eligibility-container">
+                    <div className="compliance-intro-eligibility">
                         <LuCheck size={16} />
                         <span>Anda memenuhi syarat untuk mengisi tes kepatuhan minggu ini.</span>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '320px', marginTop: '12px' }}>
+                    <div className="compliance-intro-actions">
                         <button
                             className="compliance-btn-outline"
-                            style={{ flex: 1 }}
                             onClick={() => navigate('/dashboard')}
                         >
                             Kembali
                         </button>
                         <button
                             className="compliance-btn-primary"
-                            style={{ flex: 1.5 }}
                             onClick={onStart}
                         >
                             Mulai Kuesioner
@@ -78,20 +70,19 @@ const ComplianceIntroPage = ({ eligibility, onStart }) => {
                     </div>
                 </div>
             ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
-                    <div className="compliance-intro-meta locked" style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700 }}>
+                <div className="compliance-intro-eligibility-container">
+                    <div className="compliance-intro-eligibility locked">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800 }}>
                             <LuLock size={16} />
                             <span>Kuesioner Sedang Terkunci (Cooldown)</span>
                         </div>
-                        <span style={{ fontSize: '12px', fontWeight: 400, display: 'block', textAlign: 'center' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 500, display: 'block', textAlign: 'center', opacity: 0.9 }}>
                             Terakhir diisi: <strong>{formattedLastDate}</strong>. Anda dapat melakukan pengujian ulang dalam <strong>{daysRemaining} hari</strong> lagi untuk melacak progress pemulihan harian.
                         </span>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px', width: '100%', maxWidth: '320px', marginTop: '12px' }}>
+                    <div className="compliance-intro-actions single">
                         <button
                             className="compliance-btn-primary"
-                            style={{ flex: 1 }}
                             onClick={() => navigate('/dashboard')}
                         >
                             Kembali ke Dashboard

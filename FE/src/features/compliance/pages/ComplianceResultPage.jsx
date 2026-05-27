@@ -87,8 +87,9 @@ const ComplianceResultPage = () => {
         );
     }
 
-    const { adherence_class, adherence_score, behaviour_class, perception_class, intervention, created_at } = latest;
-    const isHigh = adherence_class === 1;
+    const { adherence_class, adherence_score, behaviour_class, perception_class, intervention, created_at, global_score, global_class } = latest;
+    const isHigh = (global_class !== undefined ? global_class : adherence_class) === 1;
+    const displayScore = global_score !== undefined ? global_score : adherence_score;
     const testDate = new Date(created_at).toLocaleDateString('id-ID', {
         day: 'numeric',
         month: 'long',
@@ -117,9 +118,9 @@ const ComplianceResultPage = () => {
                     <div className="compliance-result-hero">
                         <div className="compliance-score-circle" style={{ borderColor: isHigh ? 'var(--success)' : 'var(--error)' }}>
                             <h2 style={{ color: isHigh ? 'var(--success)' : 'var(--error)' }}>
-                                {(adherence_score * 100).toFixed(0)}%
+                                {(displayScore * 100).toFixed(0)}%
                             </h2>
-                            <span>Skor Kepatuhan</span>
+                            <span>Skor Kepatuhan Global</span>
                         </div>
                         <h3 style={{ fontSize: '20px', fontWeight: 800, marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {isHigh ? (

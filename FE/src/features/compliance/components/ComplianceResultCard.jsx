@@ -1,10 +1,9 @@
 import React from 'react';
 
 const ComplianceResultCard = ({ adherenceClass, behaviourClass, perceptionClass }) => {
-    // Helper status class mapping
     const getAdherenceStatus = () => {
-        if (adherenceClass === 1) return { label: 'High (Disiplin)', style: 'success' };
-        return { label: 'Low (Butuh Intervensi)', style: 'danger' };
+        if (adherenceClass === 1) return { label: 'Patuh', style: 'success' };
+        return { label: 'Tidak Patuh', style: 'danger' };
     };
 
     const getBehaviourStatus = () => {
@@ -13,7 +12,7 @@ const ComplianceResultCard = ({ adherenceClass, behaviourClass, perceptionClass 
     };
 
     const getPerceptionStatus = () => {
-        if (perceptionClass === 2) return { label: 'Positif (Sangat Yakin)', style: 'success' };
+        if (perceptionClass === 2) return { label: 'Positif', style: 'success' };
         if (perceptionClass === 1) return { label: 'Netral', style: 'warning' };
         return { label: 'Negatif (Ragu/Khawatir)', style: 'danger' };
     };

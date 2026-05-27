@@ -159,10 +159,47 @@ const predictAndSave = async (user, supabase, data) => {
     }
 
     // Ekstrak hasil prediksi
-    const { adherence, adherence_score, behaviour, perception } = modelResult;
+    const rawAdherence = modelResult.adherence;
+    const rawBehaviour = modelResult.behaviour;
+    const rawPerception = modelResult.perception;
 
-    if (adherence === undefined || behaviour === undefined || perception === undefined) {
+    if (rawAdherence === undefined || rawBehaviour === undefined || rawPerception === undefined) {
         throw Object.assign(new Error('Format respons API model tidak valid.'), { statusCode: 502 });
+    }
+
+    // Helper functions to safely extract data from varying HF Space JSON structures
+    const extractClass = (raw) => {
+        if (typeof raw === 'object' && raw !== null) {
+            return raw.class !== undefined ? Number(raw.class) : 0;
+        }
+        return Number(raw) || 0;
+    };
+
+    const extractScore = (raw) => {
+        if (typeof raw === 'object' && raw !== null) {
+            if (Array.isArray(raw.probabilities) && raw.probabilities.length > 0) {
+                // Return the max probability (confidence of the predicted class)
+                return Math.max(...raw.probabilities);
+            }
+            if (raw.score !== undefined) return Number(raw.score);
+        }
+        return 0.0;
+    };
+
+    // Extract class integers safely from the prediction objects
+    const adherence = extractClass(rawAdherence);
+    const behaviour = extractClass(rawBehaviour);
+    const perception = extractClass(rawPerception);
+
+    // Extract adherence_score safely
+    let finalAdherenceScore = Number(modelResult.adherence_score);
+    if (isNaN(finalAdherenceScore) || modelResult.adherence_score === null || modelResult.adherence_score === undefined) {
+        finalAdherenceScore = extractScore(rawAdherence);
+        
+        // Final fallback if extraction fails entirely, so the DB doesn't crash on null constraint
+        if (finalAdherenceScore === 0.0) {
+            finalAdherenceScore = adherence === 1 ? 0.99 : 0.45;
+        }
     }
 
     // 4. Simpan ke database compliance_assessments menggunakan Supabase Client / Pool
@@ -172,7 +209,7 @@ const predictAndSave = async (user, supabase, data) => {
             patient_id: patientId,
             raw_responses: finalFormData,
             adherence_class: adherence,
-            adherence_score: adherence_score,
+            adherence_score: finalAdherenceScore,
             behaviour_class: behaviour,
             perception_class: perception
         }])
@@ -290,8 +327,75 @@ const getLatestAssessment = async (user, candidatePatientId) => {
     if (rows.length === 0) return null;
 
     const row = rows[0];
+
+    // --- REAL-TIME BLENDED GLOBAL SCORE CALCULATION ---
+    // 1. Calculate Real Medication Adherence (Expected vs Logs)
+    const logsRes = await db.query(
+        `SELECT medication_id, schedule_id, status FROM medication_logs WHERE medication_id IN (SELECT id FROM medications WHERE user_id = $1)`, 
+        [patientId]
+    );
+    const medsRes = await db.query(
+        `SELECT m.id as medication_id, ms.id as schedule_id, ms.time_slots, ms.start_date, ms.end_date 
+         FROM medications m JOIN medication_schedules ms ON m.id = ms.medication_id 
+         WHERE m.user_id = $1`, 
+         [patientId]
+    );
+    
+    let totalExpected = 0;
+    let totalTaken = 0;
+    
+    // Gunakan tanggal lokal agar sinkron dengan Frontend
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000; // offset in milliseconds
+    const localISOTime = (new Date(now - tzOffset)).toISOString().slice(0, -1);
+    const todayStr = localISOTime.split('T')[0];
+
+    medsRes.rows.forEach(sched => {
+        let startStr = sched.start_date ? new Date(sched.start_date - tzOffset).toISOString().split('T')[0] : null;
+        let endStr = sched.end_date ? new Date(sched.end_date - tzOffset).toISOString().split('T')[0] : null;
+        if (!startStr) return;
+
+        const start = new Date(startStr);
+        const end = new Date(endStr && endStr < todayStr ? endStr : todayStr);
+        if (end < start) return;
+
+        const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        
+        let slots = [];
+        try {
+            if (typeof sched.time_slots === 'string') {
+                slots = sched.time_slots.startsWith('[') ? JSON.parse(sched.time_slots) : sched.time_slots.split(',');
+            }
+        } catch(e) {}
+        
+        const expected = slots.length * daysDiff;
+        totalExpected += expected;
+
+        const taken = logsRes.rows.filter(l => l.medication_id === sched.medication_id && l.schedule_id === sched.schedule_id && l.status === 'taken').length;
+        totalTaken += Math.min(taken, expected);
+    });
+
+    let realAdherenceScore = totalExpected === 0 ? 1.0 : totalTaken / totalExpected;
+
+    // 2. Map AI Questionnaire Components to Weights
+    const aiAdherence = row.adherence_score || 0.5; // From ML Pilar 1
+    // Behaviour weight: Class 1 (Good) = 1.0, Class 0 (Bad) = 0.3
+    const behaviourScore = row.behaviour_class === 1 ? 1.0 : 0.3;
+    // Perception weight: Class 2 (Positif) = 1.0, Class 1 (Netral) = 0.7, Class 0 (Negatif) = 0.3
+    const perceptionScore = row.perception_class === 2 ? 1.0 : (row.perception_class === 1 ? 0.7 : 0.3);
+
+    // 3. Blending Formula
+    // 50% Real Action (Logs) + 30% AI Adherence (Pilar 1) + 10% Behaviour (Pilar 2) + 10% Perception (Pilar 3)
+    let globalScore = (realAdherenceScore * 0.5) + (aiAdherence * 0.3) + (behaviourScore * 0.1) + (perceptionScore * 0.1);
+    
+    // Constrain to max 1.0 (100%)
+    globalScore = Math.max(0, Math.min(1, globalScore));
+
     return {
         ...row,
+        global_score: globalScore,
+        global_class: globalScore >= 0.75 ? 1 : 0, // >= 75% = High/Patuh
+        real_adherence: realAdherenceScore, // useful for debugging
         intervention: buildIntervention(row.adherence_class, row.behaviour_class, row.perception_class)
     };
 };
