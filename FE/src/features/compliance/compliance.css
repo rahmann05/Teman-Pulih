@@ -41,7 +41,7 @@
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.03);
     transition: all var(--duration-normal) var(--ease);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
 }
 
 .compliance-card::before {
@@ -52,6 +52,7 @@
     right: 0;
     height: 4px;
     background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    border-radius: 32px 32px 0 0;
 }
 
 /* ── Header Styling ────────────────────────────────────────── */
@@ -591,4 +592,44 @@
 .compliance-btn-outline:active {
     transform: translateY(0);
 }
+
+/* ── Desktop Full-Bleed Layout Adjustments ─────────────────── */
+@media (min-width: 1024px) {
+    .compliance-container {
+        max-width: 1280px; /* Spacious, premium full-bleed content width */
+        padding: 48px var(--space-6);
+    }
+
+    /* Transform vertical questions step list into a gorgeous dual-column grid */
+    .compliance-form-step {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 28px;
+    }
+
+    /* Span step titles, text blurbs, and footer action buttons across both columns */
+    .compliance-step-title,
+    .compliance-form-step > p,
+    .compliance-actions,
+    .compliance-intro {
+        grid-column: span 2;
+    }
+
+    /* Demographics form grid spans both columns and layouts in 3 horizontal fields */
+    .compliance-form-grid {
+        grid-column: span 2;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 24px;
+    }
+
+    /* Ensure actions footer buttons align beautifully inside grid column span */
+    .compliance-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        margin-top: 16px;
+    }
+}
+
 
