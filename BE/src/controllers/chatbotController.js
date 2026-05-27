@@ -29,15 +29,15 @@ const sendMessage = async (req, res) => {
                 try {
                     const { genAI } = chatbotService;
                     const gatekeeperPrompt = `Klasifikasikan pesan di dalam tag <pesan>.
-Kategori:
-1. MEDIS: Penyakit, gejala (demam, batuk, pusing, mual, dll), obat, kesehatan, keluhan fisik/mental, kondisi medis, terminologi medis.
-2. SAPAAN: Salam, ucapan terima kasih, perkenalan, salam penutup.
-3. LUAR_MEDIS: Topik di luar kesehatan sama sekali (politik, hiburan, olahraga non-kesehatan, dll).
+Kategori yang harus Anda pilih (Pilih salah satu dari 3 kata berikut saja):
+- LUAR_MEDIS: Jika pesan menanyakan hal selain kesehatan manusia, termasuk membuat kode program/coding/programming (seperti bahasa C, Python, JavaScript, Java, PHP, HTML, CSS, dll.), matematika, fisika, politik, hiburan, gosip, atau topik non-medis lainnya.
+- SAPAAN: Jika pesan berupa salam (halo, selamat pagi, siang, sore, malam), perkenalan diri, ucapan terima kasih, atau salam penutup.
+- MEDIS: Jika pesan berupa keluhan penyakit, gejala fisik/mental, pertanyaan tentang obat, resep dokter, cara menyembuhkan luka, atau topik medis manusia.
 
-PERHATIAN: Jika ada keraguan antara MEDIS dan LUAR_MEDIS, pilih MEDIS.
+PENTING: Jika pesan mengandung kata 'kode', 'program', 'koding', 'bahasa C', 'fungsi', atau meminta menulis kode software, Anda WAJIB membalas dengan 'LUAR_MEDIS'. Jangan berasumsi 'C' di sini adalah Vitamin C jika ada kata 'bahasa C' atau 'kode'.
 
 <pesan>${message}</pesan>
-Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
+Balas HANYA dengan 1 kata pilihan Anda: MEDIS, SAPAAN, atau LUAR_MEDIS.`;
 
                     let gateResult;
                     try {
@@ -90,7 +90,7 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
 
         // ── Step 1: Smart extraction — separate SYMPTOMS from DRUGS BEING TAKEN ──────
         let symptomKeywords = [];   // gejala yang dikeluhkan
-        let drugsMentioned  = [];   // obat yang sedang dikonsumsi user
+        let drugsMentioned = [];   // obat yang sedang dikonsumsi user
         let expandedKeywords = [];
         let llmExtractionOk = false;
 
@@ -132,10 +132,10 @@ Contoh untuk "saya mual dan pusing, sedang minum amoxicillin":
             const jsonMatch = rawText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
                 const parsed = JSON.parse(jsonMatch[0]);
-                symptomKeywords  = (parsed.gejala          || []).map(s => s.trim()).filter(s => s.length >= 2);
-                drugsMentioned   = (parsed.obat_diminum    || []).map(s => s.trim()).filter(s => s.length >= 2);
+                symptomKeywords = (parsed.gejala || []).map(s => s.trim()).filter(s => s.length >= 2);
+                drugsMentioned = (parsed.obat_diminum || []).map(s => s.trim()).filter(s => s.length >= 2);
                 expandedKeywords = (parsed.kata_kunci_medis || []).map(s => s.trim()).filter(s => s.length >= 2);
-                llmExtractionOk  = true;
+                llmExtractionOk = true;
                 console.log('[RAG] Gejala terdeteksi:', symptomKeywords);
                 if (drugsMentioned.length > 0) console.log('[RAG] Obat yang dikonsumsi:', drugsMentioned);
             }
@@ -205,27 +205,34 @@ Contoh untuk "saya mual dan pusing, sedang minum amoxicillin":
             }
         } catch (e) { console.error('[RAG] Error buildChatbotContext:', e.message); }
 
-        const modelConfig = { temperature: 0.2, maxOutputTokens: 2048 };
-        const safetySettings = [{ category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' }];
+        const modelConfig = { temperature: 0.2 };
+        const safetySettings = [
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' }
+        ];
 
         let systemPrompt = `Kamu adalah "Asep", asisten kesehatan AI dari TemanPulih. Nada bicaramu ramah, empatik, santai tapi profesional. Gunakan bahasa Indonesia.
 
 ATURAN KEAMANAN KLINIS (WAJIB):
-1. DIAGNOSIS DIFERENSIAL: Jika ada [KEMUNGKINAN UTAMA] dan [KEMUNGKINAN LAIN] di referensi, sebutkan kemungkinan utama terlebih dahulu, lalu alternatif lainnya. Selalu gunakan frasa "Kemungkinan ini adalah..." atau "Berdasarkan gejala yang kamu ceritakan, kondisi yang paling mungkin adalah...".
-2. ATURAN OBAT KETAT: Kamu BOLEH menyebutkan nama obat yang TERCANTUM di referensi saja. Jangan mengarang obat! JANGAN PERNAH menyebutkan dosis, HANYA sebutkan namanya saja.
-3. PROTOKOL KONTRAINDIKASI (PENTING): Cek [REKAM MEDIS]. Jika obat saranmu bertentangan dengan Alergi, Obat Rutin, atau Penyakit Terdahulu, BERI PERINGATAN KERAS dan larang konsumsi!
+0. BATASAN TOPIK KETAT (PENTING): Kamu adalah asisten virtual khusus kesehatan (TemanPulih) dan HANYA BISA menjawab topik seputar medis, kesehatan, penyakit, resep dokter, atau obat-obatan. Jika pengguna menanyakan hal lain di luar kesehatan (seperti menulis kode pemrograman/coding/bahasa C/Python/HTML/matematika/politik/dll.), kamu WAJIB menolak secara sangat sopan dan ingatkan pengguna bahwa kamu hanya bisa menjawab hal seputar medis dan kesehatan! DILARANG keras memberikan solusi coding atau non-medis.
+1. MENJAWAB SESUAI KONTEKS & LARANGAN DIAGNOSIS PASTI: 
+   - Jika user MENANYAKAN RESEP/OBAT/FUNGSI (atau pertanyaan umum kesehatan), jawablah langsung penjelasannya menggunakan pengetahuan medismu secara aman. JANGAN mendiagnosis penyakit jika user tidak mengeluhkan gejala apapun.
+   - Jika user MENGELUHKAN GEJALA PENYAKIT, berikan edukasi kemungkinan kondisi secara SANGAT HATI-HATI. DILARANG KERAS memberikan diagnosis pasti. Selalu tegaskan bahwa kamu adalah AI. Gunakan frasa: "Sebagai asisten AI, saya tidak bisa mendiagnosis pasti, namun berdasarkan keluhanmu, beberapa kemungkinan kondisinya adalah..."
+2. PRIORITAS REFERENSI & FALLBACK PENGETAHUAN: Kamu WAJIB memprioritaskan informasi penyakit dan obat yang tercantum di referensi [INFORMASI TAMBAHAN] (Chroma) terlebih dahulu. Jika informasi tentang obat atau penyakit yang ditanyakan tidak ditemukan dalam referensi atau referensi tersebut kosong, barulah kamu diperbolehkan menjawab dan menjelaskan menggunakan pengetahuan medis bawaanmu (Gemini) secara akurat, aman, dan edukatif. JANGAN mengarang obat keras baru di luar medis umum, dan JANGAN PERNAH menyebutkan dosis!
+3. PROTOKOL KONTRAINDIKASI (PENTING): Cek [REKAM MEDIS]. Jika obat yang dibahas bertentangan dengan Alergi, Obat Rutin, atau Penyakit Terdahulu, BERI PERINGATAN KERAS dan larang konsumsi!
 4. JANGAN ulangi keluhan user.
 5. CEK EFEK SAMPING OBAT (KRITIS): Jika ada [INFORMASI OBAT YANG SEDANG DIKONSUMSI PASIEN], PERIKSA apakah gejala yang dilaporkan cocok dengan efek samping obat tersebut. Jika ya, sampaikan ini PERTAMA sebelum analisis lain.
 
-STRUKTUR JAWABAN:
-- Analisis awal yang empatik: sebutkan kemungkinan kondisi utama (dan alternatif jika ada). Cek apakah gejala bisa jadi efek samping obat yang dikonsumsi.
-- Saran perawatan non-farmakologi (perawatan alami di rumah).
-- Saran obat: HANYA sebutkan jika ada di REFERENSI (hanya nama, tanpa dosis). Jika referensi tidak menyebutkan obat, abaikan poin ini sepenuhnya dan jangan beri saran obat.
-- Kapan harus ke dokter.`;
+FORMAT DAN GAYA PENULISAN CHAT (SANGAT PENTING):
+- DILARANG menggunakan format markdown robotik/kaku seperti tanda pagar tiga kali (### 1.), list bersarang yang kompleks, atau cetak tebal ganda (**) secara berlebihan.
+- Tulislah jawaban seperti pesan WhatsApp/chat dari dokter manusia sungguhan yang hangat, santai, dan rapi menggunakan penomoran normal (misalnya "1. Acyclovir 200mg:" atau "Pertama, Acyclovir...") dan pemisah baris baru biasa. 
 
-        if (!ragContextFormatted) {
-            systemPrompt += '\n\n[SISTEM DARURAT]: TIDAK ADA referensi RAG. DILARANG menyarankan nama obat medis (kimia). Berikan saran perawatan mandiri non-obat saja dan arahkan ke dokter.';
-        }
+STRUKTUR JAWABAN (FLEKSIBEL):
+- Analisis empatik: Sesuaikan dengan pertanyaan. Jika user bertanya umum, jawablah dengan edukasi. Jika terkait keluhan, berikan disclaimer AI.
+- Jika terkait keluhan/gejala: berikan kemungkinan kondisi (sangat hati-hati), perawatan non-farmakologi (alami), dan saran medis hanya jika relevan.
+- Kapan harus ke dokter.`;
 
         const finalMessage = `${systemPrompt}\n\n${emrContext}\n${ragContextFormatted || '[TIDAK ADA REFERENSI]'}\n\nKELUHAN PASIEN:\n"${message}"`;
 
