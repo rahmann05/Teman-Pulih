@@ -4,7 +4,7 @@ import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import ComplianceResultCard from '../components/ComplianceResultCard';
 import InterventionPanel from '../components/InterventionPanel';
 import * as complianceService from '../services/complianceService';
-import { LuBarChart2, LuCheckCircle, LuAlertTriangle, LuInfo } from 'react-icons/lu';
+import { LuActivity, LuCircleCheck, LuTriangleAlert, LuInfo } from 'react-icons/lu';
 import '../compliance.css';
 
 const ComplianceResultPage = () => {
@@ -69,7 +69,7 @@ const ComplianceResultPage = () => {
                 <div className="compliance-container">
                     <div className="compliance-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
                         <div style={{ background: 'var(--accent-tint)', color: 'var(--accent)', padding: '16px', borderRadius: '24px', width: 'fit-content', margin: '0 auto 16px' }}>
-                            <LuBarChart2 size={48} />
+                            <LuActivity size={48} />
                         </div>
                         <h2 style={{ marginTop: '16px' }}>Belum Ada Hasil Uji Kepatuhan</h2>
                         <p style={{ color: 'var(--text-secondary)', marginTop: '8px', marginBottom: '24px' }}>
@@ -123,9 +123,9 @@ const ComplianceResultPage = () => {
                         </div>
                         <h3 style={{ fontSize: '20px', fontWeight: 800, marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                             {isHigh ? (
-                                <LuCheckCircle size={22} style={{ color: 'var(--success)' }} />
+                                <LuCircleCheck size={22} style={{ color: 'var(--success)' }} />
                             ) : (
-                                <LuAlertTriangle size={22} style={{ color: 'var(--error)' }} />
+                                <LuTriangleAlert size={22} style={{ color: 'var(--error)' }} />
                             )}
                             <span>Kategori: {isHigh ? 'High (Sangat Patuh)' : 'Low (Butuh Intervensi)'}</span>
                         </h3>

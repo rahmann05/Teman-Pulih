@@ -5,7 +5,7 @@ import ComplianceIntroPage from '../components/ComplianceIntroPage';
 import ScaleQuestion from '../components/ScaleQuestion';
 import ChoiceQuestion from '../components/ChoiceQuestion';
 import { useNavigate } from 'react-router-dom';
-import { LuClipboardList, LuShield, LuAlertTriangle } from 'react-icons/lu';
+import { LuClipboardList, LuShield, LuTriangleAlert } from 'react-icons/lu';
 import '../compliance.css';
 
 const DEMOGRAPHIC_OPTIONS = {
@@ -88,7 +88,7 @@ const ComplianceAssessmentPage = () => {
 
                 {error && (
                     <div className="compliance-error-banner" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <LuAlertTriangle size={16} />
+                        <LuTriangleAlert size={16} />
                         <span>{error}</span>
                     </div>
                 )}

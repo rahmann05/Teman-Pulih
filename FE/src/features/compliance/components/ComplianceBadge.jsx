@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LuCheckCircle, LuShieldAlert } from 'react-icons/lu';
+import { LuCircleCheck, LuShieldAlert } from 'react-icons/lu';
 import * as complianceService from '../services/complianceService';
+import '../compliance.css';
 
 const ComplianceBadge = ({ patientId = null, viewOnly = false }) => {
     const [latest, setLatest] = useState(null);
@@ -69,7 +70,7 @@ const ComplianceBadge = ({ patientId = null, viewOnly = false }) => {
                 <h4>Status Kepatuhan AI</h4>
                 <div className={`compliance-badge-status ${badgeClass}`} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     {isHigh ? (
-                        <LuCheckCircle size={18} style={{ color: 'var(--success)' }} />
+                        <LuCircleCheck size={18} style={{ color: 'var(--success)' }} />
                     ) : (
                         <LuShieldAlert size={18} style={{ color: 'var(--error)' }} />
                     )}

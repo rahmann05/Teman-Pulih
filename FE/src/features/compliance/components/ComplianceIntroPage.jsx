@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LuBarChart2, LuFileText, LuShield, LuCheck, LuLock } from 'react-icons/lu';
+import { LuActivity, LuFileText, LuShield, LuCheck, LuLock } from 'react-icons/lu';
 
 const ComplianceIntroPage = ({ eligibility, onStart }) => {
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ const ComplianceIntroPage = ({ eligibility, onStart }) => {
     return (
         <div className="compliance-intro">
             <div style={{ background: 'var(--accent-tint)', color: 'var(--accent)', padding: '16px', borderRadius: '24px', marginBottom: '8px' }}>
-                <LuBarChart2 size={48} />
+                <LuActivity size={48} />
             </div>
             <h2>Analisis Kepatuhan Medis AI</h2>
             <p style={{ color: 'var(--text-secondary)', maxWidth: '540px', lineHeight: 1.6, fontSize: '14px' }}>
