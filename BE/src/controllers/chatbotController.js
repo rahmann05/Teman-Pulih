@@ -2,6 +2,7 @@ const chatbotService = require('../services/chatbotService');
 const { buildChatbotContext, buildSymptomDifferentialContext } = require('../services/ragService');
 const { getSupabaseClient } = require('../helpers/supabase');
 const { expandQuery } = require('../helpers/ragUtils');
+const { buildPatientBehaviorContext } = require('../services/patientContextService');
 
 const sendMessage = async (req, res) => {
     let fullReply = '';
@@ -73,12 +74,24 @@ Balas HANYA dengan 1 kata pilihan Anda: MEDIS, SAPAAN, atau LUAR_MEDIS.`;
 
         let emrContext = '', routineMedicationsForSearch = '', privateContext = '';
         let targetPatientId = null;
+        let patientBehaviorContext = '';
         try {
             const emrData = await chatbotService.getEmrContext(supabase, req.user);
             emrContext = emrData.emrContext;
             routineMedicationsForSearch = emrData.routineMedicationsForSearch;
             privateContext = emrData.privateContext;
             targetPatientId = emrData.targetPatientId || null;
+
+            // Bangun konteks perilaku klinis real-time pasien untuk Asep
+            // Mencakup: adherence stats, obat aktif, penyakit, kelas AI, interaksi caregiver
+            try {
+                const patientUserId = req.user.role === 'patient' ? req.user.id : (targetPatientId || req.user.id);
+                patientBehaviorContext = await buildPatientBehaviorContext(patientUserId);
+                console.log(`[PATIENT-CTX] Behavioral context loaded for user: ${patientUserId}`);
+            } catch (ctxErr) {
+                // Non-fatal: chatbot tetap berjalan normal tanpa konteks tambahan
+                console.warn('[PATIENT-CTX] Gagal membangun patient behavior context:', ctxErr.message);
+            }
         } catch (e) {
             console.error('[RAG] Gagal mengambil Private EMR Profile:', e.message);
         }
@@ -234,7 +247,7 @@ STRUKTUR JAWABAN (FLEKSIBEL):
 - Jika terkait keluhan/gejala: berikan kemungkinan kondisi (sangat hati-hati), perawatan non-farmakologi (alami), dan saran medis hanya jika relevan.
 - Kapan harus ke dokter.`;
 
-        const finalMessage = `${systemPrompt}\n\n${emrContext}\n${ragContextFormatted || '[TIDAK ADA REFERENSI]'}\n\nKELUHAN PASIEN:\n"${message}"`;
+        const finalMessage = `${systemPrompt}\n\n${patientBehaviorContext ? patientBehaviorContext + '\n\n' : ''}${emrContext}\n${ragContextFormatted || '[TIDAK ADA REFERENSI]'}\n\nKELUHAN PASIEN:\n"${message}"`;
 
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');

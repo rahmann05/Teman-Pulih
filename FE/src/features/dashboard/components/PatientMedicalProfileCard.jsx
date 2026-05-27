@@ -12,6 +12,8 @@ import {
   LuCircleCheck,
 } from 'react-icons/lu';
 import { getIllnessHistory } from '@/features/family-sync/services/familyService';
+import ComplianceBadge from '@/features/compliance/components/ComplianceBadge';
+import * as complianceService from '@/features/compliance/services/complianceService';
 
 const PatientMedicalProfileCard = ({ activePatientProfile, activePatientName, loading }) => {
   const profileData = activePatientProfile?.profile || {};
@@ -19,6 +21,17 @@ const PatientMedicalProfileCard = ({ activePatientProfile, activePatientName, lo
 
   const [activeIllnesses, setActiveIllnesses] = useState([]);
   const [illnessLoading, setIllnessLoading] = useState(false);
+  const [latestCompliance, setLatestCompliance] = useState(null);
+
+  useEffect(() => {
+    if (!patientUserId) {
+      setLatestCompliance(null);
+      return;
+    }
+    complianceService.getLatest(patientUserId)
+      .then(res => setLatestCompliance(res.data.data))
+      .catch(err => console.error('[Caregiver Medical Profile] Gagal memuat compliance status:', err));
+  }, [patientUserId]);
 
   useEffect(() => {
     if (!patientUserId) {
@@ -71,6 +84,24 @@ const PatientMedicalProfileCard = ({ activePatientProfile, activePatientName, lo
       <h3 className="section-title">Detail Pasien: {activePatientName}</h3>
 
       <div className="medical-profile-card bento-card" style={{ borderRadius: '32px', padding: '28px', background: '#FFF' }}>
+        {latestCompliance && latestCompliance.adherence_class === 0 && (
+          <div style={{
+            background: 'var(--error-light)',
+            border: '1.5px solid #fca5a5',
+            borderRadius: '16px',
+            padding: '16px',
+            color: 'var(--error)',
+            fontWeight: 700,
+            fontSize: '13px',
+            marginBottom: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <LuShieldAlert size={18} />
+            <span>PERINGATAN KEPATUHAN: Pasien {activePatientName} terdeteksi memiliki tingkat kepatuhan minum obat yang rendah! Mohon bantu pantau jadwal minum obatnya secara proaktif.</span>
+          </div>
+        )}
         <div className="medical-grid">
 
           {/* ── Baris 1: Data Fisik (4 kolom di desktop) ── */}
@@ -195,6 +226,11 @@ const PatientMedicalProfileCard = ({ activePatientProfile, activePatientName, lo
               </div>
             </div>
           )}
+
+          {/* Bento Item 10: Status Kepatuhan Pasien (AI) */}
+          <div className="medical-bento-item half-width-desktop-item" style={{ gridColumn: 'span 2', padding: '12px' }}>
+            <ComplianceBadge patientId={patientUserId} viewOnly={true} />
+          </div>
 
         </div>
       </div>

@@ -9,10 +9,21 @@ import EMROnboardingModal from '@/shared/layouts/EMROnboardingModal';
 import { usePatientDashboard } from '@/features/dashboard/hooks/usePatientDashboard';
 import DailyCheckinCard from '@/features/dashboard/components/DailyCheckinCard';
 import CurrentIllnessCard from '@/features/dashboard/components/CurrentIllnessCard';
+import { useState, useEffect } from 'react';
+import ComplianceBadge from '@/features/compliance/components/ComplianceBadge';
+import InterventionCoachingCard from '@/features/compliance/components/InterventionCoachingCard';
+import * as complianceService from '@/features/compliance/services/complianceService';
 import '@/features/dashboard/dashboard.css';
 
 const PatientDashboard = () => {
   const dashboardData = usePatientDashboard();
+  const [latestCompliance, setLatestCompliance] = useState(null);
+
+  useEffect(() => {
+    complianceService.getLatest()
+      .then(res => setLatestCompliance(res.data.data))
+      .catch(err => console.error('[PatientDashboard] Gagal memuat status kepatuhan:', err));
+  }, []);
 
   if (dashboardData.loading) {
     return (
@@ -74,8 +85,12 @@ const PatientDashboard = () => {
             </div>
           </div>
 
-          {/* Column 1: Quick Actions */}
+          {/* Column 1: Quick Actions & Compliance */}
           <div className="dashboard-col-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {latestCompliance && latestCompliance.adherence_class === 0 && (
+              <InterventionCoachingCard />
+            )}
+            <ComplianceBadge />
             <QuickActionGrid />
           </div>
 

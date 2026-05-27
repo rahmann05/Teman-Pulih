@@ -12,5 +12,6 @@ router.use('/family', require('./familyRoutes'));
 router.use('/chat', require('./chatRoutes'));
 router.use('/notifications', require('./notificationRoutes'));
 router.use('/illness', require('./illnessRoutes'));
+router.use('/compliance', require('./complianceRoutes'));
 
 module.exports = router;

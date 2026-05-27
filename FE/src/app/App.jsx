@@ -23,6 +23,8 @@ const FamilySyncPage = lazy(() => import('@/features/family-sync/pages/FamilySyn
 const PelajariPage   = lazy(() => import('@/features/pelajari/pages/PelajariPage'));
 const DirectChatPage = lazy(() => import('@/features/chat/pages/DirectChatPage'));
 const NotificationsPage = lazy(() => import('@/features/notifications/pages/NotificationsPage'));
+const ComplianceAssessmentPage = lazy(() => import('@/features/compliance/pages/ComplianceAssessmentPage'));
+const ComplianceResultPage = lazy(() => import('@/features/compliance/pages/ComplianceResultPage'));
 
 // Loading component for Suspense
 const PageLoader = () => (
@@ -111,6 +113,24 @@ const AnimatedRoutes = () => {
             element={
               <ProtectedRoute allowedRoles={['patient', 'caregiver']}>
                 <PageTransition><ChatbotPage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Route Kepatuhan — Patient */}
+          <Route
+            path="/compliance"
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <PageTransition><ComplianceAssessmentPage /></PageTransition>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/compliance/result"
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <PageTransition><ComplianceResultPage /></PageTransition>
               </ProtectedRoute>
             }
           />

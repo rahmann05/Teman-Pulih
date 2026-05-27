@@ -17,7 +17,7 @@ const getNotifications = async (req, res, next) => {
         const params = [userId];
         
         if (role === 'caregiver') {
-            query += ` AND type IN ('caregiver_late', 'caregiver_taken', 'medical_complaint') `;
+            query += ` AND type IN ('caregiver_late', 'caregiver_taken', 'medical_complaint', 'compliance_alert') `;
         } else {
             query += ` AND type IN ('reminder_10m', 'reminder_exact', 'patient_late') `;
         }
@@ -49,7 +49,7 @@ const markAllAsRead = async (req, res, next) => {
         const params = [userId];
         
         if (role === 'caregiver') {
-            query += ` AND type IN ('caregiver_late', 'caregiver_taken', 'medical_complaint') `;
+            query += ` AND type IN ('caregiver_late', 'caregiver_taken', 'medical_complaint', 'compliance_alert') `;
         } else {
             query += ` AND type IN ('reminder_10m', 'reminder_exact', 'patient_late') `;
         }
