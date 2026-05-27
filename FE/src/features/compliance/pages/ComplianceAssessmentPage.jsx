@@ -171,18 +171,14 @@ const ComplianceAssessmentPage = () => {
 
                             <div className="compliance-form-grid">
                                 <div className="compliance-form-group">
-                                    <label htmlFor="GENDER">Jenis Kelamin</label>
-                                    <select
-                                        id="GENDER"
-                                        className="compliance-select"
+                                    <ChoiceQuestion
+                                        label="Jenis Kelamin"
+                                        fieldName="GENDER"
                                         value={formData.GENDER}
-                                        onChange={(e) => handleInputChange('GENDER', e.target.value)}
+                                        onChange={handleInputChange}
+                                        options={DEMOGRAPHIC_OPTIONS.GENDER}
                                         disabled={!!eligibility.prefill?.GENDER}
-                                    >
-                                        <option value="">-- Pilih --</option>
-                                        <option value="Male">Laki-laki</option>
-                                        <option value="Female">Perempuan</option>
-                                    </select>
+                                    />
                                     {eligibility.prefill?.GENDER && (
                                         <span style={{ fontSize: '11px', color: 'var(--success)' }}>✓ Prefilled dari profil</span>
                                     )}
@@ -213,7 +209,7 @@ const ComplianceAssessmentPage = () => {
                                 />
 
                                 <ChoiceQuestion
-                                    label="Afiliasi Keagamaan"
+                                    label="Agama"
                                     fieldName="Religion_Affiliation"
                                     value={formData.Religion_Affiliation}
                                     onChange={handleInputChange}
