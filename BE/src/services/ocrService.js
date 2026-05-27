@@ -16,29 +16,28 @@ const VALID_FREQUENCIES = ['1x sehari', '2x sehari', '3x sehari', '4x sehari', '
  * Tidak ada data user yang dikirim ke Gemini — hanya instruksi + gambar.
  */
 const buildOcrPrompt = () => `
-Kamu adalah sistem OCR resep medis. Tugasmu HANYA mengekstrak informasi dari gambar resep dokter yang diberikan.
+Kamu adalah asisten medis ahli yang sangat mahir membaca tulisan tangan dokter (kursif, berantakan, atau singkatan latin). Tugasmu mengekstrak informasi dari gambar resep dokter yang diberikan dengan kemampuan terbaikmu.
 
 Ekstrak setiap obat yang tercantum dalam resep dan kembalikan dalam format JSON berikut:
 {
   "obat": [
     {
-      "nama_obat": "Nama obat persis seperti di resep",
-      "dosis": "Dosis per konsumsi (cth: 500mg, 1 tablet, 2 kapsul)",
+      "nama_obat": "Nama obat persis seperti di resep (gunakan pengetahuan medismu untuk menebak jika samar)",
+      "dosis": "Dosis per konsumsi (cth: 500mg, 1 tablet)",
       "frekuensi": "Salah satu dari: 1x sehari | 2x sehari | 3x sehari | 4x sehari | Setiap 8 jam | Sesuai kebutuhan",
-      "aturan_pakai": "Instruksi tambahan (cth: setelah makan, sebelum tidur, dengan air putih)",
-      "durasi": "Lama penggunaan jika tercantum (cth: 5 hari, 1 minggu). Kosongkan jika tidak ada."
+      "aturan_pakai": "Instruksi tambahan (cth: setelah makan, sebelum tidur)",
+      "durasi": "Lama penggunaan (cth: 5 hari). Kosongkan jika tidak ada."
     }
   ],
-  "catatan_dokter": "Catatan tambahan dari dokter jika ada, atau string kosong jika tidak ada",
-  "teks_mentah": "Seluruh teks yang berhasil dibaca dari gambar resep, persis seperti yang tertulis"
+  "catatan_dokter": "Catatan tambahan dokter jika ada",
+  "teks_mentah": "Seluruh teks yang berhasil dibaca dari gambar resep"
 }
 
 ATURAN PENTING:
-1. Jangan menambahkan informasi yang tidak ada di resep
-2. Jika frekuensi tidak jelas, pilih nilai terdekat dari daftar yang tersedia
-3. Jika tidak bisa membaca teks, kembalikan { "error": "Teks tidak dapat dibaca", "teks_mentah": "" }
-4. Kembalikan HANYA JSON yang valid, tanpa teks penjelasan di luar JSON
-5. Jangan sertakan nama pasien, nama dokter, atau data pribadi apapun dalam output
+1. Jangan menambahkan obat yang tidak ada di resep, tapi GUNAKAN intuisi medismu untuk menyimpulkan tulisan yang berantakan (misal: "amox" -> "Amoxicillin").
+2. Jika ada kata yang benar-benar tidak bisa dibaca sama sekali, tulis "[tidak terbaca]". Jangan menyerah! Ekstrak sebanyak yang kamu bisa.
+3. Kembalikan HANYA JSON yang valid, tanpa teks penjelasan di luar JSON.
+4. Jangan sertakan nama pasien, nama dokter, atau data pribadi apapun dalam output.
 `.trim();
 
 /**
@@ -47,8 +46,8 @@ ATURAN PENTING:
  * @param {Buffer} imageBuffer - Raw image buffer
  * @returns {Promise<{ structured: object, rawText: string }>}
  */
-const runGeminiOcr = async (imageBuffer) => {
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+const runGeminiOcr = async (imageBuffer, modelName = 'gemini-3.5-flash') => {
+    const model = genAI.getGenerativeModel({ model: modelName });
 
     const imagePart = {
         inlineData: {
@@ -144,24 +143,49 @@ const formatStructuredToText = (parsed) => {
  * @returns {Promise<{ id, text, image_url, structured_data }>}
  */
 const scanPrescription = async (userId, userSupabase, fileBuffer, originalname) => {
-    // 1. Kompres gambar untuk menghemat bandwidth & menjaga kualitas OCR
+    // 1. Kompres gambar secara minimal untuk menjaga detail tulisan tangan (resolusi tinggi)
     const compressedBuffer = await sharp(fileBuffer)
-        .resize(1600, null, { withoutEnlargement: true })
-        .jpeg({ quality: 85 })
+        .resize(2400, null, { withoutEnlargement: true })
+        .jpeg({ quality: 95 })
         .toBuffer();
 
-    // 2. Jalankan OCR via Gemini (hanya buffer gambar yang dikirim, TANPA data user)
+    // 2. Jalankan OCR via Gemini dengan Fallback
     let structured = {};
     let extractedText = '';
     try {
-        const ocrResult = await runGeminiOcr(compressedBuffer);
+        console.log('[OCR] Menjalankan model utama: gemini-3.5-flash...');
+        const ocrResult = await runGeminiOcr(compressedBuffer, 'gemini-3.5-flash');
         structured = ocrResult.structured;
         extractedText = ocrResult.rawText;
-    } catch (geminiErr) {
-        console.error('[OCR] Gemini Vision Error:', geminiErr.message);
-        // Fallback ke teks kosong agar flow tetap berjalan
-        extractedText = 'Gagal membaca teks dari gambar. Silakan coba lagi dengan gambar yang lebih jelas.';
-        structured = { obat: [], teks_mentah: extractedText };
+    } catch (primaryErr) {
+        console.warn('[OCR] Model utama gemini-3.5-flash gagal. Mencoba fallback ke gemini-3.1-flash-lite...', primaryErr.message);
+        try {
+            const ocrResult = await runGeminiOcr(compressedBuffer, 'gemini-3.1-flash-lite');
+            structured = ocrResult.structured;
+            extractedText = ocrResult.rawText;
+        } catch (fallbackErr) {
+            console.error('[OCR] Kedua model (flash & flash-lite) gagal. Detail error:', fallbackErr.message);
+            
+            // Cek jika error disebabkan oleh limit kuota, rate limit, traffic sibuk, atau server error
+            const errMsg = `${primaryErr.message || ''} ${fallbackErr.message || ''}`.toLowerCase();
+            const isQuotaOrTraffic = 
+                errMsg.includes('429') || 
+                errMsg.includes('quota') || 
+                errMsg.includes('limit') || 
+                errMsg.includes('exhausted') || 
+                errMsg.includes('overloaded') || 
+                errMsg.includes('503') || 
+                errMsg.includes('busy') || 
+                errMsg.includes('capacity');
+
+            if (isQuotaOrTraffic) {
+                extractedText = 'Layanan scan resep saat ini sedang tidak tersedia (kapasitas sibuk atau batas kuota terlampaui). Silakan coba lagi beberapa saat lagi atau masukkan obat secara manual.';
+            } else {
+                extractedText = 'Gagal membaca teks dari gambar. Silakan coba lagi dengan gambar yang lebih jelas atau masukkan secara manual.';
+            }
+            
+            structured = { obat: [], teks_mentah: extractedText };
+        }
     }
 
     // 3. Upload ke Supabase Storage dengan path: {userId}/{YYYY-MM-DD}/{timestamp}_scan.jpg

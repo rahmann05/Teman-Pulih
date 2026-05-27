@@ -28,7 +28,6 @@ const sendMessage = async (req, res) => {
             (async () => {
                 try {
                     const { genAI } = chatbotService;
-                    const gatekeeperModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
                     const gatekeeperPrompt = `Klasifikasikan pesan di dalam tag <pesan>.
 Kategori:
 1. MEDIS: Penyakit, gejala (demam, batuk, pusing, mual, dll), obat, kesehatan, keluhan fisik/mental, kondisi medis, terminologi medis.
@@ -39,7 +38,17 @@ PERHATIAN: Jika ada keraguan antara MEDIS dan LUAR_MEDIS, pilih MEDIS.
 
 <pesan>${message}</pesan>
 Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
-                    const gateResult = await gatekeeperModel.generateContent({ contents: [{ role: 'user', parts: [{ text: gatekeeperPrompt }] }], signal: abortController.signal });
+
+                    let gateResult;
+                    try {
+                        const gatekeeperModel = genAI.getGenerativeModel({ model: 'gemini-3.5-flash', generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
+                        gateResult = await gatekeeperModel.generateContent({ contents: [{ role: 'user', parts: [{ text: gatekeeperPrompt }] }], signal: abortController.signal });
+                    } catch (primaryGateErr) {
+                        console.warn('[CHAT] Gatekeeper gemini-3.5-flash gagal. Mencoba fallback ke gemini-3.1-flash-lite...', primaryGateErr.message);
+                        const gatekeeperModel = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.0, maxOutputTokens: 10 } });
+                        gateResult = await gatekeeperModel.generateContent({ contents: [{ role: 'user', parts: [{ text: gatekeeperPrompt }] }], signal: abortController.signal });
+                    }
+
                     const text = gateResult.response.text().trim().toUpperCase();
                     if (text.includes('LUAR_MEDIS')) return 'LUAR_MEDIS';
                     if (text.includes('SAPAAN')) return 'SAPAAN';
@@ -87,10 +96,6 @@ Balas HANYA 1 kata (MEDIS, SAPAAN, atau LUAR_MEDIS).`;
 
         try {
             const { genAI } = chatbotService;
-            const expansionModel = genAI.getGenerativeModel({
-                model: 'gemini-2.5-flash',
-                generationConfig: { temperature: 0.1, maxOutputTokens: 150 },
-            });
             const expandPrompt = `Analisis pesan medis berikut dan ekstrak informasi dalam format JSON (tanpa markdown).
 
 Pesan: "${message}"
@@ -101,10 +106,28 @@ Output JSON:
 Contoh untuk "saya mual dan pusing, sedang minum amoxicillin":
 {"gejala":["mual","pusing"],"obat_diminum":["amoxicillin"],"kata_kunci_medis":["mual","pusing","amoxicillin"]}`;
 
-            const expandResult = await expansionModel.generateContent({
-                contents: [{ role: 'user', parts: [{ text: expandPrompt }] }],
-                signal: abortController.signal,
-            });
+            let expandResult;
+            try {
+                const expansionModel = genAI.getGenerativeModel({
+                    model: 'gemini-3.5-flash',
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 150 },
+                });
+                expandResult = await expansionModel.generateContent({
+                    contents: [{ role: 'user', parts: [{ text: expandPrompt }] }],
+                    signal: abortController.signal,
+                });
+            } catch (primaryExpandErr) {
+                console.warn('[RAG] Query expansion gemini-3.5-flash gagal. Mencoba fallback ke gemini-3.1-flash-lite...', primaryExpandErr.message);
+                const expansionModel = genAI.getGenerativeModel({
+                    model: 'gemini-3.1-flash-lite',
+                    generationConfig: { temperature: 0.1, maxOutputTokens: 150 },
+                });
+                expandResult = await expansionModel.generateContent({
+                    contents: [{ role: 'user', parts: [{ text: expandPrompt }] }],
+                    signal: abortController.signal,
+                });
+            }
+
             const rawText = expandResult.response.text().trim();
             const jsonMatch = rawText.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -211,12 +234,20 @@ STRUKTUR JAWABAN:
         res.setHeader('Connection', 'keep-alive');
 
         const { genAI } = chatbotService;
-        // Primary model: gemini-2.5-flash (latest Flash); auto-fallback handled by SDK
-        const activeModelName = 'gemini-2.5-flash';
-        console.log(`[AI] Menghasilkan respons dengan model: ${activeModelName}...`);
-        const model = genAI.getGenerativeModel({ model: activeModelName, safetySettings, generationConfig: modelConfig });
-        const chatSession = model.startChat({ history: chatHistoryFormat });
-        const result = await chatSession.sendMessageStream(finalMessage, { signal: abortController.signal });
+        let result;
+        let activeModelName = 'gemini-3.5-flash';
+        try {
+            console.log(`[AI] Menghasilkan respons dengan model utama: ${activeModelName}...`);
+            const model = genAI.getGenerativeModel({ model: activeModelName, safetySettings, generationConfig: modelConfig });
+            const chatSession = model.startChat({ history: chatHistoryFormat });
+            result = await chatSession.sendMessageStream(finalMessage, { signal: abortController.signal });
+        } catch (primaryChatErr) {
+            activeModelName = 'gemini-3.1-flash-lite';
+            console.warn(`[AI] Model utama gemini-3.5-flash gagal. Mencoba fallback ke model: ${activeModelName}...`, primaryChatErr.message);
+            const model = genAI.getGenerativeModel({ model: activeModelName, safetySettings, generationConfig: modelConfig });
+            const chatSession = model.startChat({ history: chatHistoryFormat });
+            result = await chatSession.sendMessageStream(finalMessage, { signal: abortController.signal });
+        }
 
         for await (const chunk of result.stream) {
             if (abortController.signal.aborted) break;
