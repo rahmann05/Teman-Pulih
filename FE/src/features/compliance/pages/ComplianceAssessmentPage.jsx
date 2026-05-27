@@ -43,7 +43,7 @@ const ComplianceAssessmentPage = () => {
 
     if (loading) {
         return (
-            <DashboardLayout>
+            <DashboardLayout hideNavigation={true}>
                 <div className="compliance-container">
                     <div className="compliance-card">
                         <div className="skeleton-block" style={{ height: 40, width: '60%', margin: '0 auto 20px' }} />
@@ -58,7 +58,7 @@ const ComplianceAssessmentPage = () => {
     // Step 0: Tampilkan Intro/Eligibility Page
     if (step === 0) {
         return (
-            <DashboardLayout>
+            <DashboardLayout hideNavigation={true}>
                 <div className="compliance-container">
                     <div className="compliance-card">
                         <ComplianceIntroPage
@@ -75,7 +75,7 @@ const ComplianceAssessmentPage = () => {
     const progressPercent = Math.min(100, Math.max(0, ((step - 1) / 6) * 100));
 
     return (
-        <DashboardLayout>
+        <DashboardLayout hideNavigation={true}>
             <div className="compliance-container">
                 <div className="compliance-header">
                     <h1>Tes Kepatuhan Medis AI</h1>

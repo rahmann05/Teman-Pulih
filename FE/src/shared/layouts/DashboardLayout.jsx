@@ -2,15 +2,15 @@ import SideNav from '@/shared/layouts/SideNav';
 import BottomNav from '@/shared/layouts/BottomNav';
 import TopNav from '@/shared/layouts/TopNav';
 
-const DashboardLayout = ({ children, caregiverMode = false }) => {
+const DashboardLayout = ({ children, caregiverMode = false, hideNavigation = false }) => {
   return (
-    <div className="app-main-wrapper">
-      <TopNav caregiverMode={caregiverMode} />
-      <SideNav caregiverMode={caregiverMode} />
+    <div className={`app-main-wrapper ${hideNavigation ? 'navigation-hidden' : ''}`}>
+      {!hideNavigation && <TopNav caregiverMode={caregiverMode} />}
+      {!hideNavigation && <SideNav caregiverMode={caregiverMode} />}
       <main className="app-main">
         {children}
       </main>
-      <BottomNav caregiverMode={caregiverMode} />
+      {!hideNavigation && <BottomNav caregiverMode={caregiverMode} />}
     </div>
   );
 };
