@@ -185,7 +185,18 @@
     letter-spacing: 0.08em;
 }
 
-.compliance-input,
+.compliance-input {
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    border: 1.5px solid var(--border);
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    background: var(--bg-card);
+    color: var(--text);
+    transition: all var(--duration-fast) var(--ease);
+    min-height: 48px;
+}
+
 .compliance-select {
     padding: 12px 16px;
     border-radius: var(--radius-md);
@@ -196,6 +207,17 @@
     color: var(--text);
     transition: all var(--duration-fast) var(--ease);
     min-height: 48px;
+
+    /* Elegant Custom Select Arrow override */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%234B6E5A' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 20px;
+    padding-right: 40px !important;
+    cursor: pointer;
 }
 
 .compliance-input:focus,

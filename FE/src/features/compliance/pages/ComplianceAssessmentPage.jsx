@@ -9,19 +9,83 @@ import { LuClipboardList, LuShield, LuTriangleAlert } from 'react-icons/lu';
 import '../compliance.css';
 
 const DEMOGRAPHIC_OPTIONS = {
-    GENDER: ['Male', 'Female'],
-    Marital_Status: ['Single', 'Married', 'Widowed', 'Divorced'],
-    Religion_Affiliation: ['Islam', 'Christianity', 'Catholicism', 'Hinduism', 'Buddhism', 'Other'],
-    Educational_Attainment: ['Primary School', 'High School', 'Bachelor Degree', 'Master/Doctoral', 'No Formal Education'],
-    Occupation: ['Self-employed', 'Government Employee', 'Private Sector', 'Unemployed', 'Student', 'Retired'],
-    Care_Giver: ['Yes', 'No'],
-    Have_Mobile_Phone: ['Yes', 'No'],
-    Receive_Text_Frequency: ['Daily', 'Weekly', 'Rarely', 'Never'],
-    Answer_Call_Frequency: ['Always', 'Sometimes', 'Rarely', 'Never'],
-    Preferred_Language: ['Indonesian', 'English', 'Local Language'],
-    Drug_Duration: ['Less than 1 month', '1-6 months', '6-12 months', 'More than 1 year'],
-    When_Take_Drugs: ['Morning', 'Afternoon', 'Evening', 'Night', 'Flexible'],
-    Why_Take_Drugs_At_That_Time: ['Prescribed by doctor', 'Easy to remember', 'Matches meals', 'Matches sleep schedule']
+    GENDER: [
+        { value: 'Male', label: 'Laki-laki' },
+        { value: 'Female', label: 'Perempuan' }
+    ],
+    Marital_Status: [
+        { value: 'Single', label: 'Belum Menikah (Single)' },
+        { value: 'Married', label: 'Menikah' },
+        { value: 'Widowed', label: 'Ditinggal Mati (Janda/Duda)' },
+        { value: 'Divorced', label: 'Cerai Hidup' }
+    ],
+    Religion_Affiliation: [
+        { value: 'Islam', label: 'Islam' },
+        { value: 'Christianity', label: 'Kristen Protestan' },
+        { value: 'Catholicism', label: 'Katolik' },
+        { value: 'Hinduism', label: 'Hindu' },
+        { value: 'Buddhism', label: 'Buddha' },
+        { value: 'Other', label: 'Lainnya / Konghucu' }
+    ],
+    Educational_Attainment: [
+        { value: 'Primary School', label: 'SD / SMP' },
+        { value: 'High School', label: 'SMA / SMK / Sederajat' },
+        { value: 'Bachelor Degree', label: 'Sarjana (S1)' },
+        { value: 'Master/Doctoral', label: 'Pascasarjana (S2/S3)' },
+        { value: 'No Formal Education', label: 'Tidak Ada Pendidikan Formal' }
+    ],
+    Occupation: [
+        { value: 'Self-employed', label: 'Wirausaha / Pekerja Mandiri' },
+        { value: 'Government Employee', label: 'PNS / Pegawai BUMN' },
+        { value: 'Private Sector', label: 'Karyawan Swasta' },
+        { value: 'Unemployed', label: 'Tidak Bekerja' },
+        { value: 'Student', label: 'Pelajar / Mahasiswa' },
+        { value: 'Retired', label: 'Pensiunan' }
+    ],
+    Care_Giver: [
+        { value: 'Yes', label: 'Ya, Ada Pendamping' },
+        { value: 'No', label: 'Tidak Ada' }
+    ],
+    Have_Mobile_Phone: [
+        { value: 'Yes', label: 'Ya, Punya' },
+        { value: 'No', label: 'Tidak Punya' }
+    ],
+    Receive_Text_Frequency: [
+        { value: 'Daily', label: 'Setiap Hari' },
+        { value: 'Weekly', label: 'Setiap Minggu' },
+        { value: 'Rarely', label: 'Jarang' },
+        { value: 'Never', label: 'Tidak Pernah' }
+    ],
+    Answer_Call_Frequency: [
+        { value: 'Always', label: 'Selalu' },
+        { value: 'Sometimes', label: 'Kadang-kadang' },
+        { value: 'Rarely', label: 'Jarang' },
+        { value: 'Never', label: 'Tidak Pernah' }
+    ],
+    Preferred_Language: [
+        { value: 'Indonesian', label: 'Bahasa Indonesia' },
+        { value: 'English', label: 'Bahasa Inggris' },
+        { value: 'Local Language', label: 'Bahasa Daerah' }
+    ],
+    Drug_Duration: [
+        { value: 'Less than 1 month', label: 'Kurang dari 1 bulan' },
+        { value: '1-6 months', label: '1 hingga 6 bulan' },
+        { value: '6-12 months', label: '6 hingga 12 bulan' },
+        { value: 'More than 1 year', label: 'Lebih dari 1 tahun' }
+    ],
+    When_Take_Drugs: [
+        { value: 'Morning', label: 'Pagi Hari' },
+        { value: 'Afternoon', label: 'Siang Hari' },
+        { value: 'Evening', label: 'Sore Hari' },
+        { value: 'Night', label: 'Malam Hari' },
+        { value: 'Flexible', label: 'Fleksibel / Sesuai Gejala' }
+    ],
+    Why_Take_Drugs_At_That_Time: [
+        { value: 'Prescribed by doctor', label: 'Ditetapkan oleh resep dokter' },
+        { value: 'Easy to remember', label: 'Lebih mudah diingat' },
+        { value: 'Matches meals', label: 'Menyesuaikan jadwal makan' },
+        { value: 'Matches sleep schedule', label: 'Menyesuaikan jadwal tidur' }
+    ]
 };
 
 const ComplianceAssessmentPage = () => {
