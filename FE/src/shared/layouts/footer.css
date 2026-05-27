@@ -110,18 +110,24 @@
 
 @media (max-width: 1023px) {
   .footer-sus-top {
-    flex-direction: column;
-    gap: 40px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding: 60px 24px;
   }
   
+  .footer-sus-heading {
+    font-size: 38px;
+  }
+
+  .footer-sus-arrow {
+    width: 100px;
+    height: 100px;
+  }
+
   .footer-sus-links-grid {
     grid-template-columns: 1fr 1fr;
   }
   
   .footer-sus-col {
-    padding: 40px 20px;
+    padding: 32px 24px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
   
@@ -135,26 +141,71 @@
   }
   
   .footer-sus-bottom {
-    flex-direction: column;
-    gap: 16px;
-    align-items: center;
-    text-align: center;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding: 24px 24px;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
+  .footer-sus {
+    padding-top: 40px;
+  }
+
+  .footer-sus-top {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32px 20px;
+    gap: 20px;
+  }
+  
+  .footer-sus-heading {
+    font-size: 26px;
+    line-height: 1.1;
+    max-width: 70%;
+  }
+  
+  .footer-sus-arrow {
+    width: 56px;
+    height: 56px;
+  }
+
   .footer-sus-links-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   
   .footer-sus-col {
-    border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
   
-  .footer-sus-col:last-child {
-    border-bottom: none;
+  .footer-sus-col:nth-child(even) {
+    border-right: none !important;
+  }
+  
+  .footer-sus-col:nth-child(3),
+  .footer-sus-col:nth-child(4) {
+    border-bottom: none !important;
+  }
+
+  .footer-sus-title {
+    font-size: 10px;
+    margin-bottom: 14px;
+  }
+
+  .footer-sus-col nav {
+    gap: 10px;
+  }
+
+  .footer-sus-col a {
+    font-size: 13px;
+  }
+  
+  .footer-sus-bottom {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    text-align: left;
+    padding: 24px 20px;
   }
 }
