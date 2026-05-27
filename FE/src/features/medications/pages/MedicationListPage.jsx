@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LuPlus, LuSearch } from 'react-icons/lu';
 import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import MedicationCard from '@/features/medications/components/MedicationCard';
@@ -21,8 +21,20 @@ const MedicationListPage = () => {
   const { user } = useAuth();
   const isCaregiver = user?.role === 'caregiver';
 
+  const location = useLocation();
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [modalPrefill, setModalPrefill] = useState(null);
+
+  // Buka modal dengan pre-fill jika datang dari halaman scan result
+  useEffect(() => {
+    if (location.state?.openAddModal) {
+      setModalPrefill(location.state.prefill || null);
+      setShowAddModal(true);
+      // Bersihkan state agar tidak re-trigger jika user navigasi ulang
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const {
     medications,
@@ -207,9 +219,10 @@ const MedicationListPage = () => {
 
         <AddMedicationModal
           isOpen={showAddModal}
-          onClose={() => setShowAddModal(false)}
+          onClose={() => { setShowAddModal(false); setModalPrefill(null); }}
           onSubmit={handleAdd}
           patientId={isCaregiver ? selectedPatientId : undefined}
+          prefill={modalPrefill}
         />
       </div>
     </DashboardLayout>

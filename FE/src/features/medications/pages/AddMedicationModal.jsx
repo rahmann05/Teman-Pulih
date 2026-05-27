@@ -334,7 +334,7 @@ const formatRupiahPremium = (rawText) => {
  * @param {Function} onSubmit  - async (formData) => void
  * @param {string}   [patientId]
  */
-const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
+const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId, prefill }) => {
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -359,6 +359,28 @@ const AddMedicationModal = ({ isOpen, onClose, onSubmit, patientId }) => {
       document.body.classList.remove('add-medication-modal-open');
     };
   }, [isOpen]);
+
+  // Pre-fill form dari hasil OCR scan (via location.state.prefill)
+  useEffect(() => {
+    if (isOpen && prefill) {
+      // Normalisasi frekuensi agar cocok dengan pilihan yang tersedia
+      const normalizedFreq = FREQUENCY_OPTIONS.find(
+        (opt) => opt.toLowerCase() === (prefill.frequency || '').toLowerCase()
+      ) || prefill.frequency || '';
+
+      setForm((prev) => ({
+        ...prev,
+        name: prefill.name || prev.name,
+        dosage: prefill.dosage || prev.dosage,
+        instructions: prefill.instructions || prev.instructions,
+        schedules: prev.schedules.map((s, i) =>
+          i === 0 && normalizedFreq
+            ? { ...s, frequency: normalizedFreq }
+            : s
+        ),
+      }));
+    }
+  }, [isOpen, prefill]);
 
   // Manual Chroma Search trigger
   const handleSearchChroma = async () => {
