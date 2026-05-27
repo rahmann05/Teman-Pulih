@@ -595,11 +595,6 @@
 }
 
 .stat {
-  background: rgba(196, 101, 58, 0.04);
-  border-left: 4px solid var(--accent);
-  border-top: 1px solid rgba(196, 101, 58, 0.08);
-  border-right: 1px solid rgba(196, 101, 58, 0.08);
-  border-bottom: 1px solid rgba(196, 101, 58, 0.08);
   border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
   padding: 24px 20px 24px 16px;
   box-shadow: none;
@@ -617,7 +612,6 @@
   line-height: 1;
   margin-bottom: 8px;
   letter-spacing: -0.03em;
-  color: var(--accent);
 }
 
 .stat-desc {
@@ -626,8 +620,47 @@
   line-height: 1.4;
 }
 
-/* Accent for primary stat */
+.stat--c1 {
+  background: rgba(196, 101, 58, 0.04);
+  border-left: 4px solid var(--accent);
+  border-top: 1px solid rgba(196, 101, 58, 0.08);
+  border-right: 1px solid rgba(196, 101, 58, 0.08);
+  border-bottom: 1px solid rgba(196, 101, 58, 0.08);
+}
 .stat--c1 .stat-value {
+  color: var(--accent);
+}
+
+.stat--c2 {
+  background: rgba(91, 123, 106, 0.04);
+  border-left: 4px solid var(--sage);
+  border-top: 1px solid rgba(91, 123, 106, 0.08);
+  border-right: 1px solid rgba(91, 123, 106, 0.08);
+  border-bottom: 1px solid rgba(91, 123, 106, 0.08);
+}
+.stat--c2 .stat-value {
+  color: var(--sage);
+}
+
+.stat--c3 {
+  background: rgba(162, 123, 92, 0.04);
+  border-left: 4px solid var(--copper);
+  border-top: 1px solid rgba(162, 123, 92, 0.08);
+  border-right: 1px solid rgba(162, 123, 92, 0.08);
+  border-bottom: 1px solid rgba(162, 123, 92, 0.08);
+}
+.stat--c3 .stat-value {
+  color: var(--copper);
+}
+
+.stat--c4 {
+  background: rgba(196, 101, 58, 0.04);
+  border-left: 4px solid var(--accent);
+  border-top: 1px solid rgba(196, 101, 58, 0.08);
+  border-right: 1px solid rgba(196, 101, 58, 0.08);
+  border-bottom: 1px solid rgba(196, 101, 58, 0.08);
+}
+.stat--c4 .stat-value {
   color: var(--accent);
 }
 /* ─── STEPS: Mobile (vertical timeline) ───────────────────── */
@@ -692,14 +725,14 @@
 }
 
 .step-timeline-item:nth-child(2) .step-circle {
-  background: var(--accent);
-  border: 2px solid var(--accent);
+  background: var(--sage);
+  border: 2px solid var(--sage);
   color: #fff;
 }
 
 .step-timeline-item:nth-child(3) .step-circle {
-  background: var(--accent);
-  border: 2px solid var(--accent);
+  background: var(--copper);
+  border: 2px solid var(--copper);
   color: #fff;
 }
 
@@ -774,8 +807,8 @@
 }
 
 .t-card {
-  background: rgba(61, 92, 77, 0.04);
-  border: 1px solid rgba(61, 92, 77, 0.1);
+  background: rgba(196, 101, 58, 0.03);
+  border: 1px solid rgba(196, 101, 58, 0.08);
   border-radius: var(--radius-xl);
   padding: 24px;
   display: flex;
