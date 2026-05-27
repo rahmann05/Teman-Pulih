@@ -187,6 +187,52 @@ export const buildCaregiverTimeline = (medications = [], logs = [], patientName 
   return items.sort((left, right) => toMinutes(left.time) - toMinutes(right.time));
 };
 
+/**
+ * Hitung persentase kepatuhan nyata dari daftar obat dan logs.
+ * Formula: slot 'taken' / slot yang seharusnya diminum (sejak start_date s/d hari ini)
+ *
+ * @param {Array} medications - Array medication objects with medication_schedules
+ * @param {Array} logs        - Array log objects
+ * @returns {number} 0–100
+ */
+export const calculateAdherenceRate = (medications = [], logs = []) => {
+  if (!medications.length) return 0;
+
+  const todayStr = new Date().toLocaleDateString('en-CA');
+  let totalExpected = 0;
+  let totalTaken    = 0;
+
+  medications.forEach((med) => {
+    const schedules = med.medication_schedules || [];
+    schedules.forEach((sched) => {
+      const startStr = sched.start_date?.split('T')[0];
+      const endStr   = sched.end_date?.split('T')[0];
+      if (!startStr) return;
+
+      const start = new Date(startStr);
+      const end   = new Date(endStr && endStr < todayStr ? endStr : todayStr);
+      if (end < start) return;
+
+      const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      const slots    = parseTimeSlots(sched.time_slots);
+      if (!slots.length) return;
+
+      const expected = slots.length * daysDiff;
+      totalExpected += expected;
+
+      const taken = logs.filter(l =>
+        l.medication_id === med.id &&
+        l.schedule_id === sched.id &&
+        l.status === 'taken'
+      ).length;
+      totalTaken += Math.min(taken, expected);
+    });
+  });
+
+  if (totalExpected === 0) return 0;
+  return Math.round((totalTaken / totalExpected) * 100);
+};
+
 export const buildRoster = (relations = []) => {
   return relations
     .filter((relation) => relation.status !== 'rejected')
@@ -198,15 +244,24 @@ export const buildRoster = (relations = []) => {
           ? 'Menunggu persetujuan'
           : 'Hubungan tidak aktif';
 
+      // Hitung kepatuhan nyata jika data obat & log tersedia dari relasi
+      const patientMeds = relation.medications || [];
+      const patientLogs = relation.logs || [];
+      const rate = patientMeds.length > 0
+        ? calculateAdherenceRate(patientMeds, patientLogs)
+        : null;
+
       return {
         id: relation.id,
         name: patient.name || 'Pasien tanpa nama',
         initials: getInitials(patient.name || 'Pasien'),
         status: relation.status === 'accepted' ? 'safe' : 'alert',
-        adherence: statusLabel,
+        adherence: rate !== null ? `${rate}% kepatuhan` : statusLabel,
+        adherenceRate: rate,
       };
     });
 };
+
 
 export const buildWeeklyMedicationHistory = (medications = [], logs = [], days = []) => {
   const data = {};

@@ -31,7 +31,8 @@ const CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 hours
 const _cache = {
     diseaseNames: null,
     drugNames: null,
-    expiry: 0,
+    diseaseExpiry: 0,
+    drugExpiry: 0,
 };
 
 /**
@@ -57,14 +58,14 @@ const _fetchAllMetadatas = async (collection) => {
  * @returns {string[]}
  */
 const getDiseaseNames = async () => {
-    if (_cache.diseaseNames && Date.now() < _cache.expiry) return _cache.diseaseNames;
+    if (_cache.diseaseNames && Date.now() < _cache.diseaseExpiry) return _cache.diseaseNames;
     try {
         const col = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih');
-        if (!col) return [];
+        if (!col) return _cache.diseaseNames || [];
         console.log('[CHROMA CACHE] Fetching disease metadata list...');
         const metas = await _fetchAllMetadatas(col);
         _cache.diseaseNames = [...new Set(metas.map(m => m?.disease_name).filter(Boolean))];
-        _cache.expiry = Date.now() + CACHE_TTL_MS;
+        _cache.diseaseExpiry = Date.now() + CACHE_TTL_MS;
         console.log(`[CHROMA CACHE] Cached ${_cache.diseaseNames.length} unique disease names.`);
         return _cache.diseaseNames;
     } catch (e) {
@@ -78,17 +79,14 @@ const getDiseaseNames = async () => {
  * @returns {string[]}
  */
 const getDrugNames = async () => {
-    if (_cache.drugNames && Date.now() < _cache.expiry) return _cache.drugNames;
+    if (_cache.drugNames && Date.now() < _cache.drugExpiry) return _cache.drugNames;
     try {
         const col = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat');
-        if (!col) return [];
+        if (!col) return _cache.drugNames || [];
         console.log('[CHROMA CACHE] Fetching drug metadata list...');
         const metas = await _fetchAllMetadatas(col);
         _cache.drugNames = [...new Set(metas.map(m => m?.nama_obat).filter(Boolean))];
-        // Share same TTL as disease names
-        if (!_cache.expiry || _cache.expiry < Date.now() + CACHE_TTL_MS) {
-            _cache.expiry = Date.now() + CACHE_TTL_MS;
-        }
+        _cache.drugExpiry = Date.now() + CACHE_TTL_MS;
         console.log(`[CHROMA CACHE] Cached ${_cache.drugNames.length} unique drug names.`);
         return _cache.drugNames;
     } catch (e) {
@@ -101,7 +99,8 @@ const getDrugNames = async () => {
 const invalidateMetadataCache = () => {
     _cache.diseaseNames = null;
     _cache.drugNames = null;
-    _cache.expiry = 0;
+    _cache.diseaseExpiry = 0;
+    _cache.drugExpiry = 0;
     console.log('[CHROMA CACHE] Metadata cache invalidated.');
 };
 
@@ -132,7 +131,7 @@ const MEDICAL_STOPWORDS = new Set([
 
 /**
  * Fuzzy match a query against a list of canonical names.
- * Strategy: exact → substring → Levenshtein (whole) → Levenshtein (token-level)
+ * Strategy: exact → substring (whole) → token-level substring → Levenshtein
  *
  * @param {string}   query    - User's search query
  * @param {string[]} nameList - Canonical names to match against
@@ -152,21 +151,43 @@ const fuzzyMatchName = (query, nameList, topN = 3) => {
         for (const item of nameList) {
             const normItem = _normalizeForMatch(item);
 
-            // 1. Exact
+            // 1. Exact match
             if (normItem === normWord) {
                 matches.set(item, { name: item, score: 100, type: 'exact' });
                 continue;
             }
 
-            // 2. Substring (item contains query or vice versa)
+            // 2. Substring: whole query contained in item name or vice versa
+            // e.g. "paratusin" is in "paratusin forte"
             if (normWord.length >= 4 && (normItem.includes(normWord) || normWord.includes(normItem))) {
-                const score = 50 + normWord.length * 2;
+                const score = 70 + normWord.length * 2;
                 const prev = matches.get(item);
                 if (!prev || prev.score < score) matches.set(item, { name: item, score, type: 'substring' });
                 continue;
             }
 
-            // 3. Whole-string Levenshtein
+            // 3. Token-level substring: each word in query vs each word in item name
+            // Catches: query "paratusin" matching drug name "OBH Paratusin" or "Paratusin Forte"
+            const queryTokens = normWord.split(' ').filter(t => t.length >= 4);
+            const itemTokens  = normItem.split(' ').filter(t => t.length >= 3);
+            let tokenScore = 0;
+            for (const qt of queryTokens) {
+                if (MEDICAL_STOPWORDS.has(qt)) continue;
+                for (const it of itemTokens) {
+                    if (it === qt) { tokenScore = Math.max(tokenScore, 65); break; }
+                    if (qt.length >= 5 && (it.includes(qt) || qt.includes(it))) {
+                        tokenScore = Math.max(tokenScore, 55 + qt.length);
+                        break;
+                    }
+                }
+            }
+            if (tokenScore > 0) {
+                const prev = matches.get(item);
+                if (!prev || prev.score < tokenScore) matches.set(item, { name: item, score: tokenScore, type: 'substring' });
+                continue;
+            }
+
+            // 4. Whole-string Levenshtein (typo tolerance)
             const dist = _levenshtein(normWord, normItem);
             const maxLen = Math.max(normWord.length, normItem.length);
             if (maxLen >= 4 && dist <= 2 && dist / maxLen <= 0.3) {
@@ -190,6 +211,7 @@ const fuzzyMatchName = (query, nameList, topN = 3) => {
         .sort((a, b) => b.score - a.score)
         .slice(0, topN);
 };
+
 
 // ─── DOCUMENT FETCHING + CHUNK MERGING ───────────────────────────────────────
 

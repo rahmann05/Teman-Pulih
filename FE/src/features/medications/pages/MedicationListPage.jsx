@@ -36,11 +36,53 @@ const MedicationListPage = () => {
     fetchAll,
   } = useMedications(isCaregiver ? selectedPatientId : undefined);
 
+  /**
+   * Hitung persentase kepatuhan nyata:
+   * = total slot "taken" yang ter-log / total slot yang seharusnya diminum (sejak start_date jadwal aktif sampai hari ini)
+   */
   const calculateCompliance = () => {
-    if (!logs || logs.length === 0) return 0;
-    const taken = logs.filter(l => l.status === 'taken').length;
-    return Math.round((taken / logs.length) * 100);
+    if (!medications || medications.length === 0) return 0;
+
+    const todayStr = new Date().toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+    let totalExpected = 0;
+    let totalTaken = 0;
+
+    medications.forEach((med) => {
+      const schedules = med.medication_schedules || [];
+      schedules.forEach((sched) => {
+        const startStr = sched.start_date?.split('T')[0];
+        const endStr   = sched.end_date?.split('T')[0];
+        if (!startStr) return; // jadwal tanpa start_date diabaikan
+
+        // Hitung jumlah hari aktif dari start_date sampai min(endStr, today)
+        const start   = new Date(startStr);
+        const end     = new Date(endStr && endStr < todayStr ? endStr : todayStr);
+        if (end < start) return;
+
+        const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+        const slots    = Array.isArray(sched.time_slots)
+          ? sched.time_slots
+          : String(sched.time_slots || '').split(',').map(s => s.replace(/[[\]"'\s]/g, '').trim()).filter(Boolean);
+
+        // Expected = jumlah slot per hari × jumlah hari aktif
+        const expected = slots.length * daysDiff;
+        totalExpected += expected;
+
+        // Taken = log dengan status 'taken' untuk jadwal ini
+        const taken = logs.filter(l =>
+          l.medication_id === med.id &&
+          l.schedule_id === sched.id &&
+          l.status === 'taken'
+        ).length;
+        totalTaken += Math.min(taken, expected); // cap agar tidak melebihi expected
+      });
+    });
+
+    if (totalExpected === 0) return 0;
+    return Math.round((totalTaken / totalExpected) * 100);
   };
+
 
   const handleAdd = async (data) => {
     await addMedication(data);
