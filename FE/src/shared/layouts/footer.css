@@ -1,7 +1,7 @@
 /* src/styles/features/Footer.css */
 
 .footer-sus {
-  background: var(--accent);
+  background: #141416;
   color: var(--bg);
   padding-top: var(--space-editorial-y, 80px);
 }
@@ -52,7 +52,7 @@
 .footer-sus-arrow:hover {
   transform: scale(1.05);
   background: var(--bg);
-  color: var(--accent);
+  color: #141416;
   border-color: var(--bg);
 }
 
