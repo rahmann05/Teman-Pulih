@@ -60,7 +60,7 @@ const Footer = () => {
 
         <div className="footer-sus-bottom">
           <span>© 2026 TemanPulih · Tim CC26-PSU347</span>
-          <span>Aman & Terenkripsi</span>
+          <span>Aman & Terpercaya</span>
         </div>
       </div>
     </footer>

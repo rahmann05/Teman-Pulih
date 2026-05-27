@@ -884,11 +884,12 @@
 /* ─── BOTTOM CTA: Premium Split-Layout ────────────────────── */
 .cta-section {
   padding: var(--section-pad-mobile) 20px;
-  background: var(--bg-muted);
+  background: var(--bg);
 }
 
 .cta-card {
-  background: var(--accent);
+  background: #F2E6DC;
+  border: 1px solid rgba(196, 101, 58, 0.15);
   border-radius: var(--radius-2xl);
   padding: 48px 28px;
   position: relative;
@@ -904,7 +905,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--accent);
   margin-bottom: 12px;
 }
 
@@ -912,7 +913,7 @@
   font-family: var(--font-heading);
   font-size: clamp(28px, 6vw, 40px);
   font-weight: 800;
-  color: #fff;
+  color: var(--text);
   margin-bottom: 14px;
   letter-spacing: -0.03em;
   line-height: 1.05;
@@ -920,7 +921,7 @@
 
 .cta-desc {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--text-secondary);
   margin-bottom: 28px;
   line-height: 1.6;
   max-width: 440px;
@@ -940,18 +941,19 @@
   font-family: var(--font-heading);
   font-size: 15px;
   font-weight: 700;
-  color: var(--accent);
-  background: #fff;
+  color: #fff;
+  background: var(--accent);
   padding: 14px 28px;
   border-radius: var(--radius-full);
   text-decoration: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(196, 101, 58, 0.2);
   transition: all 0.25s var(--ease);
 }
 
 .cta-btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  background: #b0532e;
+  box-shadow: 0 8px 32px rgba(196, 101, 58, 0.3);
 }
 
 .cta-btn-secondary {
@@ -961,9 +963,9 @@
   font-family: var(--font-heading);
   font-size: 15px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text);
+  background: transparent;
+  border: 1px solid rgba(28, 25, 23, 0.2);
   padding: 14px 28px;
   border-radius: var(--radius-full);
   text-decoration: none;
@@ -971,8 +973,8 @@
 }
 
 .cta-btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
+  background: rgba(28, 25, 23, 0.04);
+  color: var(--text);
 }
 
 .cta-trust {
@@ -986,7 +988,7 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
 }
 
 .cta-visual {
@@ -996,7 +998,7 @@
 .cta-visual-ring {
   position: absolute;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(196, 101, 58, 0.1);
 }
 
 .cta-visual-ring--1 { width: 240px; height: 240px; top: -80px; right: -80px; }
@@ -1012,7 +1014,7 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(196, 101, 58, 0.25);
   font-family: var(--font-heading);
   font-size: 12px;
   font-weight: 700;
@@ -1026,13 +1028,6 @@
 @media (min-width: 768px) {
 
   /* Overrides to match editorial & clean desktop/tablet themes */
-  .cta-card {
-    background: #1C1917;
-  }
-
-  .cta-btn-primary {
-    color: #1C1917;
-  }
 
   .stat {
     background: transparent;
@@ -1425,7 +1420,7 @@
     left: 50%;
     right: auto;
     transform: translate(-50%, -50%);
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(196, 101, 58, 0.25);
   }
 
 } /* End @media (min-width: 768px) */

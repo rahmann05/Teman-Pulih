@@ -4,7 +4,7 @@ import { HiOutlineArrowRight, HiOutlineShieldCheck, HiOutlineHeart, HiOutlineSta
 import { Link } from 'react-router-dom';
 
 const TRUST_SIGNALS = [
-  { icon: HiOutlineShieldCheck, text: 'Data terenkripsi penuh' },
+  { icon: HiOutlineShieldCheck, text: 'Data dijamin aman & privat' },
   { icon: HiOutlineHeart, text: 'Gratis selamanya' },
   { icon: HiOutlineStar, text: 'Dinilai 4.9/5 pengguna' },
 ];

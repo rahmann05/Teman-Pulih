@@ -121,7 +121,7 @@ const PelajariCTA = () => (
 
         <div className="p-footer-sus-bottom">
           <span>© 2024 TemanPulih</span>
-          <span>Aman & Terenkripsi</span>
+          <span>Aman & Terpercaya</span>
         </div>
       </div>
     </footer>

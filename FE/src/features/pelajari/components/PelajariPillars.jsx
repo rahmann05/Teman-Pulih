@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 const pillars = [
   {
     id: '01',
-    title: 'Privasi Terenkripsi',
-    desc: 'Setiap data rekam medis dan jurnal personal diamankan dengan standar enkripsi medis tertinggi. Kepercayaan Anda adalah fondasi kami.',
+    title: 'Privasi Terjamin',
+    desc: 'Setiap data rekam medis dan jurnal personal diamankan secara ketat. Kepercayaan Anda adalah fondasi kami.',
   },
   {
     id: '02',

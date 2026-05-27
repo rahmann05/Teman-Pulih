@@ -91,7 +91,7 @@ const getEmrContext = async (supabase, user) => {
         .from('medications').select('name, dosage, instructions').eq('user_id', targetPatientId);
 
     if (patientMedications && patientMedications.length > 0) {
-        privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---\n\n(Informasi ini terenkripsi dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
+        privateContext = `\n--- DATA MEDIS PRIVAT (${patientProfileName}) ---\n\n(Informasi ini privat dan eksklusif. Hanya Anda dan Pasien/Caregiver ini yang mengetahuinya)\nDaftar Obat Sedang Dikonsumsi Pasien saat ini:\n`;
         privateContext += patientMedications.map(m => `- ${m.name} (${m.dosage}): ${m.instructions}`).join('\n');
         routineMedicationsForSearch += ' ' + patientMedications.map(m => m.name).join(' ');
     }
