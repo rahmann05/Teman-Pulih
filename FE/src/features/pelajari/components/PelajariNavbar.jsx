@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { LuHeartPulse } from 'react-icons/lu';
 
 const PelajariNavbar = () => {
   const [isDark, setIsDark] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,10 +25,12 @@ const PelajariNavbar = () => {
       className="p-navbar"
       style={{ color: isDark ? '#FFFFFF' : 'var(--text)' }}
     >
-      <Link to="/" className="p-navbar-logo">TemanPulih.</Link>
-      <button className="p-navbar-menu" aria-label="Menu">
-        <span className="p-navbar-line" />
-        <span className="p-navbar-line" />
+      <Link to="/" className="p-navbar-logo">
+        <LuHeartPulse className="p-navbar-logo-icon" size={24} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+        <span style={{ verticalAlign: 'middle' }}>TemanPulih.</span>
+      </Link>
+      <button className="p-navbar-back-btn" onClick={() => navigate('/')} aria-label="Kembali">
+        Kembali
       </button>
     </nav>
   );

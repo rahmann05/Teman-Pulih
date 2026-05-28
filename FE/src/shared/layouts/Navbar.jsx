@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/shared/hooks/useAuth';
 
 const NAV_LINKS = [
-  { label: 'Tentang', href: '#about' },
+  { label: 'Tentang Kami', href: '/about', isRoute: true },
   { label: 'Pelajari', href: '/pelajari', isRoute: true },
   { label: 'Cara Kerja', href: '#how-it-works' },
 ];

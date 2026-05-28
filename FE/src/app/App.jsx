@@ -22,6 +22,7 @@ const ChatbotPage = lazy(() => import('@/features/chatbot/pages/ChatbotPage'));
 const ProfilePage = lazy(() => import('@/features/profile/pages/ProfilePage'));
 const FamilySyncPage = lazy(() => import('@/features/family-sync/pages/FamilySyncPage'));
 const PelajariPage   = lazy(() => import('@/features/pelajari/pages/PelajariPage'));
+const AboutPage      = lazy(() => import('@/features/about/pages/AboutPage'));
 const DirectChatPage = lazy(() => import('@/features/chat/pages/DirectChatPage'));
 const NotificationsPage = lazy(() => import('@/features/notifications/pages/NotificationsPage'));
 const ComplianceAssessmentPage = lazy(() => import('@/features/compliance/pages/ComplianceAssessmentPage'));
@@ -80,6 +81,7 @@ const AnimatedRoutes = () => {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/pelajari" element={<PageTransition><PelajariPage /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/auth/callback" element={<PageTransition><AuthCallback /></PageTransition>} />

@@ -1,8 +1,8 @@
-﻿import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 import img1 from '@/assets/images/hero-doctor-consult.webp';
 import img2 from '@/assets/images/feature-family-sync.webp';
-import img3 from '@/assets/images/hero-medical-3d.webp';
+import img3 from '@/assets/images/pelajari-wide-gallery.webp';
 
 const PelajariGallery = () => (
   <section className="p-gallery-sus" data-theme="light">

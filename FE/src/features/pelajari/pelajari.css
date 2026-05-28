@@ -48,29 +48,32 @@
   color: inherit;
 }
 
-.p-navbar-menu {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  background: none;
-  border: none;
+.p-navbar-back-btn {
+  background: transparent;
+  border: 1px solid currentColor;
+  padding: 6px 20px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   cursor: pointer;
-  padding: 4px;
+  color: inherit;
+  transition: all 0.4s var(--ease-editorial);
 }
 
-.p-navbar-line {
-  display: block;
-  width: 28px;
-  height: 2px;
-  background: currentColor;
-  border-radius: 2px;
-  transition: transform 0.4s var(--ease-editorial),
-              width 0.4s var(--ease-editorial);
-  transform-origin: right;
+.p-navbar-back-btn:hover {
+  background: var(--text);
+  color: var(--bg);
+  border-color: var(--text);
 }
 
-.p-navbar-menu:hover .p-navbar-line:first-child { width: 20px; }
-.p-navbar-menu:hover .p-navbar-line:last-child  { width: 28px; }
+.p-navbar[style*="color: rgb(255, 255, 255)"] .p-navbar-back-btn:hover {
+  background: #FFFFFF;
+  color: var(--sage);
+  border-color: #FFFFFF;
+}
 
 /* ═══════════════════════════════════════════
    HERO SECTION (Sustainability Asymmetric Split)

@@ -98,7 +98,7 @@ const PelajariCTA = () => (
           <div className="p-footer-sus-col">
             <p className="p-footer-sus-title">Perusahaan</p>
             <nav>
-              <a href="#">Tentang</a>
+              <Link to="/about">Tentang</Link>
               <a href="#">Karir</a>
               <a href="#">Kontak</a>
             </nav>
