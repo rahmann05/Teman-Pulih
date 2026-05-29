@@ -341,6 +341,7 @@ AI Response → Save to DB → Return to User
 1. Pasien atau Caregiver mengirim undangan via **email** atau **nomor telepon**.
 2. Backend mengecek apakah user terdaftar → generate **kode verifikasi 6-digit**.
 3. Kode dikirim via **Email** (Resend API, HTML template premium) atau **WhatsApp** (Twilio Content Template OTP).
+   - Catatan deliverability: jika pengirim email belum **verifikasi domain** (Resend) atau memakai SMTP gratis (Gmail), OTP berpotensi masuk **spam**.
 4. Penerima memasukkan kode verifikasi di halaman Family Sync.
 5. Relasi `family_relations` diubah dari `pending` → `accepted`.
 6. Undangan pending otomatis **kedaluwarsa setelah 10 menit**.

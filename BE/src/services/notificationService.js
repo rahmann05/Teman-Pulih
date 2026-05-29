@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
 const { Resend } = require('resend');
 
 const logFilePath = path.join(process.cwd(), 'notifications.log');
@@ -7,6 +8,24 @@ const logFilePath = path.join(process.cwd(), 'notifications.log');
 // Initialize Resend SDK
 const resend = process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_xxxxxxxxx'
     ? new Resend(process.env.RESEND_API_KEY)
+    : null;
+
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'TemanPulih <onboarding@resend.dev>';
+
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASS = process.env.SMTP_PASS;
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
+const SMTP_SECURE = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : SMTP_PORT === 465;
+const SMTP_FROM_EMAIL = process.env.SMTP_FROM_EMAIL || SMTP_USER || RESEND_FROM_EMAIL;
+
+const smtpTransport = (SMTP_USER && SMTP_PASS)
+    ? nodemailer.createTransport({
+        host: SMTP_HOST,
+        port: SMTP_PORT,
+        secure: SMTP_SECURE,
+        auth: { user: SMTP_USER, pass: SMTP_PASS }
+    })
     : null;
 
 /**
@@ -34,11 +53,28 @@ const auditLog = (notification) => {
  * Uses official Resend SDK if RESEND_API_KEY is configured in .env, otherwise logs a mock email.
  */
 const sendEmail = async (to, subject, htmlContent, textContent) => {
+    if (smtpTransport) {
+        try {
+            console.log(`[SMTP] Mengirim email ke ${to} via ${SMTP_HOST}:${SMTP_PORT}...`);
+            const info = await smtpTransport.sendMail({
+                from: SMTP_FROM_EMAIL,
+                to,
+                subject,
+                html: htmlContent,
+                text: textContent
+            });
+            console.log(`[SMTP] Email berhasil dikirim! ID: ${info.messageId || 'n/a'}`);
+            return { success: true, provider: 'smtp', id: info.messageId };
+        } catch (error) {
+            console.error('[SMTP Error]:', error.message);
+        }
+    }
+
     if (resend) {
         try {
             console.log(`[Resend SDK] Mengirim email ke ${to}...`);
             const response = await resend.emails.send({
-                from: 'TemanPulih <onboarding@resend.dev>',
+                from: RESEND_FROM_EMAIL,
                 to: [to],
                 subject: subject,
                 html: htmlContent,

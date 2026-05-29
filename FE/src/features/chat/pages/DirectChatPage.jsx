@@ -5,6 +5,7 @@ import DashboardLayout from '@/shared/layouts/DashboardLayout';
 import { getDirectMessages, sendDirectMessage } from '../services/chatService';
 import { getFamilyMembers } from '@/features/family-sync/services/familyService';
 import { supabase } from '@/shared/config/supabaseClient';
+import { getInitials } from '@/features/dashboard/utils/dashboardHelpers';
 
 import '../chat.css';
 
@@ -24,16 +25,30 @@ const DirectChatPage = () => {
       try {
         const response = await getFamilyMembers();
         const members = response.data?.members || [];
-        const found = members.find(m => m.userId === parseInt(userId, 10));
-        if (found) {
-          setRecipient(found);
-        }
+        const targetId = parseInt(userId, 10);
+        const found = members.find((m) => m.patient?.id === targetId || m.caregiver?.id === targetId);
+        if (!found) return;
+
+        const role = user?.role || 'patient';
+        const isCaregiver = role === 'caregiver';
+        const relationPerson = isCaregiver ? found.patient : found.caregiver;
+        const roleLabel = isCaregiver ? 'Pasien' : 'Caregiver';
+        const name = relationPerson?.name || 'Pengguna';
+        const email = relationPerson?.email || '';
+
+        setRecipient({
+          id: relationPerson?.id,
+          name,
+          email,
+          initials: getInitials(name),
+          roleLine: email ? `${roleLabel} - ${email}` : roleLabel,
+        });
       } catch (err) {
         console.error('Gagal memuat info penerima:', err);
       }
     };
     fetchRecipient();
-  }, [userId]);
+  }, [userId, user?.role]);
 
   useEffect(() => {
     const fetchMessages = async () => {
