@@ -1,3 +1,6 @@
+import React from 'react';
+import { HiOutlineArrowRight } from 'react-icons/hi2';
+
 const STATS_DATA = [
   {
     value: '30–50%',
@@ -23,6 +26,15 @@ const LandingStats = () => {
       <div className="stats-header reveal">
         <h2 className="section-huge-title">Fakta Pemulihan</h2>
         <p className="section-subtitle">Mengapa kami membangun Teman Pulih</p>
+        <a 
+          href="https://dashboard-capstone-temanpulih.streamlit.app/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="btn-primary" 
+          style={{ marginTop: '1.5rem', display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+        >
+          Lihat Dashboard Analitik <HiOutlineArrowRight size={16} />
+        </a>
       </div>
       <div className="stats-grid">
         {STATS_DATA.map((stat, index) => (

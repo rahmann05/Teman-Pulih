@@ -1,4 +1,5 @@
 import React from 'react';
+import { HiOutlineArrowRight } from 'react-icons/hi2';
 
 const AboutHero = () => {
   return (
@@ -12,6 +13,17 @@ const AboutHero = () => {
         <p className="a-hero-desc">
           TemanPulih dibangun oleh tim kecil dengan tiga fokus utama: mengolah data medis, meracik kecerdasan buatan, dan merancang pengalaman web yang nyaman. Semuanya dikerjakan bersama dengan satu tujuan tulus—memastikan pasien tidak lagi merasa kebingungan saat masa pemulihan di rumah.
         </p>
+        <div style={{ marginTop: '2rem' }}>
+          <a 
+            href="https://dashboard-capstone-temanpulih.streamlit.app/" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="btn-primary" 
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+          >
+            Lihat Dashboard Analitik <HiOutlineArrowRight size={16} />
+          </a>
+        </div>
       </div>
     </section>
   );
