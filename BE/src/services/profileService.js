@@ -47,9 +47,28 @@ const updateProfile = async (userId, supabase, updates) => {
         updates.phone = normalizedPhone;
     }
 
+    // Whitelist valid columns to prevent Supabase from throwing 'column does not exist' errors
+    const validColumns = [
+        'phone', 'address', 'birth_date', 'gender', 'blood_type', 'height', 'weight',
+        'allergies', 'chronic_conditions', 'emergency_contact_name', 'emergency_contact_phone',
+        'smoking_habit', 'alcohol_habit', 'is_emr_completed', 'past_illnesses',
+        'last_illness', 'surgeries_history', 'routine_medications', 'blood_pressure_range'
+    ];
+
+    const cleanUpdates = {};
+    for (const key of Object.keys(updates)) {
+        if (validColumns.includes(key)) {
+            cleanUpdates[key] = updates[key];
+        }
+    }
+
+    if (Object.keys(cleanUpdates).length === 0) {
+        return await getProfile(userId); // Return current if nothing to update
+    }
+
     const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update(cleanUpdates)
         .eq('user_id', userId)
         .select()
         .maybeSingle();

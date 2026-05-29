@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LuCircleCheck } from 'react-icons/lu';
 import ChipSelector from './ChipSelector';
 import { STEP_LABELS, ALLERGY_PRESETS, CHRONIC_PRESETS, PAST_ILLNESS_PRESETS } from '../constants/emrPresets';
@@ -26,6 +26,30 @@ const EMRForm = ({ formData, handleChange, handleSubmit, loading, uploader, erro
     handleChange({ target: { name: field, value: list.join(', ') } });
     handleChange({ target: { name: listField, value: list } });
   };
+
+  useEffect(() => {
+    const parseList = (str) => str ? str.split(',').map(s => s.trim()).filter(Boolean) : [];
+    
+    setAllergiesList(prev => {
+      const parsed = parseList(formData.allergies);
+      if (prev.join(',') !== parsed.join(',')) return parsed;
+      return prev;
+    });
+    
+    setChronicList(prev => {
+      const parsed = parseList(formData.chronic_conditions);
+      if (prev.join(',') !== parsed.join(',')) return parsed;
+      return prev;
+    });
+    
+    setPastIllnessesList(prev => {
+      const parsed = parseList(formData.past_illnesses);
+      if (prev.join(',') !== parsed.join(',')) return parsed;
+      return prev;
+    });
+    
+    if (formData.surgeries_history) setHadSurgery(true);
+  }, [formData.allergies, formData.chronic_conditions, formData.past_illnesses, formData.surgeries_history]);
 
   const goNext = () => {
     if (step < 2) setStep(step + 1);

@@ -51,10 +51,17 @@ export const useEMRForm = (initialData, onSuccess) => {
     setError('');
 
     try {
+      // Clean up internal _list properties before sending to API
+      // to avoid Supabase 'column does not exist' errors
+      const payload = { ...formData };
+      delete payload.allergies_list;
+      delete payload.chronic_conditions_list;
+      delete payload.past_illnesses_list;
+
       await updateProfile({
-        ...formData,
-        height: formData.height ? parseInt(formData.height) : null,
-        weight: formData.weight ? parseInt(formData.weight) : null,
+        ...payload,
+        height: payload.height ? parseInt(payload.height) : null,
+        weight: payload.weight ? parseInt(payload.weight) : null,
         is_emr_completed: true
       });
       if (onSuccess) {

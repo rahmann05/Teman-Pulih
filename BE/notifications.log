@@ -5,5 +5,19 @@
     "recipient": "rahman@gmail.com",
     "subject": "Pengingat: Minum Obat 10 Menit Lagi",
     "content": "Persiapkan diri Anda untuk meminum Amoxicilin (500mg) dalam 10 menit (jadwal: 12:30)."
+  },
+  {
+    "timestamp": "2026-05-29T05:30:04.897Z",
+    "type": "email",
+    "recipient": "rahman@gmail.com",
+    "subject": "Waktunya Minum Obat Sekarang!",
+    "content": "Saatnya meminum obat Amoxicilin (500mg) Anda sekarang (jadwal: 12:30). Jangan lupa mencatatnya setelah diminum."
+  },
+  {
+    "timestamp": "2026-05-29T05:45:04.376Z",
+    "type": "email",
+    "recipient": "rahman@gmail.com",
+    "subject": "Terlambat Minum Obat!",
+    "content": "Anda terlambat meminum obat Amoxicilin (500mg) lebih dari 15 menit dari jadwal (pukul 12:30). Mohon segera diminum."
   }
 ]
