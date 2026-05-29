@@ -3,6 +3,15 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
+// ─── COLLECTION NAME CONSTANTS ────────────────────────────────────────────────
+// Central registry so every file uses the same names.
+const COLLECTIONS = {
+  DISEASE:        process.env.CHROMA_DATABASE        || 'RAG-TemanPulih',
+  DRUG_DETAIL:    process.env.CHROMA_DATABASE_DRUGS   || 'RAG-TemanPulih-Obat',
+  DRUG_PUSKESMAS: 'RAG-TemanPulih-Obat-Puskesmas',
+  DRUG_RS:        'RAG-TemanPulih-Obat-RS',
+};
+
 const chromaClient = new ChromaClient({
   host: process.env.CHROMA_HOST || 'api.trychroma.com',
   tenant: process.env.CHROMA_TENANT || '8d7a382f-c41c-4ba6-9d7c-94e20ac0761e',
@@ -27,5 +36,6 @@ const createHybridCollection = async (collectionName) => {
 
 module.exports = {
   chromaClient,
-  createHybridCollection
+  createHybridCollection,
+  COLLECTIONS,
 };

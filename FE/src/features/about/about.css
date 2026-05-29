@@ -1,8 +1,6 @@
-/* ==========================================================================
-   ABOUT PAGE — TemanPulih Premium Warm Editorial Style
-   ========================================================================== */
 .about-page {
-  background: var(--bg); /* Soft Cream Warm background */
+  background: var(--bg);
+  /* Soft Cream Warm background */
   color: var(--text);
   font-family: var(--font-body);
   overflow-x: hidden;
@@ -22,7 +20,7 @@
 /* ── Hero Section ── */
 .a-hero {
   padding: 40px var(--space-editorial-x) 60px;
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   background: var(--bg);
 }
 
@@ -35,7 +33,7 @@
   display: inline-block;
   padding: 8px 16px;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 600;
@@ -47,20 +45,22 @@
 
 .a-hero-title {
   font-family: var(--font-heading);
-  font-size: clamp(48px, 9vw, 130px); /* Matches --text-display-giant */
+  font-size: clamp(48px, 9vw, 130px);
+  /* Matches --text-display-giant */
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: -0.04em;
   color: var(--text);
   margin-bottom: 40px;
-  text-transform: lowercase; /* Signature Pelajari lowercase branding */
+  text-transform: lowercase;
+  /* Signature Pelajari lowercase branding */
 }
 
 .a-hero-desc {
   font-family: var(--font-body);
   font-size: clamp(16px, 1.4vw, 21px);
   line-height: 1.65;
-  color: rgba(0,0,0,0.65);
+  color: rgba(0, 0, 0, 0.65);
   max-width: 680px;
   border-left: 2px solid var(--accent);
   padding-left: 24px;
@@ -70,7 +70,7 @@
 .a-carousel-section {
   padding: 100px 0 140px;
   background: var(--bg);
-  border-bottom: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -151,20 +151,22 @@
 }
 
 /* Front & Back Card Faces (Premium Rounded Editorial) */
-.a-card-front, .a-card-back {
+.a-card-front,
+.a-card-back {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-2xl) !important; /* Matches Pelajari rounded layout */
+  border-radius: var(--radius-2xl) !important;
+  /* Matches Pelajari rounded layout */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   border: 1px solid rgba(0, 0, 0, 0.06);
   background: white;
   overflow: hidden;
-  box-shadow: 
-    0 10px 30px rgba(0,0,0,0.03),
-    0 2px 8px rgba(0,0,0,0.02);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.03),
+    0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
 /* 3D Z-plane Separation for clean Flipping */
@@ -186,35 +188,46 @@
 .a-card-image-section {
   position: relative;
   width: 100%;
-  height: 60%; /* Increased from 55% to give the portrait more vertical room */
+  height: 60%;
+  /* Increased from 55% to give the portrait more vertical room */
   overflow: hidden;
   background-color: var(--bg-warm);
-  border-bottom: 1px solid rgba(0,0,0,0.04);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .a-card-image-section img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 30%; /* Default shifted to keep faces visible */
+  object-position: center 30%;
+  /* Default shifted to keep faces visible */
   transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Individual developer fine-tuned image positioning in the Carousel */
 .a-card-image-section img.a-member-img-1 {
-  object-position: center 38%; /* Abu Harris Muhyidin */
+  object-position: center 38%;
+  /* Abu Harris Muhyidin */
 }
+
 .a-card-image-section img.a-member-img-2 {
-  object-position: center 25%; /* Safdar Rahman Syam */
+  object-position: center 25%;
+  /* Safdar Rahman Syam */
 }
+
 .a-card-image-section img.a-member-img-3 {
-  object-position: center 58%; /* Muhammad Mirza Faiz Rabbani */
+  object-position: center 58%;
+  /* Muhammad Mirza Faiz Rabbani */
 }
+
 .a-card-image-section img.a-member-img-4 {
-  object-position: center 35%; /* Ruli Hardimulya */
+  object-position: center 35%;
+  /* Ruli Hardimulya */
 }
+
 .a-card-image-section img.a-member-img-5 {
-  object-position: center 35%; /* Mochammad Ikhsan */
+  object-position: center 35%;
+  /* Mochammad Ikhsan */
 }
 
 .a-card-stage:hover .a-card-image-section img {
@@ -229,7 +242,8 @@
   color: var(--accent);
   border: 1px solid rgba(196, 101, 58, 0.2);
   padding: 6px 14px;
-  border-radius: var(--radius-full); /* Beautiful rounded pill */
+  border-radius: var(--radius-full);
+  /* Beautiful rounded pill */
   font-family: var(--font-body);
   font-size: 10px;
   font-weight: 700;
@@ -273,7 +287,7 @@
 .a-card-bio {
   font-size: 13.5px;
   line-height: 1.55;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
   margin-top: 10px;
 }
 
@@ -281,7 +295,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-top: 1px solid rgba(0,0,0,0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding-top: 16px;
   font-family: var(--font-body);
   font-size: 11px;
@@ -302,7 +316,7 @@
 
 /* Card Back Header */
 .a-card-back-header {
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   padding-bottom: 16px;
   display: flex;
   align-items: center;
@@ -329,7 +343,8 @@
   border: none;
   width: 32px;
   height: 32px;
-  border-radius: 50%; /* Rounded circle close */
+  border-radius: 50%;
+  /* Rounded circle close */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -356,7 +371,7 @@
   font-family: var(--font-body);
   font-size: 14px;
   line-height: 1.6;
-  color: rgba(0,0,0,0.65);
+  color: rgba(0, 0, 0, 0.65);
   font-style: italic;
   position: relative;
   padding-left: 16px;
@@ -380,18 +395,20 @@
 }
 
 .a-tag {
-  background: rgba(91, 123, 106, 0.06); /* Soft light Sage tag tint */
+  background: rgba(91, 123, 106, 0.06);
+  /* Soft light Sage tag tint */
   color: var(--sage-dark);
   font-family: var(--font-body);
   font-size: 10px;
   font-weight: 600;
   padding: 4px 12px;
-  border-radius: var(--radius-full); /* Beautiful rounded pill */
+  border-radius: var(--radius-full);
+  /* Beautiful rounded pill */
   border: 1px solid rgba(91, 123, 106, 0.12);
 }
 
 .a-card-back-footer {
-  border-top: 1px solid rgba(0,0,0,0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
   padding-top: 20px;
   display: flex;
   flex-direction: column;
@@ -405,7 +422,8 @@
   gap: 8px;
   width: 100%;
   padding: 10px;
-  border-radius: var(--radius-full); /* Sleek rounded button */
+  border-radius: var(--radius-full);
+  /* Sleek rounded button */
   font-family: var(--font-body);
   font-size: 12px;
   font-weight: 700;
@@ -413,7 +431,7 @@
   letter-spacing: 0.05em;
   transition: all 0.3s ease;
   text-decoration: none;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .a-social-btn.github {
@@ -491,15 +509,16 @@
 
 .a-carousel-btn {
   background: white;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   color: var(--text);
   width: 48px;
   height: 48px;
-  border-radius: 50%; /* Circle navigation */
+  border-radius: 50%;
+  /* Circle navigation */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
   transition: all 0.2s ease;
   cursor: pointer;
 }
@@ -525,7 +544,7 @@
 .a-timeline-section {
   padding: 120px var(--space-editorial-x) 140px;
   background: var(--bg-muted);
-  border-top: 1px solid rgba(0,0,0,0.08);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -552,7 +571,7 @@
   font-family: var(--font-body);
   font-size: clamp(15px, 1.2vw, 19px);
   line-height: 1.6;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
   max-width: 580px;
   margin: 0 auto;
 }
@@ -564,10 +583,11 @@
   justify-content: center;
   gap: 8px;
   margin-bottom: 72px;
-  border: 1px solid rgba(0,0,0,0.08);
-  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.8);
   padding: 8px;
-  border-radius: var(--radius-full); /* Beautiful rounded pill deck */
+  border-radius: var(--radius-full);
+  /* Beautiful rounded pill deck */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
@@ -577,19 +597,21 @@
   align-items: center;
   gap: 10px;
   padding: 10px 20px;
-  border-radius: var(--radius-full); /* Rounded pill tab */
+  border-radius: var(--radius-full);
+  /* Rounded pill tab */
   background: transparent;
   border: none;
   cursor: pointer;
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .a-selector-btn.is-active {
-  background: var(--accent); /* Premium Terracotta accent background */
+  background: var(--accent);
+  /* Premium Terracotta accent background */
   color: white;
 }
 
@@ -607,7 +629,7 @@
   overflow: hidden;
   border: 1.5px solid white;
   margin-left: -8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .a-selector-avatar-mini:first-child {
@@ -627,19 +649,21 @@
   left: 50%;
   transform: translateX(-50%) translateY(8px) scale(0.96);
   background: white;
-  border: 1px solid rgba(0,0,0,0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: var(--radius-xl);
-  box-shadow: 
-    0 12px 30px rgba(0,0,0,0.1),
-    0 4px 12px rgba(0,0,0,0.04);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
   z-index: 25;
-  width: 380px; /* Enlarge card width for better photo proportions and breathing room */
+  width: 380px;
+  /* Enlarge card width for better photo proportions and breathing room */
   opacity: 0;
   pointer-events: none;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden; /* So the image stays within the rounded corners */
+  overflow: hidden;
+  /* So the image stays within the rounded corners */
 }
 
 /* Arrow tip for the popup */
@@ -652,7 +676,7 @@
   border-width: 8px;
   border-style: solid;
   border-color: white transparent transparent transparent;
-  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.05));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.05));
 }
 
 .a-roadmap-smart-card:hover {
@@ -668,7 +692,8 @@
 .a-hover-header-imgs {
   display: flex;
   width: 100%;
-  height: 250px; /* Increased image height to prevent tight squished crop */
+  height: 250px;
+  /* Increased image height to prevent tight squished crop */
   background: #f4f4f4;
 }
 
@@ -677,25 +702,35 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 30%; /* Shift vertical focal point upward to preserve heads and faces */
+  object-position: center 30%;
+  /* Shift vertical focal point upward to preserve heads and faces */
   border-right: 1px solid white;
 }
 
 /* Individual developer fine-tuned image positioning in Timeline hover card */
 .a-hover-top-img.a-hover-member-img-1 {
-  object-position: center 58%; /* Abu Harris Muhyidin */
+  object-position: center 58%;
+  /* Abu Harris Muhyidin */
 }
+
 .a-hover-top-img.a-hover-member-img-2 {
-  object-position: center 25%; /* Safdar Rahman Syam */
+  object-position: center 25%;
+  /* Safdar Rahman Syam */
 }
+
 .a-hover-top-img.a-hover-member-img-3 {
-  object-position: center 58%; /* Muhammad Mirza Faiz Rabbani */
+  object-position: center 58%;
+  /* Muhammad Mirza Faiz Rabbani */
 }
+
 .a-hover-top-img.a-hover-member-img-4 {
-  object-position: center 58%; /* Ruli Hardimulya */
+  object-position: center 58%;
+  /* Ruli Hardimulya */
 }
+
 .a-hover-top-img.a-hover-member-img-5 {
-  object-position: center 58%; /* Mochammad Ikhsan */
+  object-position: center 58%;
+  /* Mochammad Ikhsan */
 }
 
 .a-hover-top-img:last-child {
@@ -720,7 +755,7 @@
 .a-hover-card-subtitle {
   font-family: var(--font-body);
   font-size: 12px;
-  color: rgba(0,0,0,0.5);
+  color: rgba(0, 0, 0, 0.5);
   margin-bottom: 12px;
 }
 
@@ -732,19 +767,19 @@
 }
 
 .a-hover-tech-tag {
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
   padding: 4px 8px;
   border-radius: 6px;
   font-family: var(--font-body);
   font-size: 11px;
   font-weight: 600;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .a-hover-card-desc {
   font-size: 13px;
   line-height: 1.5;
-  color: rgba(0,0,0,0.7);
+  color: rgba(0, 0, 0, 0.7);
   margin: 0;
 }
 
@@ -765,7 +800,7 @@
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .a-hover-member-info {
@@ -785,7 +820,7 @@
 .a-hover-member-role {
   font-family: var(--font-body);
   font-size: 9.5px;
-  color: rgba(0,0,0,0.45);
+  color: rgba(0, 0, 0, 0.45);
   line-height: 1;
   margin-top: 1px;
 }
@@ -805,7 +840,8 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: rgba(0,0,0,0.08); /* Soft line track */
+  background: rgba(0, 0, 0, 0.08);
+  /* Soft line track */
 }
 
 @media (min-width: 768px) {
@@ -836,7 +872,8 @@
   height: 12px;
   background: var(--bg);
   border: 3px solid var(--accent);
-  border-radius: 50%; /* Circles matching Pelajari style */
+  border-radius: 50%;
+  /* Circles matching Pelajari style */
   z-index: 5;
   box-shadow: 0 0 0 4px white;
 }
@@ -871,7 +908,8 @@
   border: 1px solid rgba(196, 101, 58, 0.15);
   display: inline-block;
   padding: 6px 20px;
-  border-radius: var(--radius-full); /* Beautiful rounded pill milestone title */
+  border-radius: var(--radius-full);
+  /* Beautiful rounded pill milestone title */
 }
 
 /* Single smart card centered layout */
@@ -893,12 +931,13 @@
 /* Smart card style (Soft Rounded Editorial Cards) */
 .a-roadmap-smart-card {
   background: white;
-  border-radius: var(--radius-2xl) !important; /* Soft corners */
+  border-radius: var(--radius-2xl) !important;
+  /* Soft corners */
   padding: 28px;
-  border: 1px solid rgba(0,0,0,0.05);
-  box-shadow: 
-    0 10px 25px rgba(0,0,0,0.02),
-    0 2px 6px rgba(0,0,0,0.01);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.02),
+    0 2px 6px rgba(0, 0, 0, 0.01);
   transition: all 0.3s ease;
   position: relative;
   display: flex;
@@ -908,9 +947,9 @@
 
 .a-roadmap-smart-card:hover {
   transform: translateY(-4px);
-  box-shadow: 
-    0 20px 35px rgba(0,0,0,0.04),
-    0 4px 12px rgba(0,0,0,0.02);
+  box-shadow:
+    0 20px 35px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.02);
 }
 
 .a-roadmap-tag {
@@ -923,9 +962,10 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   padding: 4px 12px;
-  border-radius: var(--radius-full); /* Rounded pill */
+  border-radius: var(--radius-full);
+  /* Rounded pill */
   align-self: flex-start;
-  border: 1px solid rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .a-roadmap-tag.plan {
@@ -943,7 +983,7 @@
 .a-roadmap-card-text {
   font-size: 14px;
   line-height: 1.6;
-  color: rgba(0,0,0,0.6);
+  color: rgba(0, 0, 0, 0.6);
 }
 
 /* ==========================================================================
@@ -955,40 +995,50 @@
   .a-hero {
     padding: 140px 40px 70px;
   }
+
   .a-carousel-section {
     padding: 80px 0 100px;
   }
+
   .a-carousel-viewport {
     height: 520px;
   }
+
   .a-card-stage {
     width: 310px;
     height: 460px;
   }
+
   /* Adjusted horizontal offsets for tablet viewport */
   .a-card-stage.prev {
     transform: translate3d(-170px, 0, -140px) rotateY(24deg) scale(0.88);
     opacity: 0.45;
   }
+
   .a-card-stage.next {
     transform: translate3d(170px, 0, -140px) rotateY(-24deg) scale(0.88);
     opacity: 0.45;
   }
+
   .a-card-stage.far-prev {
     transform: translate3d(-310px, 0, -250px) rotateY(32deg) scale(0.78);
     opacity: 0.15;
   }
+
   .a-card-stage.far-next {
     transform: translate3d(310px, 0, -250px) rotateY(-32deg) scale(0.78);
     opacity: 0.15;
   }
+
   .a-timeline-section {
     padding: 80px 40px 100px;
   }
+
   .a-timeline-selector {
     padding: 6px;
     gap: 4px;
   }
+
   .a-selector-btn {
     padding: 8px 16px;
     font-size: 12px;
@@ -1000,14 +1050,17 @@
   .a-hero {
     padding: 120px 20px 60px;
   }
+
   .a-hero-eyebrow {
     margin-bottom: 24px;
     padding: 6px 12px;
     font-size: 11px;
   }
+
   .a-hero-title {
     margin-bottom: 24px;
   }
+
   .a-hero-desc {
     padding-left: 16px;
   }
@@ -1016,54 +1069,68 @@
   .a-carousel-section {
     padding: 60px 0 80px;
   }
+
   .a-carousel-subtitle {
     margin-bottom: 48px;
   }
+
   .a-carousel-viewport {
     height: 470px;
   }
+
   .a-card-stage {
     width: 280px;
     height: 420px;
   }
+
   /* Small translation offsets to prevent mobile overflowing */
   .a-card-stage.prev {
     transform: translate3d(-80px, 0, -100px) rotateY(15deg) scale(0.84);
     opacity: 0.45;
   }
+
   .a-card-stage.next {
     transform: translate3d(80px, 0, -100px) rotateY(-15deg) scale(0.84);
     opacity: 0.45;
   }
-  .a-card-stage.far-prev, 
+
+  .a-card-stage.far-prev,
   .a-card-stage.far-next {
-    display: none; /* Hide outer cards completely on mobile to prevent clutter */
+    display: none;
+    /* Hide outer cards completely on mobile to prevent clutter */
   }
 
   .a-card-info-section {
     padding: 20px;
   }
+
   .a-card-name {
     font-size: 20px;
   }
+
   .a-card-bio {
     font-size: 12.5px;
     margin-top: 6px;
   }
+
   .a-card-back {
     padding: 20px;
   }
+
   .a-card-quote {
     font-size: 12.5px;
     padding-left: 12px;
   }
+
   .a-tech-tags {
     gap: 4px;
   }
+
   .a-tag {
     font-size: 9px;
     padding: 3px 10px;
   }
+
   .a-social-btn {
     padding: 8px;
     font-size: 11px;
@@ -1073,9 +1140,11 @@
   .a-timeline-section {
     padding: 60px 20px 80px;
   }
+
   .a-timeline-header {
     margin-bottom: 40px;
   }
+
   .a-timeline-selector {
     border-radius: var(--radius-xl);
     width: 100%;
@@ -1083,6 +1152,7 @@
     gap: 4px;
     flex-wrap: wrap;
   }
+
   .a-selector-btn {
     padding: 6px 12px;
     font-size: 11px;
@@ -1096,24 +1166,30 @@
   .a-roadmap-line {
     left: 16px;
   }
+
   .a-roadmap-dot {
     left: 11px;
   }
+
   .a-roadmap-step-header {
     padding-left: 40px;
     text-align: left;
   }
+
   .a-roadmap-milestone-title {
     font-size: 12px;
     padding: 4px 14px;
   }
+
   .a-roadmap-cards-grid {
     padding-left: 40px;
     gap: 16px;
   }
+
   .a-roadmap-smart-card {
     padding: 20px;
   }
+
   .a-roadmap-card-text {
     font-size: 13px;
   }
@@ -1121,8 +1197,10 @@
 
 /* ── Premium Editorial Footer Style ── */
 .a-footer-sus {
-  background: #2c2a29; /* Luxurious Warm Dark Charcoal */
-  color: var(--bg); /* Soft cream color for contrast */
+  background: #2c2a29;
+  /* Luxurious Warm Dark Charcoal */
+  color: var(--bg);
+  /* Soft cream color for contrast */
   padding: 100px var(--space-editorial-x) 40px;
   position: relative;
   overflow: hidden;
@@ -1170,7 +1248,8 @@
   align-items: center;
   gap: 12px;
   background: var(--bg);
-  color: #2c2a29; /* Match footer charcoal color */
+  color: #2c2a29;
+  /* Match footer charcoal color */
   padding: 18px 36px;
   border-radius: var(--radius-full);
   font-family: var(--font-body);
@@ -1204,7 +1283,8 @@
 
 /* ── Premium Navbar Logo & Styling Override ── */
 .about-page .p-navbar {
-  background: rgba(244, 241, 237, 0.85) !important; /* Elegant warm translucent cream glass */
+  background: rgba(244, 241, 237, 0.85) !important;
+  /* Elegant warm translucent cream glass */
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   padding: 20px var(--space-editorial-x);
   backdrop-filter: blur(12px);
@@ -1215,7 +1295,8 @@
   font-family: var(--font-heading);
   font-weight: 800;
   font-size: 24px;
-  color: var(--text) !important; /* Grounded dark charcoal text logo */
+  color: var(--text) !important;
+  /* Grounded dark charcoal text logo */
   letter-spacing: -0.04em;
   display: inline-flex;
   align-items: center;
@@ -1223,30 +1304,36 @@
 }
 
 .about-page .p-navbar-logo-icon {
-  color: var(--accent) !important; /* Beautiful terracotta brand heart pulse */
+  color: var(--accent) !important;
+  /* Beautiful terracotta brand heart pulse */
   opacity: 0.9;
 }
 
 .about-page .p-navbar-line {
-  background: var(--text) !important; /* Dark charcoal menu lines */
+  background: var(--text) !important;
+  /* Dark charcoal menu lines */
 }
 
 @media (max-width: 768px) {
   .a-footer-sus {
     padding: 80px 24px 32px;
   }
+
   .a-footer-sus-top {
     flex-direction: column;
     align-items: flex-start;
     gap: 32px;
   }
+
   .a-footer-heading {
     font-size: 40px;
   }
+
   .a-footer-btn {
     width: 100%;
     justify-content: center;
   }
+
   .a-footer-bottom {
     flex-direction: column;
     gap: 16px;

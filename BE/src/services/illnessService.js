@@ -14,10 +14,10 @@ const { resolveTargetPatientId } = require('../helpers/patientAccess');
 const {
     getChromaCollection,
     getDiseaseNames,
-    getDrugNames,
     fuzzyMatchName,
     getDocsByDiseaseName,
-    getDocsByDrugName,
+    searchAllDrugCollections,
+    COLLECTIONS,
 } = require('../helpers/chromaHelper');
 const {
     parseIllnessContent,
@@ -119,8 +119,7 @@ const addIllness = async (user, supabase, { illness_name, started_at, notes, ill
 const fetchIllnessInfoFromChroma = async (illnessName) => {
     if (!illnessName) return null;
     try {
-        const condCol = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih');
-        const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat');
+        const condCol = await getChromaCollection(COLLECTIONS.DISEASE);
 
         // Step 1: Fuzzy match name from cache
         const diseaseNames = await getDiseaseNames();
@@ -154,9 +153,9 @@ const fetchIllnessInfoFromChroma = async (illnessName) => {
         // Step 3: Parse illness info
         const parsedInfo = parseIllnessContent(fullContent);
 
-        // Step 4: Enrich with drug info if obat_terkait is missing
-        if (!parsedInfo.obat_terkait && drugCol) {
-            const drugResult = await fetchDrugsForCondition(drugCol, resolvedName);
+        // Step 4: Enrich with drug info from all 3 drug collections
+        if (!parsedInfo.obat_terkait) {
+            const drugResult = await fetchDrugsForCondition(resolvedName);
             if (drugResult.length > 0) {
                 parsedInfo.obat_terkait = drugResult.map(d => d.nama_obat).filter(Boolean).join(', ');
                 parsedInfo.drug_details = drugResult.slice(0, 3);
@@ -171,57 +170,36 @@ const fetchIllnessInfoFromChroma = async (illnessName) => {
     }
 };
 
-// ─── DRUG CROSS-REFERENCE ─────────────────────────────────────────────────────
+// ─── DRUG CROSS-REFERENCE (multi-collection) ─────────────────────────────────
 
 /**
- * Ambil obat terkait dari RAG-TemanPulih-Obat untuk suatu kondisi penyakit.
- * Hanya Layer 1: semantic vector search dengan nama penyakit.
+ * Ambil obat terkait dari SEMUA drug collections (detail + puskesmas + rs).
+ * Uses the multi-collection search from chromaDrugSearch.
  *
- * @param {object} drugCol     - ChromaDB drug collection
  * @param {string} illnessName - Nama penyakit
- * @returns {{ nama_obat, indikasi, dosis, aturan_pakai, efek_samping }[]}
+ * @returns {{ nama_obat, kategori, indikasi, komposisi, dosis, aturan_pakai, efek_samping }[]}
  */
-const fetchDrugsForCondition = async (drugCol, illnessName) => {
-    if (!drugCol || !illnessName) return [];
-    const drugs    = [];
-    const seenDrugs = new Set();
-
+const fetchDrugsForCondition = async (illnessName) => {
+    if (!illnessName) return [];
     try {
-        const queries   = buildQueryList(illnessName).slice(0, 4);
-        const semResult = await drugCol.query({ queryTexts: queries, nResults: 6 });
-        const semDocs   = semResult?.documents?.flat().filter(Boolean) || [];
-        const semMetas  = semResult?.metadatas?.flat() || [];
-
-        for (let i = 0; i < semDocs.length; i++) {
-            const meta = semMetas[i] || {};
-            const nama = meta.nama_obat;
-            if (!nama) continue;
-
-            const key = normalizeText(nama);
-            if (seenDrugs.has(key)) continue;
-            seenDrugs.add(key);
-
-            // Fetch full content by nama_obat
-            const fullContent = await getDocsByDrugName(drugCol, nama);
-            const parsed = parseDrugContent(fullContent || semDocs[i]);
-
-            drugs.push({
-                nama_obat:    nama,
-                kategori:     meta.kategori       || parsed.kategori     || '',
+        const hits = await searchAllDrugCollections(illnessName, 5);
+        return hits.map(hit => {
+            const parsed = hit.detailDoc ? parseDrugContent(hit.detailDoc) : {};
+            return {
+                nama_obat:    hit.name,
+                kategori:     hit.meta?.kategori   || parsed.kategori     || '',
                 indikasi:     parsed.indikasi     || '',
                 komposisi:    parsed.komposisi    || '',
                 dosis:        parsed.dosis        || '',
                 aturan_pakai: parsed.aturan_pakai || '',
                 efek_samping: parsed.efek_samping || '',
-            });
-
-            if (drugs.length >= 5) break;
-        }
+                tersedia_di:  hit.sources.filter(s => s !== 'detail').map(s => s === 'puskesmas' ? 'Puskesmas' : 'Rumah Sakit').join(', '),
+            };
+        });
     } catch (e) {
         console.warn(`[ILLNESS] fetchDrugsForCondition error for "${illnessName}":`, e.message);
+        return [];
     }
-
-    return drugs;
 };
 
 // ─── SEARCH ILLNESS (autocomplete / suggestion) ───────────────────────────────
@@ -230,27 +208,24 @@ const searchIllness = async (query) => {
     if (!query || query.trim().length < 2) return [];
 
     try {
-        const condCol = await getChromaCollection(process.env.CHROMA_DATABASE || 'RAG-TemanPulih').catch(() => null);
-        const drugCol = await getChromaCollection(process.env.CHROMA_DATABASE_DRUGS || 'RAG-TemanPulih-Obat').catch(() => null);
+        const condCol = await getChromaCollection(COLLECTIONS.DISEASE).catch(() => null);
 
         console.log(`[ILLNESS SEARCH] Query: "${query}"`);
 
-        // Step 1: Use Gemini to predict standard medical conditions based on user input
+        // Step 1: Gemini normalization (lightweight, 3s timeout)
         let geminiDiseaseNames = [];
         try {
             const { genAI } = require('./chatbotService');
-            const prompt = `Pengguna menginputkan keluhan atau nama kondisi: "${query}". 
-Tugasmu adalah memberikan 3 kemungkinan kondisi medis atau penyakit umum dalam bahasa Indonesia yang relevan.
-HANYA kembalikan array JSON berisi string nama penyakit. Dilarang memberikan teks lain.
-Contoh jika input "perut perih": ["Maag", "Asam Lambung", "Gastritis"]
-Contoh jika input "pusing muter": ["Vertigo", "Sakit Kepala", "Migrain"]`;
-            
-            const model = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
-            const result = await model.generateContent(prompt);
+            const prompt = `Pengguna menginputkan keluhan atau nama kondisi: "${query}". Berikan 1-3 kemungkinan nama penyakit/kondisi Indonesia. HANYA kembalikan array JSON string. Tanpa penjelasan.`;
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite', generationConfig: { temperature: 0.1, maxOutputTokens: 100 } });
+            const result = await Promise.race([
+                model.generateContent(prompt),
+                new Promise((_, rej) => setTimeout(() => rej(new Error('Gemini timeout')), 3000))
+            ]);
             const text = result.response.text().trim();
             const jsonMatch = text.match(/\[.*\]/s);
             if (jsonMatch) {
-                geminiDiseaseNames = JSON.parse(jsonMatch[0]);
+                geminiDiseaseNames = JSON.parse(jsonMatch[0]).filter(s => typeof s === 'string' && s.length >= 2);
                 console.log(`[ILLNESS SEARCH] Gemini predictions:`, geminiDiseaseNames);
             }
         } catch (e) {
@@ -264,15 +239,18 @@ Contoh jika input "pusing muter": ["Vertigo", "Sakit Kepala", "Migrain"]`;
         // Step 2: Fuzzy match from query and Gemini predictions
         const searchTerms = [query.trim(), ...geminiDiseaseNames].filter(Boolean);
 
-        // Helper function for concurrent fetching
         const fetchDiseaseData = async (dname, score, type) => {
             try {
                 const fullContent = condCol ? await getDocsByDiseaseName(condCol, dname) : '';
                 if (!fullContent) return null;
                 const info = parseIllnessContent(fullContent);
-                const drugResults = drugCol ? await fetchDrugsForCondition(drugCol, dname) : [];
-                if (drugResults.length > 0 && !info.obat_terkait) {
-                    info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
+                // Cross-reference: fetch drugs from all 3 collections
+                if (!info.obat_terkait) {
+                    const drugResults = await fetchDrugsForCondition(dname);
+                    if (drugResults.length > 0) {
+                        info.obat_terkait = drugResults.map(d => d.nama_obat).filter(Boolean).join(', ');
+                        info.drug_details = drugResults.slice(0, 3);
+                    }
                 }
                 return {
                     name: dname,
@@ -282,7 +260,7 @@ Contoh jika input "pusing muter": ["Vertigo", "Sakit Kepala", "Migrain"]`;
                         penanganan:   info.penanganan,
                         obat_terkait: info.obat_terkait,
                         peringatan:   info.peringatan,
-                        drug_details: drugResults.length > 0 ? drugResults.slice(0, 3) : undefined,
+                        drug_details: info.drug_details,
                     },
                     relevance_score: score,
                     match_type: type,
@@ -310,8 +288,8 @@ Contoh jika input "pusing muter": ["Vertigo", "Sakit Kepala", "Migrain"]`;
         const topMatches = uniqueMatches.slice(0, 6);
 
         if (topMatches.length > 0) {
-            const resolved = await Promise.all(topMatches.map(m => fetchDiseaseData(m.name, m.score || 0, m.type || 'fuzzy')));
-            suggestions.push(...resolved.filter(Boolean));
+            const resolved = await Promise.allSettled(topMatches.map(m => fetchDiseaseData(m.name, m.score || 0, m.type || 'fuzzy')));
+            suggestions.push(...resolved.filter(r => r.status === 'fulfilled' && r.value).map(r => r.value));
         }
 
         // Step 3: Fallback Vector Search if no metadata matches
@@ -332,43 +310,13 @@ Contoh jika input "pusing muter": ["Vertigo", "Sakit Kepala", "Migrain"]`;
             }
 
             if (vectorMatches.length > 0) {
-                const resolved = await Promise.all(vectorMatches.map(name => fetchDiseaseData(name, 0, 'vector')));
-                suggestions.push(...resolved.filter(Boolean));
+                const resolved = await Promise.allSettled(vectorMatches.map(name => fetchDiseaseData(name, 0, 'vector')));
+                suggestions.push(...resolved.filter(r => r.status === 'fulfilled' && r.value).map(r => r.value));
             }
         }
 
-        // Step 4: Synthesize via Gemini if RAG returns absolutely nothing
-        if (suggestions.length === 0 && geminiDiseaseNames.length > 0) {
-            console.log('[ILLNESS SEARCH] No RAG matches, generating synthesis from Gemini...');
-            try {
-                const { genAI } = require('./chatbotService');
-                const targetDisease = geminiDiseaseNames[0];
-                const p = `Berikan informasi medis edukatif singkat tentang "${targetDisease}" dalam format JSON.
-Format HARUS persis seperti ini tanpa markdown tambahan:
-{
-  "indikasi": "Penjelasan singkat tentang kondisi ini",
-  "gejala_umum": "Gejala yang sering dialami",
-  "penanganan": "Penanganan mandiri yang disarankan",
-  "obat_terkait": "Contoh obat generik yang umum",
-  "peringatan": "Kapan pasien harus segera ke dokter"
-}`;
-                const m = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite', generationConfig: { temperature: 0.1 } });
-                const r = await m.generateContent(p);
-                const t = r.response.text().trim();
-                const j = t.match(/\{.*\}/s);
-                if (j) {
-                    const info = JSON.parse(j[0]);
-                    suggestions.push({
-                        name: targetDisease,
-                        illness_info: info,
-                        relevance_score: 0,
-                        match_type: 'gemini-synthesized'
-                    });
-                }
-            } catch(e) {
-                console.warn('[ILLNESS SEARCH] Synthesis error:', e.message);
-            }
-        }
+        // NO Gemini synthesis fallback — return empty if no RAG data found
+        // This prevents hallucination and ensures all data is grounded in ChromaDB
 
         console.log(`[ILLNESS SEARCH] Returned ${suggestions.length} results for "${query}"`);
         return suggestions;
