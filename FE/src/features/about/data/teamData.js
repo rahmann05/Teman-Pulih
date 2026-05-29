@@ -1,8 +1,8 @@
-import imgAbu from '@/assets/images/developer/Abu Harris.webp';
-import imgSafdar from '@/assets/images/developer/Rahman.webp';
-import imgRuli from '@/assets/images/developer/Ruli Hardimulya.webp';
-import imgMirza from '@/assets/images/developer/Mirza.webp';
-import imgIkhsan from '@/assets/images/developer/Ikhsan.webp';
+import imgAbu from '@/assets/images/Developer/Abu Harris.webp';
+import imgSafdar from '@/assets/images/Developer/Rahman.webp';
+import imgRuli from '@/assets/images/Developer/Ruli Hardimulya.webp';
+import imgMirza from '@/assets/images/Developer/Mirza.webp';
+import imgIkhsan from '@/assets/images/Developer/Ikhsan.webp';
 
 export const teamMembers = [
   {

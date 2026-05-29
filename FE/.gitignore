@@ -31,3 +31,4 @@ AGENT.MD
 .env.*
 !.env.example
 
+.vercel
