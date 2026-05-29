@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { AnimatePresence } from 'framer-motion';
 import PageTransition from '@/shared/components/PageTransition';
 import { useAuth } from '@/shared/hooks/useAuth';
-import '@/styles/app.css';
+import '@/styles/App.css';
 
 // Lazy load feature pages
 const LandingPage = lazy(() => import('@/features/landing/pages/LandingPage'));
