@@ -313,11 +313,23 @@ const FamilyComplaintsSection = ({ caregiverMode, members }) => {
             <button
               type="submit"
               disabled={submitting}
-              className="checkin-submit-btn"
               style={{
+                width: '100%',
+                padding: '14px 24px',
+                borderRadius: '100px',
                 background: 'var(--accent)',
+                color: '#FFF',
+                border: 'none',
+                fontWeight: '800',
+                fontSize: '14px',
+                cursor: 'pointer',
                 boxShadow: '0 4px 16px rgba(196, 101, 58, 0.25)',
-                opacity: submitting ? 0.7 : 1
+                opacity: submitting ? 0.7 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                fontFamily: 'inherit'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent-hover)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--accent)'; }}
