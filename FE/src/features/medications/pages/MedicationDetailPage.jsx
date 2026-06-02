@@ -1,5 +1,5 @@
-﻿import { useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { 
   LuArrowLeft, 
@@ -24,7 +24,8 @@ import EditMedicationModal from '@/features/medications/pages/EditMedicationModa
 import ConfirmDialog from '@/shared/components/ConfirmDialog';
 import { useMedications } from '@/features/medications/hooks/useMedications';
 import { useAuth } from '@/shared/hooks/useAuth';
-import { uploadMedicationImage } from '@/features/medications/services/medicationService';
+import { uploadMedicationImage, getMedications } from '@/features/medications/services/medicationService';
+import { getFamilyMembers } from '@/features/family-sync/services/familyService';
 import heroImg from '@/assets/images/feature-medication.webp';
 import '@/features/medications/medications.css';
 
@@ -192,6 +193,43 @@ const MedicationDetailPage = () => {
   const { user } = useAuth();
   const isCaregiver = user?.role === 'caregiver';
 
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const routePatientId = location.state?.patientId || searchParams.get('patientId');
+  const [resolvedPatientId, setResolvedPatientId] = useState(routePatientId);
+  const [resolvingPatient, setResolvingPatient] = useState(false);
+
+  useEffect(() => {
+    if (isCaregiver && !resolvedPatientId) {
+      let active = true;
+      const resolvePatient = async () => {
+        try {
+          setResolvingPatient(true);
+          const membersRes = await getFamilyMembers();
+          const allRelations = membersRes.data?.members || [];
+          const activeRels = allRelations.filter(r => r.status === 'accepted');
+          const patientsList = activeRels.map(r => r.patient).filter(Boolean);
+          
+          for (const patient of patientsList) {
+            const medsRes = await getMedications(patient.id);
+            const meds = medsRes.data?.data || [];
+            const found = meds.some(m => String(m.id) === String(id));
+            if (found && active) {
+              setResolvedPatientId(patient.id);
+              break;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to resolve patient ID for caregiver:', e);
+        } finally {
+          if (active) setResolvingPatient(false);
+        }
+      };
+      resolvePatient();
+      return () => { active = false; };
+    }
+  }, [isCaregiver, resolvedPatientId, id]);
+
   const [showEdit, setShowEdit]       = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [uploading, setUploading]     = useState(false);
@@ -208,7 +246,7 @@ const MedicationDetailPage = () => {
     removeMedication,
     logDose,
     fetchAll,
-  } = useMedications();
+  } = useMedications(resolvedPatientId);
 
   const medication = medications.find((m) => String(m.id) === String(id));
   const schedule   = medication?.medication_schedules?.[0];
@@ -249,7 +287,7 @@ const MedicationDetailPage = () => {
   };
 
   // Loading skeleton
-  if (loading) {
+  if (loading || resolvingPatient) {
     return (
       <DashboardLayout caregiverMode={isCaregiver}>
         <div className="med-detail-container">

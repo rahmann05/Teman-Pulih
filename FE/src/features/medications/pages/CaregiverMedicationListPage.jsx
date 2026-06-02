@@ -238,7 +238,7 @@ const CaregiverMedicationListPage = () => {
                               key={med.id}
                               type="button"
                               className="patient-med-subcard"
-                              onClick={() => navigate(`/medications/${med.id}`)}
+                              onClick={() => navigate(`/medications/${med.id}?patientId=${p.patient.id}`, { state: { patientId: p.patient.id } })}
                             >
                               <div className="patient-med-icon">
                                 <LuPill size={16} />
