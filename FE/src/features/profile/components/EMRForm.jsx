@@ -59,16 +59,17 @@ const EMRForm = ({ formData, handleChange, handleSubmit, loading, uploader, erro
     if (step > 0) setStep(step - 1);
   };
 
-  const handleFinalSubmit = (e) => {
+  const handleFinalSave = () => {
     // Sync lists before submit
     syncList('allergies', 'allergies_list', allergiesList);
     syncList('chronic_conditions', 'chronic_conditions_list', chronicList);
     syncList('past_illnesses', 'past_illnesses_list', pastIllnessesList);
-    handleSubmit(e);
+    // Create a synthetic event with preventDefault for handleSubmit compatibility
+    handleSubmit({ preventDefault: () => {} });
   };
 
   return (
-    <form onSubmit={handleFinalSubmit} className="emr-wizard-form">
+    <div className="emr-wizard-form">
       <div className="emr-wizard-body">
         {uploader}
         {error && <div className="alert-error" style={{ marginBottom: '1.5rem' }}>{error}</div>}
@@ -215,6 +216,7 @@ const EMRForm = ({ formData, handleChange, handleSubmit, loading, uploader, erro
                 name="surgeries_history"
                 value={formData.surgeries_history}
                 onChange={handleChange}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); goNext(); } }}
                 placeholder="Contoh: Operasi usus buntu (2020)"
                 className="emr-input"
                 style={{ marginTop: '12px' }}
@@ -280,12 +282,12 @@ const EMRForm = ({ formData, handleChange, handleSubmit, loading, uploader, erro
             Selanjutnya →
           </button>
         ) : (
-          <button type="submit" className="emr-btn-primary" disabled={loading}>
+          <button type="button" className="emr-btn-primary" disabled={loading} onClick={handleFinalSave}>
             {loading ? 'Menyimpan...' : 'Simpan Rekam Medis'}
           </button>
         )}
       </div>
-    </form>
+    </div>
   );
 };
 
