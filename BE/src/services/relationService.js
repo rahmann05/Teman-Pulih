@@ -68,18 +68,19 @@ const requestAccess = async (caregiverId, supabase, identifier) => {
     const { rows: caregiverRows } = await db.query('SELECT name FROM users WHERE id = $1', [caregiverId]);
     const caregiverName = caregiverRows[0]?.name || 'Caregiver';
 
-    // Send verification code to the patient
-    try {
-        await notificationService.sendVerificationCode({
-            identifier: identifier.trim(),
-            code: verificationCode,
-            senderName: caregiverName,
-            isEmail
-        });
-    } catch (sendErr) {
-        console.error('[Notification Send Error]: Failed to send verification code:', sendErr.message);
-        // Do not crash the API if notification helper fails (for smooth development)
-    }
+    // Send verification code to the patient in the background
+    setImmediate(async () => {
+        try {
+            await notificationService.sendVerificationCode({
+                identifier: identifier.trim(),
+                code: verificationCode,
+                senderName: caregiverName,
+                isEmail
+            });
+        } catch (sendErr) {
+            console.error('[Notification Send Error]: Failed to send verification code in background:', sendErr.message);
+        }
+    });
 
     await cacheDel(`family_relations:${caregiverId}`, `family_relations:${patientId}`);
     return relation;

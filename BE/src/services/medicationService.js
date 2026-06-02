@@ -141,7 +141,7 @@ const markTaken = async (user, supabase, medicationId, data) => {
     const { schedule_id, status, time_slot } = data;
     if (!status) throw Object.assign(new Error('Status wajib diisi (taken/missed/skipped)'), { statusCode: 400 });
 
-    const { rows: meds } = await db.query('SELECT id, user_id FROM medications WHERE id = $1', [medicationId]);
+    const { rows: meds } = await db.query('SELECT id, user_id, name, dosage FROM medications WHERE id = $1', [medicationId]);
     const medication = meds[0];
     if (!medication) throw Object.assign(new Error('Obat tidak ditemukan'), { statusCode: 404 });
 
@@ -209,32 +209,34 @@ const markTaken = async (user, supabase, medicationId, data) => {
                             target_date: todayStr
                         }]);
 
-                    // Send actual WhatsApp / Email
-                    try {
-                        const dbConfig = require('../config/db');
-                        const contactRes = await dbConfig.query(`
-                            SELECT u.name, u.email, p.phone 
-                            FROM users u 
-                            LEFT JOIN profiles p ON u.id = p.user_id 
-                            WHERE u.id = $1
-                        `, [rel.caregiver_id]);
-                        
-                        const caregiverContact = contactRes?.rows?.[0];
-                        if (caregiverContact) {
-                            if (caregiverContact.phone) {
-                                await notificationService.sendWhatsApp(caregiverContact.phone, messageText);
-                            } else if (caregiverContact.email) {
-                                await notificationService.sendEmail(
-                                    caregiverContact.email,
-                                    `${patientName} Sudah Minum Obat`,
-                                    `<h3>Kabar Kepatuhan Keluarga</h3><p>${messageText}</p>`,
-                                    messageText
-                                );
+                    // Send actual WhatsApp / Email in the background to prevent blocking/timeout
+                    setImmediate(async () => {
+                        try {
+                            const dbConfig = require('../config/db');
+                            const contactRes = await dbConfig.query(`
+                                SELECT u.name, u.email, p.phone 
+                                FROM users u 
+                                LEFT JOIN profiles p ON u.id = p.user_id 
+                                WHERE u.id = $1
+                            `, [rel.caregiver_id]);
+                            
+                            const caregiverContact = contactRes?.rows?.[0];
+                            if (caregiverContact) {
+                                if (caregiverContact.phone) {
+                                    await notificationService.sendWhatsApp(caregiverContact.phone, messageText);
+                                } else if (caregiverContact.email) {
+                                    await notificationService.sendEmail(
+                                        caregiverContact.email,
+                                        `${patientName} Sudah Minum Obat`,
+                                        `<h3>Kabar Kepatuhan Keluarga</h3><p>${messageText}</p>`,
+                                        messageText
+                                    );
+                                }
                             }
+                        } catch (contactErr) {
+                            console.error('[Notification Caregiver Contact Error]:', contactErr.message);
                         }
-                    } catch (contactErr) {
-                        console.error('[Notification Caregiver Contact Error]:', contactErr.message);
-                    }
+                    });
                 }
             }
         } catch (notifErr) {

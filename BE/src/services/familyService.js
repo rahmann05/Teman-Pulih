@@ -87,18 +87,19 @@ const invite = async (user, supabase, identifier) => {
         }, { onConflict: 'patient_id, caregiver_id' });
     if (inviteError) throw inviteError;
 
-    // Send verification code to the recipient
-    try {
-        await notificationService.sendVerificationCode({
-            identifier: trimmedIdentifier,
-            code: verificationCode,
-            senderName: user.name,
-            isEmail
-        });
-    } catch (sendErr) {
-        console.error('[Notification Send Error]: Failed to send verification code:', sendErr.message);
-        // Continue even if notification fails so flow doesn't break, but log it
-    }
+    // Send verification code to the recipient in the background
+    setImmediate(async () => {
+        try {
+            await notificationService.sendVerificationCode({
+                identifier: trimmedIdentifier,
+                code: verificationCode,
+                senderName: user.name,
+                isEmail
+            });
+        } catch (sendErr) {
+            console.error('[Notification Send Error]: Failed to send verification code in background:', sendErr.message);
+        }
+    });
 
     await cacheDel(`family_relations:${user.id}`, `family_relations:${invitedUser.id}`);
     return { message: 'Undangan Keluarga berhasil dikirim.', status: 'pending' };
@@ -218,17 +219,19 @@ const createComplaint = async (user, supabase, data) => {
                 is_read: false
             }]);
 
-        // 2. WhatsApp Notification (dengan konteks EMR)
+        // 2. WhatsApp Notification (dengan konteks EMR) in the background
         if (cg.caregiver_phone) {
             const waMessage = `🚨 *PEMBERITAHUAN DARURAT TEMANPULIH* 🚨\n\nPasien Anda, *${user.name}*, baru saja melaporkan keluhan medis mendadak!\n\n*Gejala:* ${symptomsText}\n*Tingkat Keparahan:* ${severityLabel}\n*Catatan:* ${notesText}\n\n📋 *Riwayat Medis Relevan:*\n${emrSummary}\n\nMohon segera hubungi pasien atau lakukan tindakan medis yang diperlukan.`;
-            try {
-                await notificationService.sendWhatsApp(cg.caregiver_phone, waMessage);
-            } catch (waErr) {
-                console.error('[WhatsApp Alert Error]:', waErr.message);
-            }
+            setImmediate(async () => {
+                try {
+                    await notificationService.sendWhatsApp(cg.caregiver_phone, waMessage);
+                } catch (waErr) {
+                    console.error('[WhatsApp Alert Error]:', waErr.message);
+                }
+            });
         }
 
-        // 3. Email Notification (dengan konteks EMR)
+        // 3. Email Notification (dengan konteks EMR) in the background
         if (cg.caregiver_email) {
             const emailSubject = `🚨 DARURAT: Keluhan Medis Mendadak dari Pasien ${user.name}`;
             const emrRowsHtml = emrSummaryLines.map(line =>
@@ -261,11 +264,13 @@ const createComplaint = async (user, supabase, data) => {
                 </div>
             `;
             const emailText = `Pemberitahuan Keluhan Medis TemanPulih\n\nPasien Anda, ${user.name}, baru saja melaporkan keluhan medis mendadak:\n- Gejala: ${symptomsText}\n- Tingkat Keparahan: ${severityLabel}\n- Catatan: ${notesText}\n\nRiwayat Medis Relevan:\n${emrSummary}\n\nMohon segera hubungi pasien untuk tindakan lebih lanjut.`;
-            try {
-                await notificationService.sendEmail(cg.caregiver_email, emailSubject, emailHtml, emailText);
-            } catch (emailErr) {
-                console.error('[Email Alert Error]:', emailErr.message);
-            }
+            setImmediate(async () => {
+                try {
+                    await notificationService.sendEmail(cg.caregiver_email, emailSubject, emailHtml, emailText);
+                } catch (emailErr) {
+                    console.error('[Email Alert Error]:', emailErr.message);
+                }
+            });
         }
     }
 
