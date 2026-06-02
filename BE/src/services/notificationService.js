@@ -15,7 +15,7 @@ const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'TemanPulih <onboardi
 const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASS = process.env.SMTP_PASS;
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465', 10);
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
 const SMTP_SECURE = process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : SMTP_PORT === 465;
 const SMTP_FROM_EMAIL = process.env.SMTP_FROM_EMAIL || SMTP_USER || RESEND_FROM_EMAIL;
 
@@ -24,7 +24,11 @@ const smtpTransport = (SMTP_USER && SMTP_PASS)
         host: SMTP_HOST,
         port: SMTP_PORT,
         secure: SMTP_SECURE,
-        auth: { user: SMTP_USER, pass: SMTP_PASS }
+        auth: { user: SMTP_USER, pass: SMTP_PASS },
+        connectionTimeout: 10000,   // 10s to establish TCP connection
+        greetingTimeout: 10000,     // 10s for SMTP greeting
+        socketTimeout: 15000,       // 15s for socket inactivity
+        ...(SMTP_PORT === 587 && !SMTP_SECURE ? { tls: { rejectUnauthorized: false } } : {})
     })
     : null;
 
@@ -50,12 +54,16 @@ const auditLog = (notification) => {
 
 /**
  * Send an email notification.
- * Uses official Resend SDK if RESEND_API_KEY is configured in .env, otherwise logs a mock email.
+ * Strategy:
+ *   1. Try SMTP (Gmail) first — works for all recipients if port/network is OK
+ *   2. Fallback to Resend SDK — note: testing keys can only send TO the account owner
+ *   3. Final fallback: mock log
  */
 const sendEmail = async (to, subject, htmlContent, textContent) => {
+    // ── Attempt 1: SMTP ──
     if (smtpTransport) {
         try {
-            console.log(`[SMTP] Mengirim email ke ${to} via ${SMTP_HOST}:${SMTP_PORT}...`);
+            console.log(`[SMTP] Mengirim email ke ${to} via ${SMTP_HOST}:${SMTP_PORT} (secure=${SMTP_SECURE})...`);
             const info = await smtpTransport.sendMail({
                 from: SMTP_FROM_EMAIL,
                 to,
@@ -63,18 +71,30 @@ const sendEmail = async (to, subject, htmlContent, textContent) => {
                 html: htmlContent,
                 text: textContent
             });
-            console.log(`[SMTP] Email berhasil dikirim! ID: ${info.messageId || 'n/a'}`);
+            console.log(`[SMTP] Email berhasil dikirim ke ${to}! ID: ${info.messageId || 'n/a'}`);
             return { success: true, provider: 'smtp', id: info.messageId };
         } catch (error) {
-            console.error('[SMTP Error]:', error.message);
+            console.error(`[SMTP Error] Gagal kirim ke ${to}:`, error.message);
         }
     }
 
+    // ── Attempt 2: Resend SDK ──
     if (resend) {
         try {
+            // For testing API keys (re_...), force the from address to onboarding@resend.dev
+            const apiKey = process.env.RESEND_API_KEY || '';
+            const isTestingKey = apiKey.startsWith('re_') && !process.env.RESEND_VERIFIED_DOMAIN;
+            const fromAddress = isTestingKey
+                ? 'TemanPulih <onboarding@resend.dev>'
+                : RESEND_FROM_EMAIL;
+
+            if (isTestingKey) {
+                console.log(`[Resend SDK] Mode testing terdeteksi — menggunakan from: ${fromAddress}`);
+            }
+
             console.log(`[Resend SDK] Mengirim email ke ${to}...`);
             const response = await resend.emails.send({
-                from: RESEND_FROM_EMAIL,
+                from: fromAddress,
                 to: [to],
                 subject: subject,
                 html: htmlContent,
@@ -82,17 +102,21 @@ const sendEmail = async (to, subject, htmlContent, textContent) => {
             });
             
             if (response.error) {
-                console.error('[Resend SDK Error]:', response.error);
+                console.error(`[Resend SDK Error] Gagal kirim ke ${to}:`, response.error);
+                if (response.error.statusCode === 403) {
+                    console.warn(`[Resend SDK] PERHATIAN: API key testing hanya bisa kirim ke email pemilik akun Resend.`);
+                    console.warn(`[Resend SDK] Untuk kirim ke semua email, verifikasi domain di https://resend.com/domains`);
+                }
             } else {
-                console.log(`[Resend SDK] Email berhasil dikirim! ID: ${response.data?.id}`);
+                console.log(`[Resend SDK] Email berhasil dikirim ke ${to}! ID: ${response.data?.id}`);
                 return { success: true, provider: 'resend', id: response.data?.id };
             }
         } catch (error) {
-            console.error('[Resend SDK Exception]:', error.message);
+            console.error(`[Resend SDK Exception] Gagal kirim ke ${to}:`, error.message);
         }
     }
 
-    // Mock Fallback
+    // ── Fallback: Mock ──
     const banner = `
 =========================================
             [MOCK EMAIL SENT]            
